@@ -182,6 +182,11 @@ def main():
         res = {"Barbell 60/40": s(port), "Growth note only": s(growth), "Phoenix only (cash to 7Y)": s(phx),
                "Direct basket": s(direct)}
         out["portfolio"][f"{mu:.2f}"] = res
+        edges = np.round(np.arange(0.0, 3.01, 0.1), 2)       # 7Y multiple bins for the deck histogram
+        out.setdefault("hist", {})[f"{mu:.2f}"] = dict(
+            edges=edges.tolist(),
+            barbell=(np.histogram(np.clip(port, 0, 2.999), edges)[0] / n).tolist(),
+            direct=(np.histogram(np.clip(direct, 0, 2.999), edges)[0] / n).tolist())
         print(f" basket return {mu:.0%}:")
         for k_, v_ in res.items():
             print(f"   {k_:<27} p5 {v_['p5']:.2f} median {v_['p50']:.2f} mean {v_['mean']:.2f} p95 {v_['p95']:.2f}"

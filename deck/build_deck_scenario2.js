@@ -58,6 +58,7 @@ function table(s, rows, o, headFill) {
 }
 
 
+
 // ===== Barbell data (pricing/scenario2_barbell.py) =====
 const BB = require("../pricing/scenario2_barbell_results.json");
 const PHX = BB.phoenix, PT = BB.terms, PF = BB.portfolio;
@@ -67,6 +68,8 @@ const phxWorst = Math.min(...BB.phx_stress.map((x) => x[1]));
 const gWorst = Math.min(...risk.stress.map((x) => x[3]));
 const comboStressMn = (risk.v0 - gWorst) * AG + (PHX.value - phxWorst) * AP;     // USD Mn
 const b6 = PF["0.06"];
+// Chart palette (validated with the dataviz validator: lightness, chroma, CVD, contrast)
+const C_A = JADE, C_B = VER, C_BLUE = "2F6FB0", C_OCH = "B7841C", BENCH = "9AA8AF";
 
 // ---------- Cover ----------
 {
@@ -109,23 +112,25 @@ const b6 = PF["0.06"];
 {
   const s = pres.addSlide(); s.background = { color: WHITE };
   title(s, "Client profile: protect the legacy, then grow", "NKE Private Wealth, single-family office of the Chak family (third generation)");
-  card(s, 0.5, 1.35, 2.9, 3.0, INK);
-  txt(s, "Client", { x: 0.7, y: 1.5, w: 2.5, h: 0.35, fontFace: HF, fontSize: 15, bold: true, color: GOLD });
-  bullets(s, ["Single-family office, Chak family", "Net worth > USD 2Bn", "Businesses: tech infrastructure, renewables, real estate", "Japan and Greater China", "Patriarch now focused on allocation and legacy"],
-    { x: 0.7, y: 1.9, w: 2.55, h: 2.4, fontSize: 11, color: "E2EEE9" });
-  txt(s, "Goals", { x: 3.65, y: 1.35, w: 2.9, h: 0.35, fontFace: HF, fontSize: 15, bold: true, color: INK });
+  // Chart: mandate as share of net worth
+  s.addChart(pres.charts.DOUGHNUT, [{ name: "Net worth", labels: ["This mandate (USD 100Mn)", "Rest of family wealth"], values: [100, 1900] }], {
+    x: 0.4, y: 1.25, w: 2.9, h: 3.1, chartColors: [C_A, "DCE6E2"], holeSize: 62, showLegend: true, legendPos: "b", legendFontFace: BF, legendFontSize: 9.5, legendColor: TXT,
+    showValue: false, showPercent: false, showTitle: true, title: "Mandate vs net worth (> USD 2Bn)", titleFontFace: BF, titleFontSize: 11, titleColor: TXT, dataLabelColor: TXT,
+  });
+  txt(s, "5%", { x: 1.2, y: 2.5, w: 1.3, h: 0.5, fontFace: HF, fontSize: 24, bold: true, color: C_A, align: "center" });
+  txt(s, "Goals", { x: 3.55, y: 1.35, w: 3.0, h: 0.35, fontFace: HF, fontSize: 15, bold: true, color: INK });
   const goals = [["1", "Capital appreciation", "Grow wealth for future generations"], ["2", "Asia's digital transformation", "Exposure to the sectors driving it, bridging traditional and new"], ["3", "Downside managed", "Appropriate for generational wealth preservation"]];
   goals.forEach((g, i) => {
     const y = 1.8 + i * 0.85;
-    badge(s, 3.65, y, g[0], i === 2 ? VER : JADE, 0.4);
-    txt(s, g[1], { x: 4.15, y: y - 0.02, w: 2.4, h: 0.28, fontSize: 12, bold: true, color: INK });
-    txt(s, g[2], { x: 4.15, y: y + 0.27, w: 2.4, h: 0.5, fontSize: 10.5, color: MUTED });
+    badge(s, 3.55, y, g[0], i === 2 ? VER : JADE, 0.4);
+    txt(s, g[1], { x: 4.05, y: y - 0.02, w: 2.5, h: 0.28, fontSize: 12, bold: true, color: INK });
+    txt(s, g[2], { x: 4.05, y: y + 0.27, w: 2.5, h: 0.5, fontSize: 10.5, color: MUTED });
   });
   card(s, 6.8, 1.35, 2.7, 3.0, MIST);
   txt(s, "Risk tolerance: Moderate", { x: 6.95, y: 1.5, w: 2.45, h: 0.35, fontFace: HF, fontSize: 13.5, bold: true, color: JADE });
   txt(s, "Key assumptions", { x: 6.95, y: 1.9, w: 2.45, h: 0.3, fontSize: 11.5, bold: true, color: INK });
-  bullets(s, ["Mandate: USD 100Mn (5% of net worth)", "5–7 year horizon; limited early exit accepted", "Regular cash flow welcome for next-generation distributions", "USD base; open to Natixis structured notes"],
-    { x: 6.95, y: 2.25, w: 2.45, h: 2.05, fontSize: 10.5 });
+  bullets(s, ["Businesses: tech infrastructure, renewables, real estate (Japan, Greater China)", "5–7 year horizon; limited early exit accepted", "Regular cash flow welcome for next-generation distributions", "USD base; open to Natixis notes"],
+    { x: 6.95, y: 2.25, w: 2.45, h: 2.05, fontSize: 10 });
   card(s, 0.5, 4.5, 9, 0.6, "FBEDE9");
   s.addText([{ text: "Hidden risk: ", options: { bold: true, color: VER } },
     { text: "the family already owns Asian infrastructure, renewables and property. We give them the AI hardware layer and exclude what they already own." }],
@@ -139,21 +144,31 @@ const b6 = PF["0.06"];
   const s = pres.addSlide(); s.background = { color: WHITE };
   title(s, "Outlook: volatile macro, AI shifts to hardware", "Macro, geopolitical and sector view (figures to be sourced on Bloomberg / Natixis research as of 17 Sep 2026)");
   const cols = [
-    ["Geopolitics and elections", INK2, ["US midterms (Nov 2026) and the 2028 race keep trade policy uncertain", "US–China tech restrictions and tariffs hit cross-border families", "Capital rotates to supply-chain security and reshoring"]],
-    ["Middle East, oil, inflation", VER, ["US–Iran conflict and Strait of Hormuz risk drive oil volatility", "Sticky core inflation keeps long-end yields high", "Rewards real pricing power; penalises cash-burning growth"]],
-    ["AI pivots to hardware", JADE, ["High-multiple AI software de-rates on higher discount rates", "Capex shifts decisively to chips, HBM memory, equipment, servers", "Asia (Taiwan, Korea, Japan) supplies that hardware"]],
+    ["Geopolitics and elections", C_BLUE, ["US midterms (Nov 2026) and the 2028 race keep trade policy uncertain", "US–China tech curbs and tariffs hit cross-border families"]],
+    ["Middle East, oil, inflation", VER, ["US–Iran conflict and Hormuz risk drive oil volatility", "Sticky inflation keeps long-end yields high; pricing power wins"]],
+    ["AI pivots to hardware", JADE, ["AI software de-rates on higher discount rates", "Capex shifts to chips, HBM, equipment and servers made in Asia"]],
   ];
   cols.forEach((c, i) => {
-    const x = 0.5 + i * 3.05;
-    card(s, x, 1.35, 2.85, 2.95, MIST);
-    s.addShape(pres.shapes.OVAL, { x: x + 0.18, y: 1.52, w: 0.3, h: 0.3, fill: { color: c[1] } });
-    txt(s, c[0], { x: x + 0.58, y: 1.47, w: 2.2, h: 0.42, fontFace: HF, fontSize: 13, bold: true, color: INK, valign: "middle" });
-    bullets(s, c[2], { x: x + 0.18, y: 2.02, w: 2.55, h: 2.2, fontSize: 10.5 });
+    const y = 1.35 + i * 1.02;
+    card(s, 0.5, y, 4.6, 0.92, MIST);
+    s.addShape(pres.shapes.OVAL, { x: 0.65, y: y + 0.12, w: 0.26, h: 0.26, fill: { color: c[1] } });
+    txt(s, c[0], { x: 1.02, y: y + 0.07, w: 3.95, h: 0.32, fontFace: HF, fontSize: 12.5, bold: true, color: INK });
+    bullets(s, c[2], { x: 1.02, y: y + 0.4, w: 3.95, h: 0.5, fontSize: 9.5, paraSpaceAfter: 2 });
   });
-  card(s, 0.5, 4.45, 9, 0.65, INK);
-  txt(s, "Therefore: own Asia's AI hardware, with protection for the legacy and income while we wait.", { x: 0.7, y: 4.45, w: 8.6, h: 0.65, fontFace: HF, fontSize: 13.5, bold: true, color: WHITE, valign: "middle" });
+  const ten = ["1Y", "2Y", "3Y", "5Y", "7Y", "10Y", "20Y"];
+  s.addChart(pres.charts.LINE, [
+    { name: "USD", labels: ten, values: [4.78, 5.30, 5.52, 5.69, 5.75, 5.82, 6.04] },
+    { name: "EUR", labels: ten, values: [3.13, 3.52, 3.69, 3.89, 3.95, 4.06, 4.24] },
+    { name: "JPY", labels: ten, values: [1.70, 2.12, 2.40, 2.82, 3.23, 3.52, 4.21] },
+  ], {
+    x: 5.3, y: 1.25, w: 4.3, h: 3.15, ...chartBase(), chartColors: [C_A, C_BLUE, C_OCH], lineSize: 2, lineDataSymbol: "circle", lineDataSymbolSize: 6,
+    showLegend: true, legendPos: "b", legendFontFace: BF, legendFontSize: 10, legendColor: TXT, valAxisMinVal: 0, valAxisLabelFormatCode: '0"%"',
+    showTitle: true, title: "Natixis funding (%): USD makes protection cheapest",
+  });
+  card(s, 0.5, 4.5, 9, 0.6, INK);
+  txt(s, "Therefore: own Asia's AI hardware, with protection for the legacy and income while we wait.", { x: 0.7, y: 4.5, w: 8.6, h: 0.6, fontFace: HF, fontSize: 13.5, bold: true, color: WHITE, valign: "middle" });
   pageNo(s, 2);
-  s.addNotes("Template: investment outlook. Add sourced data points: long-end UST yield level, Natixis strategist survey on inflation risk, hyperscaler capex, TSMC/HBM market shares. Note: the 2026 midterms, not a 2027 election.");
+  s.addNotes("Template: investment outlook. Chart: the rules' funding grid. At 5.75% USD 7Y, the bond floor costs 67.6 vs ~80 in JPY. Add sourced data points for the three themes (UST yields, Natixis strategist survey, hyperscaler capex). Note: the 2026 midterms, not a 2027 election.");
 }
 
 // ---------- 3. Thesis ----------
@@ -164,7 +179,7 @@ const b6 = PF["0.06"];
   const med = [b6["Direct basket"].p50, BB.ust_multiple, b6["Growth note only"].p50, b6["Barbell 60/40"].p50];
   const p5 = [b6["Direct basket"].p5, BB.ust_multiple, b6["Growth note only"].p5, b6["Barbell 60/40"].p5];
   s.addChart(pres.charts.BAR, [{ name: "Median", labels: lab, values: med.map((v) => +v.toFixed(2)) }, { name: "Worst 5%", labels: lab, values: p5.map((v) => +v.toFixed(2)) }], {
-    x: 0.4, y: 1.3, w: 4.7, h: 3.75, barDir: "col", barGrouping: "clustered", ...chartBase(), chartColors: [JADE, VER],
+    x: 0.4, y: 1.3, w: 4.7, h: 3.75, barDir: "col", barGrouping: "clustered", ...chartBase(), chartColors: [C_A, C_B],
     showLegend: true, legendPos: "b", legendFontFace: BF, legendFontSize: 10, legendColor: TXT,
     showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: '0.00"x"', dataLabelColor: TXT, dataLabelFontSize: 9,
     showTitle: true, title: "Multiple of capital after 7 years", valAxisHidden: true, barGapWidthPct: 60,
@@ -191,32 +206,34 @@ const b6 = PF["0.06"];
 {
   const s = pres.addSlide(); s.background = { color: WHITE };
   title(s, "The Asia AI Hardware Barbell", "Two Natixis notes, one theme: protect and grow with " + AG + "%, earn income with " + AP + "%");
+  s.addChart(pres.charts.DOUGHNUT, [{ name: "Allocation", labels: ["Sleeve A: growth note", "Sleeve B: Phoenix"], values: [AG, AP] }], {
+    x: 0.35, y: 1.3, w: 2.7, h: 3.0, chartColors: [C_A, C_B], holeSize: 58, showLegend: true, legendPos: "b", legendFontFace: BF, legendFontSize: 9.5, legendColor: TXT,
+    showPercent: true, showValue: false, dataLabelColor: WHITE, dataLabelFontSize: 11, dataLabelFontBold: true, showTitle: false,
+  });
+  txt(s, "USD 100Mn", { x: 1.0, y: 2.38, w: 1.4, h: 0.4, fontFace: HF, fontSize: 13, bold: true, color: INK, align: "center" });
   const sleeves = [
-    ["A", "Preserve and grow", "USD " + AG + "Mn · Asia Digital Bridge Note", JADE,
-      ["7 years, 100% capital protected", pct(PROD) + " uncapped participation", "10% vol-target index of 13 AI-hardware names", "Legacy Lock banks gains at +30/60/90%"]],
-    ["B", "Earn income", "USD " + AP + "Mn · AI Hardware Phoenix", VER,
-      ["5 years, autocallable", "10% p.a. coupon, paid quarterly (60% barrier, memory)", "Basket: TSMC · SK Hynix · Tokyo Electron", "Capital at risk only below 50% at maturity"]],
+    ["A", "Preserve and grow", "USD " + AG + "Mn · Asia Digital Bridge Note", C_A,
+      ["7 years, 100% capital protected", pct(PROD) + " uncapped participation", "Vol-target index of 13 AI-hardware names", "Legacy Lock at +30/60/90%"]],
+    ["B", "Earn income", "USD " + AP + "Mn · AI Hardware Phoenix", C_B,
+      ["5 years, autocallable", "10% p.a., paid quarterly (60% barrier)", "TSMC · SK Hynix · Tokyo Electron", "Capital at risk only below 50%"]],
   ];
   sleeves.forEach((sl, i) => {
-    const x = 0.5 + i * 3.1;
-    card(s, x, 1.35, 2.95, 3.0, i ? "FBEDE9" : MIST);
+    const x = 3.2 + i * 3.2;
+    card(s, x, 1.35, 3.05, 2.95, i ? "FBEDE9" : MIST);
     badge(s, x + 0.2, 1.5, sl[0], sl[3]);
-    txt(s, sl[1], { x: x + 0.8, y: 1.5, w: 2.05, h: 0.46, fontFace: HF, fontSize: 15, bold: true, color: INK, valign: "middle" });
-    txt(s, sl[2], { x: x + 0.2, y: 2.05, w: 2.6, h: 0.3, fontSize: 10.5, bold: true, color: sl[3] });
-    bullets(s, sl[4], { x: x + 0.2, y: 2.42, w: 2.6, h: 1.85, fontSize: 10.5 });
+    txt(s, sl[1], { x: x + 0.8, y: 1.5, w: 2.15, h: 0.46, fontFace: HF, fontSize: 15, bold: true, color: INK, valign: "middle" });
+    txt(s, sl[2], { x: x + 0.2, y: 2.05, w: 2.75, h: 0.3, fontSize: 10.5, bold: true, color: TXT });
+    bullets(s, sl[4], { x: x + 0.2, y: 2.42, w: 2.75, h: 1.8, fontSize: 10.5 });
   });
-  card(s, 6.75, 1.35, 2.8, 3.0, INK);
-  txt(s, "Combined", { x: 6.95, y: 1.48, w: 2.4, h: 0.35, fontFace: HF, fontSize: 15, bold: true, color: GOLD });
   const kp = [[AG + "%", "contractual floor"], ["USD " + (AP * 0.1).toFixed(0) + "Mn", "income a year if paid"], [x2(b6["Barbell 60/40"].p50), "median at 7Y (6% case)"], [pct(b6["Barbell 60/40"].p_below), "chance below 100"]];
   kp.forEach((k, i) => {
-    const y = 1.9 + i * 0.6;
-    txt(s, k[0], { x: 6.95, y, w: 1.15, h: 0.45, fontFace: HF, fontSize: 17, bold: true, color: WHITE, valign: "middle" });
-    txt(s, k[1], { x: 8.1, y, w: 1.4, h: 0.45, fontSize: 10, color: "D8E8E2", valign: "middle" });
+    const x = 0.5 + i * 2.27;
+    card(s, x, 4.45, 2.12, 0.65, INK);
+    txt(s, k[0], { x: x + 0.12, y: 4.45, w: 0.95, h: 0.65, fontFace: HF, fontSize: 15, bold: true, color: WHITE, valign: "middle" });
+    txt(s, k[1], { x: x + 1.05, y: 4.45, w: 1.0, h: 0.65, fontSize: 9.5, color: "D8E8E2", valign: "middle" });
   });
-  txt(s, "Both sleeves are USD quanto (no FX risk) and exclude data centres, telecom towers, renewables and property, which the family already owns.", { x: 0.5, y: 4.5, w: 9, h: 0.55, fontSize: 10.5, italic: true, color: MUTED });
-  foot(s, NOTE);
   pageNo(s, 4);
-  s.addNotes("Template: product overview. The barbell answers both objectives: Sleeve A preserves and grows, Sleeve B funds distributions to the next generation.");
+  s.addNotes("Template: product overview. Both sleeves are USD quanto and exclude data centres, telecom towers, renewables and property. " + NOTE);
 }
 
 // ---------- 5. Sleeve A ----------
@@ -227,103 +244,120 @@ const b6 = PF["0.06"];
     ["Index rule", "Exposure = 10% ÷ max(20d, 60d) vol, cap 150%; 1% p.a. decrement"],
     ["Redemption", "100% + " + pct(PROD) + " × max(0, index perf, locked gain)"], ["Final level", "Average of the last 12 monthly closes"],
     ["Legacy Lock", "Gains floored at +30/60/90% once hit on an annual date"], ["Dates", "17 Sep 2026 to Sep 2033"]];
-  table(s, rows, { x: 0.5, y: 1.3, w: 5.0, colW: [1.25, 3.75], rowH: 0.44, fontSize: 10 });
-  const steps = [["7Y USD funding (rules grid)", "5.75%"], ["Zero-coupon bond (floor)", pct(ZCB, 1)], ["Issuer fee", "2.0%"], ["Option budget", pct(BUDGET, 1)], ["Participation", pct(PROD)]];
-  txt(s, "Pricing build-up", { x: 5.8, y: 1.3, w: 3.75, h: 0.3, fontFace: HF, fontSize: 14, bold: true, color: INK });
-  steps.forEach((st, i) => {
-    const y = 1.68 + i * 0.47, last = i === steps.length - 1;
-    card(s, 5.8, y, 3.75, 0.4, last ? JADE : MIST);
-    txt(s, st[0], { x: 5.95, y, w: 2.6, h: 0.4, fontSize: 10.5, valign: "middle", color: last ? WHITE : TXT, bold: last });
-    txt(s, st[1], { x: 8.45, y, w: 1.0, h: 0.4, fontSize: 12, valign: "middle", align: "right", bold: true, color: last ? WHITE : INK });
+  table(s, rows, { x: 0.5, y: 1.3, w: 4.6, colW: [1.2, 3.4], rowH: 0.44, fontSize: 9.5 });
+  s.addChart(pres.charts.BAR, [{ name: "% of notional", labels: ["Bond floor", "Option budget", "Issuer fee"], values: [+(ZCB * 100).toFixed(1), +(BUDGET * 100).toFixed(1), 2.0] }], {
+    x: 5.3, y: 1.25, w: 4.3, h: 1.6, barDir: "bar", ...chartBase(), chartColors: [C_BLUE, C_A, C_OCH], varyColors: true,
+    showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: '0.0"%"', dataLabelColor: TXT, dataLabelFontSize: 10, valAxisHidden: true, valAxisMaxVal: 85,
+    showTitle: true, title: "Where each USD 100 goes (7Y funding 5.75%)", barGapWidthPct: 45,
   });
-  card(s, 0.5, 4.5, 9, 0.6, INK);
+  const T = R.tenor;
+  s.addChart(pres.charts.BAR, [{ name: "Participation", labels: T.map((t) => t[0] + "Y"), values: T.map((t) => Math.round(t[3] * 100)) }], {
+    x: 5.3, y: 2.9, w: 4.3, h: 1.55, barDir: "col", ...chartBase(), chartColors: [C_A],
+    showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: '0"%"', dataLabelColor: TXT, dataLabelFontSize: 10, valAxisHidden: true, valAxisMinVal: 0, valAxisMaxVal: 200,
+    showTitle: true, title: "Base participation by tenor (7Y chosen)", barGapWidthPct: 60,
+  });
+  card(s, 0.5, 4.55, 9, 0.55, INK);
   s.addText([{ text: "Why a vol-target index: ", options: { bold: true, color: GOLD } },
-    { text: "its volatility is fixed at 10%, so Natixis hedges with delta only and the option is cheap. Exposure falls from ~" + Math.round(1000 / VOLC) + "% to ~" + Math.round(1000 / VOLS) + "% in a crash (appendix D)." }],
-    { x: 0.7, y: 4.52, w: 8.6, h: 0.56, fontFace: BF, fontSize: 11, color: WHITE, margin: 0, valign: "middle", isTextBox: true });
+    { text: "volatility is fixed at 10%, so Natixis hedges with delta only and the option is cheap. Exposure falls from ~" + Math.round(1000 / VOLC) + "% to ~" + Math.round(1000 / VOLS) + "% in a crash (appendix D)." }],
+    { x: 0.7, y: 4.55, w: 8.6, h: 0.55, fontFace: BF, fontSize: 10.5, color: WHITE, margin: 0, valign: "middle", isTextBox: true });
   foot(s, NOTE);
   pageNo(s, 5);
-  s.addNotes("Template: key terms. Live formulas in pricing/Asia-Digital-Bridge-Pricer.xlsx (Pricer tab). Constituents: TSMC, MediaTek, SK Hynix, Samsung, Tokyo Electron, Advantest, Disco, Shin-Etsu, ASE, Ibiden, Hon Hai, Quanta, Delta.");
+  s.addNotes("Template: key terms. Tenor chart shows base participation (Black-Scholes); with Legacy Lock and 12M averaging the 7Y figure is " + pct(PROD) + ". Constituents: TSMC, MediaTek, SK Hynix, Samsung, Tokyo Electron, Advantest, Disco, Shin-Etsu, ASE, Ibiden, Hon Hai, Quanta, Delta.");
 }
 
 // ---------- 6. Sleeve B ----------
 {
   const s = pres.addSlide(); s.background = { color: WHITE };
   title(s, "Sleeve B: how the Phoenix pays 10%", "USD " + AP + "Mn · 5Y autocall on TSMC, SK Hynix and Tokyo Electron (equal weight, USD quanto)");
-  const rows = [["Term", "Proposal"], ["Coupon", "2.5% a quarter if basket ≥ 60%; missed coupons paid later (memory)"],
-    ["Autocall", "Quarterly if basket ≥ 100%, trigger steps down 5% a year"], ["Capital", "100% back unless basket < 50% at maturity; then basket level"],
-    ["Expected life", PHX.life.toFixed(1) + " years (" + pct(PHX.call_by_year[0]) + " called in year 1)"], ["P(capital loss)", pct(PHX.p_loss) + "; expected loss " + pct(PHX.exp_loss, 1)]];
-  table(s, rows, { x: 0.5, y: 1.3, w: 4.9, colW: [1.25, 3.65], rowH: 0.46, fontSize: 10 });
-  txt(s, "Where the coupon comes from", { x: 5.7, y: 1.3, w: 3.85, h: 0.3, fontFace: HF, fontSize: 14, bold: true, color: INK });
-  const steps = [["1", "Interest", "Natixis pays its 5.69% USD funding rate on the cash"], ["2", "Put sold", "Client sells a 50% barrier put on the basket (worth " + pct(PHX.pv_put, 1) + " of notional)"],
-                 ["3", "Upside given up", "Return is capped at the coupons"], ["4", "Early call", "Calls in good markets shorten the life, so fewer coupons are owed"]];
-  steps.forEach((st, i) => {
-    const y = 1.72 + i * 0.6;
-    badge(s, 5.7, y, st[0], i === 1 ? VER : JADE, 0.36);
-    txt(s, st[1], { x: 6.18, y: y - 0.02, w: 3.35, h: 0.25, fontSize: 11, bold: true, color: INK });
-    txt(s, st[2], { x: 6.18, y: y + 0.22, w: 3.35, h: 0.36, fontSize: 9.5 });
+  const rows = [["Term", "Proposal"], ["Coupon", "2.5% a quarter if basket ≥ 60%; missed coupons paid later"],
+    ["Autocall", "Quarterly if basket ≥ 100%; trigger steps down 5% a year"], ["Capital", "100% back unless basket < 50% at maturity"],
+    ["Risk", pct(PHX.p_loss) + " chance of loss; expected loss " + pct(PHX.exp_loss, 1)]];
+  table(s, rows, { x: 0.5, y: 1.3, w: 4.6, colW: [1.0, 3.6], rowH: 0.44, fontSize: 9.5 });
+  s.addChart(pres.charts.BAR, [{ name: "Called by end of year", labels: PHX.call_by_year.map((_, i) => "Y" + (i + 1)), values: PHX.call_by_year.map((x) => Math.round(x * 100)) }], {
+    x: 5.3, y: 1.25, w: 4.3, h: 2.0, barDir: "col", ...chartBase(), chartColors: [C_B],
+    showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: '0"%"', dataLabelColor: TXT, dataLabelFontSize: 10, valAxisHidden: true, valAxisMinVal: 0, valAxisMaxVal: 100,
+    showTitle: true, title: "Chance the note has been called (cumulative)", barGapWidthPct: 55,
   });
-  card(s, 0.5, 4.2, 9, 0.9, MIST);
-  s.addText([{ text: "Value check: ", options: { bold: true, color: JADE } },
-    { text: "coupons " + pct(PHX.pv_cpn, 1) + " + principal " + pct(PHX.pv_princ, 1) + " − put " + pct(PHX.pv_put, 1) + " = " + pct(PHX.value, 1) + "; Natixis keeps " + pct(PHX.margin, 1) + ". " },
-    { text: "Is it a covered call? ", options: { bold: true, color: VER } }, { text: "Economically close: bond + short put = stock + short call. The barrier gives conditional protection." }],
-    { x: 0.7, y: 4.22, w: 8.6, h: 0.86, fontFace: BF, fontSize: 10.5, color: TXT, margin: 0, valign: "middle", isTextBox: true });
-  foot(s, "Monte Carlo, 40k paths, cash flows discounted at the Natixis 5Y USD funding rate. " + NOTE.split(";")[0] + ".");
+  s.addChart(pres.charts.BAR, [{ name: "% of notional", labels: ["PV of coupons", "PV of principal", "Short put (loss)", "Natixis margin"],
+      values: [+(PHX.pv_cpn * 100).toFixed(1), +(PHX.pv_princ * 100).toFixed(1), -(PHX.pv_put * 100).toFixed(1), +(PHX.margin * 100).toFixed(1)] }], {
+    x: 0.4, y: 3.65, w: 4.8, h: 1.5, barDir: "bar", ...chartBase(), chartColors: [C_A, C_BLUE, C_B, C_OCH], varyColors: true,
+    showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: '0.0"%"', dataLabelColor: TXT, dataLabelFontSize: 9, valAxisHidden: true, valAxisMinVal: -20, valAxisMaxVal: 115,
+    showTitle: true, title: "Value of USD 100 to the client", barGapWidthPct: 35, catAxisLabelFontSize: 9,
+  });
+  const steps = [["1", "Interest", "Natixis' 5.69% USD funding"], ["2", "Put sold", "50% barrier, worth " + pct(PHX.pv_put, 1)], ["3", "Upside given up", "Return capped at coupons"], ["4", "Early calls", "Fewer coupons owed"]];
+  steps.forEach((st, i) => {
+    const x = 5.3 + (i % 2) * 2.17, y = 3.45 + Math.floor(i / 2) * 0.86;
+    card(s, x, y, 2.07, 0.76, MIST);
+    badge(s, x + 0.1, y + 0.1, st[0], i === 1 ? VER : JADE, 0.3);
+    txt(s, st[1], { x: x + 0.48, y: y + 0.08, w: 1.55, h: 0.28, fontSize: 10.5, bold: true, color: INK });
+    txt(s, st[2], { x: x + 0.48, y: y + 0.36, w: 1.55, h: 0.36, fontSize: 9, color: TXT });
+  });
+  foot(s, "Is it a covered call? Economically close: bond + short put = stock + short call; the barrier makes protection conditional. MC, 40k paths.");
   pageNo(s, 6);
-  s.addNotes("We rejected worst-of structures: at 10% they needed 30–45% barriers and still had 9–41% loss probabilities. An equal-weight basket of three gets 10% at a 50% barrier with ~9% loss probability. Phoenix tab in the Excel pricer.");
+  s.addNotes("Value check: coupons " + pct(PHX.pv_cpn, 1) + " + principal " + pct(PHX.pv_princ, 1) + " − put " + pct(PHX.pv_put, 1) + " = " + pct(PHX.value, 1) + " fair value; Natixis keeps " + pct(PHX.margin, 1) + ". Worst-of structures were rejected: at 10% they needed 30–45% barriers and had 9–41% loss probabilities.");
 }
 
 // ---------- 7. Payoffs & scenarios ----------
 {
   const s = pres.addSlide(); s.background = { color: WHITE };
-  title(s, "Payoffs and scenarios", "Sleeve A redemption vs index; Sleeve B cash flows in four scenarios");
+  title(s, "Payoffs and scenarios", "What each sleeve returns at maturity, % of notional");
   const xs = [-40, -20, 0, 20, 40, 60, 80, 100];
   s.addChart(pres.charts.LINE, [
     { name: "Sleeve A redemption", labels: xs.map((v) => v + "%"), values: xs.map((v) => +(100 + PROD * Math.max(v, 0)).toFixed(1)) },
     { name: "Holding the index", labels: xs.map((v) => v + "%"), values: xs.map((v) => 100 + v) },
   ], {
-    x: 0.4, y: 1.3, w: 4.5, h: 3.8, ...chartBase(), chartColors: [JADE, "9AA8AF"], lineSize: 3, lineDataSymbol: "none",
-    showLegend: true, legendPos: "b", legendFontFace: BF, legendFontSize: 10, legendColor: TXT,
-    showTitle: true, title: "Sleeve A payoff (% of notional)", valAxisMinVal: 50,
-    showCatAxisTitle: true, catAxisTitle: "VT index performance at maturity", catAxisTitleFontSize: 10, catAxisTitleColor: MUTED,
+    x: 0.4, y: 1.25, w: 4.6, h: 2.85, ...chartBase(), chartColors: [C_A, BENCH], lineSize: 2, lineDataSymbol: "none",
+    showLegend: true, legendPos: "b", legendFontFace: BF, legendFontSize: 9.5, legendColor: TXT, valAxisMinVal: 50,
+    showTitle: true, title: "Sleeve A vs VT index performance",
   });
-  const sc = [["Called at Q1 (basket ≥ 100%)", 1, 1.0], ["Called in year 2 (basket 96%, trigger 95%)", 8, 1.0],
-              ["Never called; basket 70% at maturity", 20, 1.0], ["Basket 45% at maturity; coupons stop after year 2", 8, 0.45]];
-  const rows = [["Sleeve B scenario", "Coupons", "Total cash"]].concat(sc.map((r) => [r[0], (r[1] * 2.5).toFixed(1) + "%", (r[2] * 100 + r[1] * 2.5).toFixed(1) + "%"]));
-  table(s, rows, { x: 5.1, y: 1.3, w: 4.45, colW: [2.65, 0.8, 1.0], rowH: 0.5, fontSize: 10 });
-  card(s, 5.1, 3.95, 4.45, 1.15, "FBEDE9");
-  s.addText([{ text: "Combined worst case: ", options: { bold: true, color: VER } },
-    { text: "Sleeve A returns USD " + AG + "Mn in 2033; Sleeve B only loses if the basket is below 50% at maturity (" + pct(PHX.p_loss) + " chance), after any coupons already paid." }],
-    { x: 5.25, y: 4.0, w: 4.15, h: 1.05, fontFace: BF, fontSize: 10.5, color: TXT, margin: 0, valign: "middle", isTextBox: true });
-  foot(s, "Sleeve A participation " + pct(PROD) + " (with Legacy Lock and 12M averaging). Coupons: 2.5% per quarter.");
+  const bx = [20, 30, 40, 49, 50, 60, 70, 80, 90, 100];
+  s.addChart(pres.charts.LINE, [
+    { name: "Capital returned (not called)", labels: bx.map((v) => v + "%"), values: bx.map((v) => (v < 50 ? v : 100)) },
+    { name: "Holding the basket", labels: bx.map((v) => v + "%"), values: bx },
+  ], {
+    x: 5.1, y: 1.25, w: 4.5, h: 2.85, ...chartBase(), chartColors: [C_B, BENCH], lineSize: 2, lineDataSymbol: "none",
+    showLegend: true, legendPos: "b", legendFontFace: BF, legendFontSize: 9.5, legendColor: TXT, valAxisMinVal: 0, valAxisMaxVal: 110,
+    showTitle: true, title: "Sleeve B capital vs basket level at maturity",
+  });
+  const sc = [["Called at Q1", "102.5%"], ["Called in year 2", "120.0%"], ["Never called, basket 70%", "150.0%"], ["Basket 45%, coupons stop yr 2", "65.0%"]];
+  sc.forEach((c, i) => {
+    const x = 0.5 + i * 2.27;
+    card(s, x, 4.25, 2.12, 0.85, i === 3 ? "FBEDE9" : MIST);
+    txt(s, c[1], { x: x + 0.12, y: 4.28, w: 1.9, h: 0.4, fontFace: HF, fontSize: 16, bold: true, color: i === 3 ? VER : INK });
+    txt(s, "Sleeve B: " + c[0], { x: x + 0.12, y: 4.68, w: 1.95, h: 0.38, fontSize: 9.5, color: MUTED });
+  });
+  foot(s, "Sleeve A " + pct(PROD) + " participation (Lock + averaging). Sleeve B totals include coupons at 2.5% a quarter; coupons already paid are never clawed back.");
   pageNo(s, 7);
-  s.addNotes("Template: scenario analysis and payoff diagram. Sleeve A example with the Lock: index hits +60% in year 4 and ends +20% -> " + (100 + PROD * 60).toFixed(0) + "%.");
+  s.addNotes("Template: scenario analysis and payoff diagrams. Sleeve A with the Lock: index hits +60% in year 4 and ends +20% -> " + (100 + PROD * 60).toFixed(0) + "%. Sleeve B has a cliff at the 50% barrier: below it the client receives the basket level.");
 }
 
 // ---------- 8. Back-testing ----------
 {
   const s = pres.addSlide(); s.background = { color: WHITE };
   title(s, "Back-testing: how the barbell behaves", "12,000 simulated 7-year paths per regime; historical windows to be added from Bloomberg (2005–2026)");
-  const regs = [["0.03", "Bear (3%)"], ["0.06", "Base (6%)"], ["0.09", "Bull (9%)"]];
+  const H = BB.hist["0.06"];
+  const labels = H.edges.slice(0, -1).map((e) => e.toFixed(1) + "x");
   s.addChart(pres.charts.BAR, [
-    { name: "Barbell", labels: regs.map((r) => r[1]), values: regs.map((r) => Math.round(PF[r[0]]["Barbell 60/40"].p_below * 100)) },
-    { name: "Direct equity", labels: regs.map((r) => r[1]), values: regs.map((r) => Math.round(PF[r[0]]["Direct basket"].p_below * 100)) },
+    { name: "Barbell", labels, values: H.barbell.map((v) => +(v * 100).toFixed(1)) },
+    { name: "Direct equity", labels, values: H.direct.map((v) => +(v * 100).toFixed(1)) },
   ], {
-    x: 0.4, y: 1.3, w: 4.5, h: 3.3, barDir: "col", barGrouping: "clustered", ...chartBase(), chartColors: [JADE, "9AA8AF"],
-    showLegend: true, legendPos: "b", legendFontFace: BF, legendFontSize: 10, legendColor: TXT,
-    showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: '0"%"', dataLabelColor: TXT, dataLabelFontSize: 10,
-    showTitle: true, title: "Chance of ending below 100 after 7 years", valAxisHidden: true, barGapWidthPct: 60,
+    x: 0.4, y: 1.25, w: 5.0, h: 3.85, barDir: "col", barGrouping: "clustered", ...chartBase(), chartColors: [C_A, BENCH], barGapWidthPct: 20,
+    showLegend: true, legendPos: "b", legendFontFace: BF, legendFontSize: 10, legendColor: TXT, valAxisLabelFormatCode: '0"%"', catAxisLabelFontSize: 8,
+    showTitle: true, title: "Distribution of 7Y outcomes, base case (6% basket return)",
   });
+  const regs = [["0.03", "Bear"], ["0.06", "Base"], ["0.09", "Bull"]];
   const rows = [["7Y multiple", "Bear", "Base", "Bull"]];
-  [["Barbell median", "Barbell 60/40", "p50"], ["Barbell worst 5%", "Barbell 60/40", "p5"], ["Growth note median", "Growth note only", "p50"], ["Direct equity median", "Direct basket", "p50"]].forEach((r) =>
+  [["Barbell median", "Barbell 60/40", "p50"], ["Barbell worst 5%", "Barbell 60/40", "p5"], ["Direct equity median", "Direct basket", "p50"], ["Direct worst 5%", "Direct basket", "p5"]].forEach((r) =>
     rows.push([r[0]].concat(regs.map((g) => x2(PF[g[0]][r[1]][r[2]])))));
-  table(s, rows, { x: 5.15, y: 1.35, w: 4.4, colW: [1.7, 0.9, 0.9, 0.9], rowH: 0.4, fontSize: 10 });
-  bullets(s, ["Phoenix: " + pct(PHX.call_by_year[0]) + " called in year 1, " + pct(PHX.call_by_year[4]) + " by year 5; cash reinvested at 3.75%",
-              "The barbell's worst 5% stays near or above " + x2(PF["0.03"]["Barbell 60/40"].p5) + "; direct equity's falls to " + x2(PF["0.03"]["Direct basket"].p5),
-              "Same simulated paths drive both sleeves, so correlation between them is captured"],
-    { x: 5.15, y: 3.5, w: 4.4, h: 1.6, fontSize: 10 });
-  foot(s, "One-factor model: market vol " + 26 + "%/" + 48 + "% (calm/stress), idiosyncratic 28%. Forward simulation, not a historical backtest.");
+  rows.push(["Barbell P(<100)"].concat(regs.map((g) => pct(PF[g[0]]["Barbell 60/40"].p_below))));
+  rows.push(["Direct P(<100)"].concat(regs.map((g) => pct(PF[g[0]]["Direct basket"].p_below))));
+  table(s, rows, { x: 5.6, y: 1.3, w: 3.95, colW: [1.55, 0.8, 0.8, 0.8], rowH: 0.36, fontSize: 9.5 });
+  bullets(s, ["Barbell outcomes bunch between 1.0x and 2.0x; direct equity spreads from 0.2x to 3x+",
+              "Phoenix: " + pct(PHX.call_by_year[0]) + " called in year 1; cash reinvested at 3.75%"],
+    { x: 5.6, y: 4.0, w: 3.95, h: 1.1, fontSize: 9.5 });
+  foot(s, "One-factor model: market vol 26%/48% (calm/stress), idiosyncratic 28%; same paths drive both sleeves. Not a historical backtest.");
   pageNo(s, 8);
-  s.addNotes("Template: back-testing. Run pricing/scenario2_backtest.py on the Bloomberg export for historical rolling 7Y windows. Rolling the Phoenix into a new issue after each call would raise income versus the cash assumption.");
+  s.addNotes("Template: back-testing. Run pricing/scenario2_backtest.py on the Bloomberg export for historical rolling 7Y windows. Outcomes above 3.0x are grouped in the last bin.");
 }
 
 // ---------- 9. Risks & hedging ----------
@@ -332,22 +366,35 @@ const b6 = PF["0.06"];
   title(s, "Key risk factors and hedging", "Unit 15 checklist: stress, sizing and exits");
   const rows = [["Risk", "What could happen", "Mitigation / hedge"],
     ["Credit", "Natixis default", "BPCE guarantee; 5% of net worth only"],
-    ["Phoenix barrier", pct(PHX.p_loss) + " chance basket < 50% at maturity", "Basket of 3, European barrier, coupons kept"],
-    ["Market (MTM)", "Combined stress: −USD " + comboStressMn.toFixed(1) + "Mn", "Sleeve A floor; vol target cuts exposure"],
+    ["Phoenix barrier", pct(PHX.p_loss) + " chance basket < 50% at maturity", "Basket of 3; coupons already paid are kept"],
     ["Reinvestment", pct(PHX.call_by_year[0]) + " of Phoenix calls in year 1", "Roll into a new Phoenix at prevailing terms"],
     ["Concentration", "Taiwan 6 of 13 names; chip cycle", "Equal weights; three layers of the chain"],
-    ["FX / inflation", "Asian FX moves; real value of floor", "USD quanto; Lock and coupons"]];
-  table(s, rows, { x: 0.5, y: 1.3, w: 5.6, colW: [1.2, 2.25, 2.15], rowH: 0.42, fontSize: 9.5 });
-  card(s, 6.35, 1.3, 3.2, 1.7, MIST);
-  s.addText([{ text: "Sizing\n", options: { bold: true, color: JADE, fontSize: 12 } },
-    { text: "USD 100Mn ÷ USD 2Bn = 5.0% of net worth. Contractual max loss: USD " + AP + "Mn (Phoenix basket to zero) = " + (AP / 20).toFixed(1) + "% of net worth. Combined stress MTM: USD " + comboStressMn.toFixed(1) + "Mn = " + pct(comboStressMn / 2000, 2) + "." }],
-    { x: 6.5, y: 1.36, w: 2.95, h: 1.58, fontFace: BF, fontSize: 10, color: TXT, margin: 0, valign: "top", isTextBox: true });
-  txt(s, "Four exits", { x: 6.35, y: 3.12, w: 3.2, h: 0.28, fontFace: HF, fontSize: 12.5, bold: true, color: INK });
-  bullets(s, ["Profit: Phoenix autocalls; Sleeve A Lock banks gains", "Stop-loss: none on A (floor); B exits on the issuer bid", "Thesis broken: Taiwan blockade or chip export bans", "Time: B by 2031, A by Sep 2033"],
-    { x: 6.35, y: 3.45, w: 3.2, h: 1.65, fontSize: 10 });
-  foot(s, "Stress: AI hardware crash (stocks −30%, vol up) on both sleeves at once. Sleeve A: 10-day 99% VaR " + pct(risk.var99, 1) + "; details in appendix B.");
+    ["FX / inflation", "Asian FX; real value of the floor", "USD quanto; Lock and coupons"]];
+  table(s, rows, { x: 0.5, y: 1.3, w: 5.0, colW: [1.1, 2.0, 1.9], rowH: 0.42, fontSize: 9 });
+  const gS = risk.stress, pS = BB.phx_stress;
+  const cats = ["Chip crash", "Taiwan gap", "Rates/stagflation", "Rally"];
+  const aPnl = gS.map((x) => +((x[3] - risk.v0) * AG).toFixed(1));
+  const bPnl = pS.map((x) => +((x[1] - PHX.value) * AP).toFixed(1));
+  s.addChart(pres.charts.BAR, [{ name: "Sleeve A", labels: cats, values: aPnl }, { name: "Sleeve B", labels: cats, values: bPnl }], {
+    x: 5.65, y: 1.25, w: 3.95, h: 2.55, barDir: "bar", barGrouping: "clustered", ...chartBase(), chartColors: [C_A, C_B], barGapWidthPct: 40,
+    showLegend: true, legendPos: "b", legendFontFace: BF, legendFontSize: 9.5, legendColor: TXT, valAxisLabelFormatCode: '0', catAxisLabelFontSize: 9,
+    showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: '0.0', dataLabelColor: TXT, dataLabelFontSize: 8.5,
+    showTitle: true, title: "Stress mark-to-market P&L (USD Mn)",
+  });
+  card(s, 5.65, 3.95, 3.95, 1.15, MIST);
+  s.addText([{ text: "Sizing: ", options: { bold: true, color: JADE } },
+    { text: "USD 100Mn = 5.0% of net worth. Contractual max loss USD " + AP + "Mn (" + (AP / 20).toFixed(1) + "% of net worth). Combined crash MTM −USD " + comboStressMn.toFixed(1) + "Mn (" + pct(comboStressMn / 2000, 2) + "). Sleeve A 10-day 99% VaR " + pct(risk.var99, 1) + "." }],
+    { x: 5.8, y: 3.98, w: 3.7, h: 1.1, fontFace: BF, fontSize: 9.5, color: TXT, margin: 0, valign: "middle", isTextBox: true });
+  const ex = [["Profit", "Autocall; Lock banks gains"], ["Stop-loss", "None on A; B on issuer bid"], ["Thesis broken", "Taiwan blockade / chip bans"], ["Time", "B by 2031, A by 2033"]];
+  ex.forEach((e, i) => {
+    const x = 0.5 + (i % 2) * 2.55, y = 3.95 + Math.floor(i / 2) * 0.6;
+    badge(s, x, y + 0.06, String(i + 1), i === 2 ? VER : JADE, 0.32);
+    txt(s, e[0] + ": ", { x: x + 0.4, y: y + 0.02, w: 2.1, h: 0.22, fontSize: 9.5, bold: true, color: INK });
+    txt(s, e[1], { x: x + 0.4, y: y + 0.24, w: 2.1, h: 0.3, fontSize: 9, color: TXT });
+  });
+  foot(s, "Stress pairs: Sleeve A crash/Taiwan/stagflation/bull vs Sleeve B crash/Taiwan/rates +100bp/rally; spot and vol shocked together. Four exits shown bottom left.");
   pageNo(s, 9);
-  s.addNotes("Template: key risk factors with hedging. Phoenix stress MTM: crash " + pct(phxWorst, 1) + "; Sleeve A crash " + (gWorst * 100).toFixed(1) + ".");
+  s.addNotes("Template: key risk factors with hedging. Phoenix crash MTM " + pct(phxWorst, 1) + "; Sleeve A crash " + (gWorst * 100).toFixed(1) + ".");
 }
 
 // ---------- 10. Summary ----------
