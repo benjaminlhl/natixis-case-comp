@@ -9,6 +9,9 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
 R = json.load(open("pricing/scenario2_results.json"))
+B = json.load(open("pricing/scenario2_barbell_results.json"))
+BASE_C = R["menu"][0][1]
+LA_C = [m for m in R["menu"] if m[0].startswith("+ Lock + averaging")][0][1]
 OUT = "pricing/Asia-Digital-Bridge-Pricer.xlsx"
 F = "Arial"
 BLUE, GREEN, BLACK = "0000FF", "008000", "000000"
@@ -56,7 +59,7 @@ put(ws, "A2", "Blue = input (edit these), black = formula, green = link to anoth
 
 header(ws, 4, ["Inputs", "Value"])
 inputs = [
-    ("Notional (USD)", 100_000_000, USD, "Client mandate: USD 100Mn (rules, Scenario 2)", False),
+    ("Notional (USD)", "=Barbell!B4*Barbell!B5", USD, "Growth sleeve = total mandate x growth allocation (Barbell tab)", False),
     ("Tenor (years)", 7, "0", "Team choice: 7Y = one-generation handover window", False),
     ("Capital protection at maturity", 1.0, PCT0, "100% of notional, subject to Natixis credit", False),
     ("Issuer fee / margin (upfront)", 0.02, PCT, "Assumption: 2% over the life (~29bp p.a.)", True),
@@ -69,7 +72,7 @@ inputs = [
 for i, (lab, v, fmt, note, key) in enumerate(inputs):
     r = 5 + i
     put(ws, f"A{r}", lab, f_b if False else Font(name=F))
-    put(ws, f"B{r}", v, f_in, fmt, fill_y if key else None, note)
+    put(ws, f"B{r}", v, f_link if str(v).startswith("=") else f_in, fmt, fill_y if key else None, note)
 # names for readability
 N_, T_, P_, FEE_, R_, V_, D_, ADJ_ = (f"$B${r}" for r in range(5, 13))
 
@@ -97,11 +100,14 @@ rows = [
     ("Option leg (USD)", f"={N_}*B17", USD, ""),
     ("Issuer fee (USD)", f"={N_}*{FEE_}", USD, ""),
     ("Check: legs sum to notional", f"=IF(ABS(B24+B25+B26-{N_})<1,\"OK\",\"CHECK\")", None, ""),
+    ("Lock + averaging option cost / base option cost (MC)", LA_C / BASE_C, NUM4, "From scenario2_vt_note.py feature menu (same paths)"),
+    ("PARTICIPATION WITH LEGACY LOCK + 12M AVERAGING", "=IF(B21*B28>0,B17/(B21*B28),0)", PCT0, "Proposed product terms"),
 ]
 for i, (lab, fml, fmt, note) in enumerate(rows):
     r = 15 + i
     put(ws, f"A{r}", lab, f_b if "PARTICIPATION" in lab else Font(name=F))
-    c = put(ws, f"B{r}", fml, f_b if "PARTICIPATION" in lab else f_calc, fmt, fill_k if "PARTICIPATION" in lab else None)
+    isin = not str(fml).startswith("=")
+    c = put(ws, f"B{r}", fml, f_in if isin else (f_b if "PARTICIPATION" in lab else f_calc), fmt, fill_k if "PARTICIPATION" in lab else None)
     put(ws, f"G{r}", note, f_note)
 
 # ---------------- Payoff ----------------
@@ -162,7 +168,7 @@ for mu, res in R["realworld"].items():
 put(wm, f"A{r + 1}", f"7Y UST proxy multiple: {R['ust_multiple']:.2f}x. Mean VT exposure {R['w_mean']:.0%}; realised index vol {R['idx_vol']:.1%}.", f_note)
 
 # ---------------- Risk ----------------
-wr = sheet("Risk", "Unit 15 risk section: VaR/ES, stress, sizing", [62, 14, 14, 14, 16, 14])
+wr = sheet("Risk", "Sleeve A (growth note) risk: VaR/ES, stress, sizing", [62, 14, 14, 14, 16, 14])
 k = R["risk"]
 put(wr, "A3", "Note fair value at issue (% notional)"); put(wr, "B3", k["v0"], f_in, PCT)
 put(wr, "A4", "Delta: note change per 1% move in VT index"); put(wr, "B4", k["delta"], f_in, PCT)
@@ -209,22 +215,84 @@ put(wbk, f"A{end + 3}", "Excluded on purpose: data-centre operators/REITs, telec
                         "Rules: market cap >= USD 250M; listed ADV > USD 5M over 6M; no OFAC-sanctioned countries; Bloomberg searchable.", f_note)
 
 # ---------------- Term Sheet ----------------
-wt = sheet("Term Sheet", "Indicative term sheet (links to Pricer)", [34, 70])
+wt = sheet("Term Sheet", "Sleeve A: Asia Digital Bridge growth note (links to Pricer)", [34, 70])
 terms = [("Issuer", "Natixis (guaranteed by BPCE)"), ("Client", "NKE Private Wealth (Chak family office)"),
          ("Notional", "=TEXT(Pricer!B5,\"$#,##0\")"), ("Currency", "USD; underlying quanto (no FX exposure)"),
          ("Trade / issue date", "17 Sep 2026"), ("Maturity", "=\"Sep \"&(2026+Pricer!B6)&\" (\"&Pricer!B6&\"Y)\""),
          ("Underlying", "Natixis Asia Digital Bridge 10% VT Index (USD, 1% decrement), on an equal-weight basket of 13 Asian AI-hardware stocks"),
          ("Index rules", "Daily exposure = min(10% / max(20d, 60d realised vol), 150%), cash on the remainder, minus 1% p.a."),
          ("Capital protection", "=TEXT(Pricer!B7,\"0%\")&\" at maturity, subject to issuer credit\""),
-         ("Participation", "=TEXT(Pricer!B23,\"0%\")&\" of index performance, uncapped\""),
-         ("Redemption", "Protection + Participation x max(0, Index final / Index initial - 1)"),
-         ("Optional enhancements", "12M final averaging (raises participation); Legacy Lock 130/160/190 (lowers it); see MC Results"),
+         ("Participation", "=TEXT(Pricer!B29,\"0%\")&\" of index performance, uncapped (with Legacy Lock and 12M averaging)\""),
+         ("Redemption", "Protection + Participation x max(0, average final index perf, locked gain)"),
+         ("Features", "12M final averaging; Legacy Lock floors gains at +30/+60/+90% once hit on an annual date"),
          ("Appendix variant", "Best-of with a spot Bitcoin ETF sleeve (IBIT US); not in the core proposal"),
          ("Secondary market", "Natixis indicative daily bid, under normal market conditions"),
          ("Pricing basis", "Funding from the game-rules grid; option inputs are placeholders to be refreshed on Bloomberg")]
 for i, (a, b) in enumerate(terms):
     put(wt, f"A{3 + i}", a, f_b); put(wt, f"B{3 + i}", b, f_link if str(b).startswith("=") else f_calc)
     wt[f"B{3 + i}"].alignment = Alignment(wrap_text=True)
+
+
+# ---------------- Phoenix ----------------
+ph = B["phoenix"]; T_ = B["terms"]
+wx = sheet("Phoenix", "Sleeve B: AI Hardware Phoenix, 10% p.a. conditional coupon autocall (USD, 5Y)", [52, 16, 4, 44, 14, 14])
+put(wx, "A2", "Blue = input, black = formula, green = link. MC outputs pasted from pricing/scenario2_barbell.py (placeholder market inputs).", f_note)
+header(wx, 4, ["Terms", "Value"])
+pt = [("Notional (USD)", "=Barbell!B4*Barbell!B6", USD), ("Tenor (years)", T_["T"], "0"), ("Coupon p.a. (paid quarterly)", T_["cpn"], PCT),
+      ("Coupon barrier (basket vs initial)", T_["cpn_bar"], PCT0), ("Autocall trigger, year 1", T_["ac"], PCT0),
+      ("Autocall step-down per year", T_["ac_step"], PCT), ("Capital barrier at maturity (European)", T_["ki"], PCT0),
+      ("Underlying", "Equal-weight basket: TSMC (2330 TT), SK Hynix (000660 KS), Tokyo Electron (8035 JT); USD quanto", None)]
+for i, (a, v, f) in enumerate(pt):
+    put(wx, f"A{5 + i}", a); put(wx, f"B{5 + i}", v, f_link if str(v).startswith("=") else f_in, f)
+put(wx, "A13", "Quarterly coupon"); put(wx, "B13", "=B7/4", fmt=PCT)
+header(wx, 15, ["Monte Carlo outputs", "Value"])
+mc = [("Fair value (% notional, discounted at Natixis funding)", ph["value"], PCT), ("Natixis margin", ph["margin"], PCT),
+      ("Expected life (years)", ph["life"], "0.00"), ("Expected coupons paid (% notional)", ph["exp_coupons"], PCT),
+      ("P(capital loss)", ph["p_loss"], PCT), ("Expected loss (% notional)", ph["exp_loss"], PCT),
+      ("PV of coupons", ph["pv_cpn"], PCT), ("PV of principal repaid at par", ph["pv_princ"], PCT), ("PV of short put (barrier loss)", ph["pv_put"], PCT)]
+for i, (a, v, f) in enumerate(mc):
+    put(wx, f"A{16 + i}", a); put(wx, f"B{16 + i}", v, f_in, f)
+put(wx, "A25", "Check: coupons + principal - put = fair value"); put(wx, "B25", "=IF(ABS(B22+B23-B24-B16)<0.0005,\"OK\",\"CHECK\")")
+header(wx, 4, ["P(called by end of year)", "Probability"], col=4)
+for i, x in enumerate(ph["call_by_year"]):
+    put(wx, f"D{5 + i}", f"Year {i + 1}"); put(wx, f"E{5 + i}", x, f_in, PCT0)
+header(wx, 11, ["Capital barrier menu", "Natixis margin", "P(loss)"], col=4)
+for i, (ki, m, pl, el) in enumerate(B["ki_menu"]):
+    put(wx, f"D{12 + i}", ki, f_in, PCT0); put(wx, f"E{12 + i}", m, f_in, PCT); put(wx, f"F{12 + i}", pl, f_in, PCT)
+header(wx, 17, ["Stress (spot and vol together)", "Phoenix MTM"], col=4)
+for i, (n_, v) in enumerate(B["phx_stress"]):
+    put(wx, f"D{18 + i}", n_); put(wx, f"E{18 + i}", v, f_in, PCT)
+put(wx, "A27", "Scenario cash flows (% notional)", f_b)
+header(wx, 28, ["Scenario", "Quarters of coupon", "", "Basket at end", "Redemption", "Total cash"])
+scen = [("Called at Q1 (basket >= 100%)", 1, 1.0), ("Called in year 2 (basket at 96% vs 95% trigger)", 8, 0.96),
+        ("Never called, basket 70% at maturity, all coupons paid", 20, 0.70), ("Basket 45% at maturity, coupons stop after year 2", 8, 0.45)]
+for i, (n_, qn, lvl) in enumerate(scen):
+    r = 29 + i
+    put(wx, f"A{r}", n_); put(wx, f"B{r}", qn, f_in, "0"); put(wx, f"D{r}", lvl, f_in, PCT0)
+    put(wx, f"E{r}", f"=IF(D{r}<$B$11,D{r},1)", fmt=PCT); put(wx, f"F{r}", f"=E{r}+B{r}*$B$13", fmt=PCT)
+
+# ---------------- Barbell ----------------
+wbb = sheet("Barbell", "Barbell allocation: protect with Sleeve A, earn income with Sleeve B", [52, 16, 16, 16, 16, 12])
+put(wbb, "A2", "Edit the blue cells. Simulated outcomes are pasted from pricing/scenario2_barbell.py (forward simulation, not a backtest).", f_note)
+put(wbb, "A4", "Total mandate (USD)"); put(wbb, "B4", 100_000_000, f_in, USD, note="Rules: USD 100Mn")
+put(wbb, "A5", "Sleeve A: growth note allocation"); put(wbb, "B5", B["alloc"][0], f_in, PCT0, fill_y)
+put(wbb, "A6", "Sleeve B: Phoenix allocation"); put(wbb, "B6", "=1-B5", fmt=PCT0)
+put(wbb, "A7", "Sleeve A amount (USD)"); put(wbb, "B7", "=B4*B5", fmt=USD)
+put(wbb, "A8", "Sleeve B amount (USD)"); put(wbb, "B8", "=B4*B6", fmt=USD)
+put(wbb, "A9", "Capital protected at maturity (USD, ex issuer default)"); put(wbb, "B9", "=B7*Pricer!B7", fmt=USD)
+put(wbb, "A10", "Contractual worst case (Phoenix basket to zero, before coupons)"); put(wbb, "B10", "=B9/B4", fmt=PCT0)
+put(wbb, "A11", "Phoenix coupon income per year if paid (USD)"); put(wbb, "B11", "=B8*Phoenix!B7", fmt=USD)
+put(wbb, "A12", "Family net worth (USD)"); put(wbb, "B12", 2_000_000_000, f_in, USD)
+put(wbb, "A13", "Contractual worst-case loss as % of net worth"); put(wbb, "B13", "=(B4-B9)/B12", fmt=PCT)
+header(wbb, 15, ["7Y outcome (multiple of capital)", "5th pct", "Median", "Mean", "95th pct", "P(<100)"])
+r = 16
+for mu, res in B["portfolio"].items():
+    for k, v in res.items():
+        put(wbb, f"A{r}", f"{float(mu):.0%} basket return | {k}")
+        for j, (key, f) in enumerate([("p5", MULT), ("p50", MULT), ("mean", MULT), ("p95", MULT), ("p_below", PCT0)]):
+            put(wbb, f"{get_column_letter(2 + j)}{r}", v[key], f_in, f)
+        r += 1
+put(wbb, f"A{r + 1}", "Phoenix cash (coupons, early redemption) is assumed reinvested at USD cash 3.75% until year 7; rolling into a new Phoenix would raise the barbell's income.", f_note)
 
 from openpyxl.workbook.properties import CalcProperties
 wb.calculation = CalcProperties(fullCalcOnLoad=True)   # Excel computes every formula on open

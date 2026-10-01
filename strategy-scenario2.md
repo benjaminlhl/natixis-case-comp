@@ -1,11 +1,54 @@
-# Scenario 2 strategy: the "Asia Digital Bridge Note"
+# Scenario 2 strategy: the "Asia AI Hardware Barbell"
 
-**Client:** NKE Private Wealth (Chak family office) · **Size:** USD 100Mn · **Trade date:** 17 Sep 2026 · **Tenor:** 7 years
-**Pitch in one line:** *"Every dollar back for the next generation, and 1.6x the upside of Asia's AI hardware build-out, through an index that cuts its own risk when markets panic."*
+**Client:** NKE Private Wealth (Chak family office) · **Size:** USD 100Mn · **Trade date:** 17 Sep 2026
+**Structure:** USD 60Mn **Sleeve A**, the Asia Digital Bridge growth note (7Y, 100% protected), plus USD 40Mn **Sleeve B**, the AI Hardware Phoenix (5Y, 10% p.a. coupon)
+**Pitch in one line:** *"Protect the legacy, earn 10% income while you wait, and own the hardware of Asia's AI era."*
 
-> Numbers come from `pricing/scenario2_vt_note.py` (Monte Carlo) and `pricing/Asia-Digital-Bridge-Pricer.xlsx` (live formulas).
+> Numbers come from `pricing/scenario2_vt_note.py` (Sleeve A), `pricing/scenario2_barbell.py` (Sleeve B and the portfolio) and `pricing/Asia-Digital-Bridge-Pricer.xlsx`.
 > Market inputs are **placeholders**. Re-run with Bloomberg data as of 17 Sep 2026 before putting numbers on slides.
-> The historical backtest (`pricing/scenario2_backtest.py`) needs a Bloomberg price export; nothing here is a historical result yet.
+> Deck: `deck/Asia-AI-Hardware-Barbell.pptx` (built by `deck/build_deck_scenario2.js`).
+
+## 0. The barbell
+| | Sleeve A: growth note | Sleeve B: Phoenix |
+|---|---|---|
+| Amount | USD 60Mn | USD 40Mn |
+| Tenor | 7Y | 5Y, autocallable quarterly (trigger 100%, stepping down 5% a year) |
+| Underlying | 10% vol-target index on 13 Asian AI-hardware stocks | Equal-weight basket: TSMC, SK Hynix, Tokyo Electron (USD quanto) |
+| Pays | 100% + 167% × max(0, index perf, locked gain) | 10% p.a., paid quarterly, if the basket is ≥ 60% (with memory) |
+| Capital | 100% protected (issuer credit) | 100% unless the basket is < 50% at maturity; then the basket level |
+| Natixis margin | 2.0% | 2.2% |
+
+**How the Phoenix pays 10%** (5Y USD, Monte Carlo):
+1. Natixis pays interest at its 5.69% USD funding rate.
+2. The client sells a put with a 50% barrier, worth 4.7% of notional.
+3. The client gives up upside beyond the coupons.
+4. Early calls shorten the life: 71% are called in year 1, and the expected life is 1.3 years.
+
+The value check is coupons 9.0% + principal 93.6% − put 4.7% = 97.8% fair value. Natixis keeps 2.2%.
+
+**Is it a covered call?** Economically close: bond + short put = stock + short call. The barrier makes the protection conditional.
+
+**Why a basket of three, not a worst-of.** In a grid search at a 10% coupon, worst-of structures needed 30–45% barriers and still carried a 9–41% chance of loss. The equal-weight basket gets 10% with a 50% barrier and about a 9% chance of loss (expected loss 6.2%).
+
+**Portfolio, simulated 7Y** (both sleeves on the same paths; Phoenix cash reinvested at 3.75%):
+
+| Basket return | Barbell median | Barbell worst 5% | P(<100) | Direct equity median | Direct P(<100) |
+|---|---|---|---|---|---|
+| 3% | 1.27x | 0.84x | 9% | 0.81x | 60% |
+| 6% | 1.35x | 0.90x | 6% | 0.99x | 51% |
+| 9% | 1.43x | 1.13x | 4% | 1.24x | 39% |
+
+**Sizing:**
+- The contractual maximum loss is USD 40Mn (the Phoenix basket goes to zero) = 2.0% of net worth. The USD 60Mn floor is intact apart from issuer default.
+- In the combined crash stress (stocks −30% with vol up), the mark-to-market loss is ~USD 15.7Mn = 0.78% of net worth.
+
+**Outlook (from the team draft, corrected):**
+- The next US vote is the Nov 2026 midterms, then the 2028 presidential race. There is no 2027 election.
+- The yield-level and strategist-survey figures still need sources.
+- Section 3 now argues hardware over data-centre real estate, to stay consistent with excluding the family's own sectors.
+
+---
+*Sleeve A detail follows (sections 1–8).*
 
 ## 1. Client read
 | Brief | Implication |
