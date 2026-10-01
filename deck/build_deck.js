@@ -58,10 +58,11 @@ const chartBase = () => ({
     s.addText(st[2], { x: x + 0.25, y: 2.9, w: 2.4, h: 0.8, fontFace: BF, fontSize: 12, color: MUTED, margin: 0, isTextBox: true });
   });
   s.addText([
-    { text: "A  Oil-shock dip buyer: ", options: { bold: true, color: P2 } }, { text: "Brent +25% switches on a KOSPI 200 call struck at the dislocated level", options: { breakLine: true } },
-    { text: "B  Decoupling dual digital: ", options: { bold: true, color: P2 } }, { text: "~9x payout if oil rises and KRW still strengthens", options: { breakLine: true } },
-    { text: "C  Re-rating call spread: ", options: { bold: true, color: P2 } }, { text: "KOSPI 200 upside to +30% from ceasefire and Value-up reforms" },
-  ], { x: 0.5, y: 4.0, w: 9, h: 1.05, fontFace: BF, fontSize: 13, color: INK, margin: 0, paraSpaceAfter: 3, isTextBox: true });
+    { text: "We recommend ", options: {} },
+    { text: "an 18-month, 90% capital-protected KRW note", options: { bold: true, color: P2 } },
+    { text: " on Brent, KOSPI 200 and USD/KRW to express our view that the Iran-war oil shock will dislocate Korean assets, and that structural inflows and reforms will drive the recovery. ", options: {} },
+    { text: "Target redemption: 114–141% in oil-shock regimes, 109.5% in a ceasefire. Maximum loss: 10% (KRW 13.5bn ≈ 10 bp of AUM), contractual.", options: { bold: true } },
+  ], { x: 0.5, y: 3.95, w: 9, h: 1.15, fontFace: BF, fontSize: 12.5, color: INK, margin: 0, valign: "top", isTextBox: true });
   s.addNotes("Executive summary (does not count toward the 10-slide limit).");
 }
 
@@ -247,7 +248,7 @@ const chartBase = () => ({
     x: 0.5, y: 1.3, w: 5.2, h: 3.75, barDir: "col", ...chartBase(), chartColors: [AMB, TEAL, P2, RED], showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: '0.0"%"', dataLabelColor: INK, dataLabelFontSize: 11,
     valAxisMinVal: 60, valAxisMaxVal: 150, valAxisHidden: true, barGapWidthPct: 60, catAxisLabelFontSize: 9.5,
   });
-  const sc = [["Oil shock, KOSPI +20% from trigger", "A pays 24%", AMB], ["Oil shock, KRW resilient, rebound", "A + B pay 51%", TEAL], ["Ceasefire and re-rating", "C pays 19.5%", P2], ["Flat markets, or no rebound after shock", "Capped at −10%", RED]];
+  const sc = [["Base: oil shock, KOSPI +20% from trigger", "A pays 24%", AMB], ["Best: oil shock, KRW resilient, rebound", "A + B pay 51%", TEAL], ["Alternative: ceasefire and re-rating", "C pays 19.5%", P2], ["Worst: flat, or no rebound after shock", "Capped at −10% at maturity", RED]];
   sc.forEach((r, i) => {
     const y = 1.45 + i * 0.88;
     s.addShape(pres.shapes.OVAL, { x: 6.0, y: y + 0.12, w: 0.3, h: 0.3, fill: { color: r[2] } });
@@ -259,45 +260,71 @@ const chartBase = () => ({
   s.addNotes("Key message: payoffs in two very different regimes, and the bad regime has a known floor.");
 }
 
-// ---------- 9. Risks ----------
+// ---------- 9. Sizing & market risk ----------
 {
   const s = pres.addSlide(); s.background = { color: WHITE };
-  title(s, "Risks we disclose and manage", "Stress tests use a level shift: whole vol surface +5 to +15 pts with spot down (Unit 4)");
-  const hdr = ["Risk", "What could happen", "Mitigant"].map((t) => ({ text: t, options: { bold: true, color: WHITE, fill: { color: P } } }));
-  const rows = [
-    ["Oil spike, no rebound", "2022-type path: oil up, KOSPI keeps falling; A expires worthless", "Max loss capped at 10%; test delayed-strike variant"],
-    ["Correlation", "Oil–KRW link strengthens; B's probability falls", "Size B at 3%; show correlation sensitivity"],
-    ["Vol surface / skew", "Barrier and spread values move with skew and term structure", "Skew-aware pricing; Greeks table per engine"],
-    ["Natixis credit", "Protection depends on the issuer", "Disclose issuer rating and CDS"],
-    ["Liquidity / early exit", "Unwind at market value, below 90% possible", "Natixis secondary market with stated bid/offer"],
-    ["KRW mechanics", "Cross-currency basis, offshore non-deliverability", "KRW-linked settlement terms agreed upfront"],
-  ];
-  s.addTable([hdr, ...rows.map((r, i) => r.map((t, j) => ({ text: t, options: { bold: j === 0, color: INK, fill: { color: i % 2 ? WHITE : LAV } } })))],
-    { x: 0.5, y: 1.4, w: 9, colW: [1.9, 3.85, 3.25], fontFace: BF, fontSize: 10.5, border: { type: "solid", pt: 0.5, color: LINE }, rowH: 0.48, valign: "middle" });
+  title(s, "Sizing and market risk", "Unit 15 sizing identity, VaR / ES, and stress tests with spot and vol shocked together");
+  // Sizing card
+  card(s, 0.5, 1.4, 3.0, 3.65, P);
+  s.addText("Sizing identity", { x: 0.7, y: 1.5, w: 2.6, h: 0.35, fontFace: HF, fontSize: 14, bold: true, color: AMB, margin: 0, isTextBox: true });
+  s.addText([
+    { text: "Risk budget: 25 bp of USD 10bn AUM", options: { breakLine: true } },
+    { text: "= USD 25M", options: { bold: true, breakLine: true } },
+    { text: "Loss per unit: 10% of notional", options: { breakLine: true } },
+    { text: "(contractual, held to maturity)", options: { italic: true, breakLine: true } },
+    { text: "Max notional = 25M ÷ 10%", options: { breakLine: true } },
+    { text: "= USD 250M", options: { bold: true } },
+  ], { x: 0.7, y: 1.9, w: 2.6, h: 1.7, fontFace: BF, fontSize: 11.5, color: WHITE, margin: 0, valign: "top", isTextBox: true });
+  s.addText("Proposed KRW 135bn ≈ USD 97M uses 39% of the budget. Max loss ≈ USD 9.7M = 10 bp of AUM, a third of the USD 30M lost with the previous manager.", { x: 0.7, y: 3.65, w: 2.6, h: 1.3, fontFace: BF, fontSize: 10.5, color: "E9E2F6", margin: 0, valign: "top", isTextBox: true });
+  // VaR / Greeks
+  s.addText("VaR and Greeks (% notional)", { x: 3.75, y: 1.4, w: 2.75, h: 0.3, fontFace: HF, fontSize: 12, bold: true, color: P, margin: 0, isTextBox: true });
+  const gk = [["Fair value at issue", "98.1%"], ["10-day 99% VaR (delta-normal)", "5.6%"], ["Expected shortfall 99%", "6.4%"], ["Delta Brent / +1%", "+0.33"], ["Delta KOSPI 200 / +1%", "+0.26"], ["Delta USD/KRW / +1%", "−0.30"], ["Vega KOSPI / +1 vol pt", "+0.36"], ["Worst MTM before maturity", "~84%"]];
+  s.addTable(gk.map((r, i) => [{ text: r[0], options: { color: INK, fill: { color: i % 2 ? WHITE : LAV } } }, { text: r[1], options: { bold: true, color: P2, align: "right", fill: { color: i % 2 ? WHITE : LAV } } }]),
+    { x: 3.75, y: 1.75, w: 2.65, colW: [1.95, 0.7], fontFace: BF, fontSize: 9.5, border: { type: "solid", pt: 0.5, color: LINE }, rowH: 0.36, valign: "middle" });
+  // Stress
+  s.addText("Instant stress: MTM change", { x: 6.65, y: 1.4, w: 2.85, h: 0.3, fontFace: HF, fontSize: 12.5, bold: true, color: P, margin: 0, isTextBox: true });
+  const st = [["Risk-off", "KOSPI −20%, KRW −5%, vols +10 pts, rates +50 bp", "−0.3 pts", INK], ["Oil shock", "Brent +30%, KOSPI −10%, vols +8 pts", "+13.0 pts", TEAL], ["Ceasefire", "Brent −20%, KOSPI +10%, vols −3 pts", "−2.9 pts", RED]];
+  st.forEach((r, i) => {
+    const y = 1.75 + i * 0.95;
+    card(s, 6.65, y, 2.85, 0.82, LAV);
+    s.addText(r[0], { x: 6.8, y: y + 0.07, w: 1.5, h: 0.3, fontFace: BF, fontSize: 12, bold: true, color: INK, margin: 0, isTextBox: true });
+    s.addText(r[2], { x: 8.2, y: y + 0.07, w: 1.2, h: 0.3, fontFace: BF, fontSize: 12, bold: true, color: r[3], align: "right", margin: 0, isTextBox: true });
+    s.addText(r[1], { x: 6.8, y: y + 0.38, w: 2.6, h: 0.4, fontFace: BF, fontSize: 9.5, color: MUTED, margin: 0, isTextBox: true });
+  });
+  s.addText("Long vega cushions the risk-off case: higher vol lifts Engine A.", { x: 6.65, y: 4.62, w: 2.85, h: 0.45, fontFace: BF, fontSize: 9.5, italic: true, color: P2, margin: 0, isTextBox: true });
+  foot(s, "Placeholder inputs; USD/KRW ≈ 1,390 assumed. Delta-normal VaR overstates risk for a convex note; early exit can be below the 90% floor.");
   pageNo(s, 9);
-  s.addNotes("Be candid: the 2022 path is the bad case for Engine A. The cap is what protects the fund. Show stress-test P&L in the appendix.");
+  s.addNotes("Unit 15: size off the contractual loss, show the division. VaR with all three parameters (10-day, 99%, delta-normal) plus ES. Stress moves spot and vol together. Script: pricing/risk_metrics.py.");
 }
 
-// ---------- 10. Why it fits / next steps ----------
+// ---------- 10. Risk register & exits ----------
 {
-  const s = pres.addSlide(); s.background = { color: P };
-  s.addShape(pres.shapes.OVAL, { x: 7.4, y: 3.2, w: 3.6, h: 3.6, fill: { color: P2 } });
-  s.addText("Why it fits Purple Magic", { x: 0.5, y: 0.35, w: 9, h: 0.6, fontFace: HF, fontSize: 28, bold: true, color: WHITE, margin: 0, isTextBox: true });
-  const fits = [["Exotic and event-driven", "Cross-asset hybrid, dual digital and barrier, all tied to live Korea catalysts"], ["Asymmetric", "Convex upside in two regimes, from a 14% option budget"], ["Built for trust", "Max loss known on day one, transparent pricing and Greeks"]];
-  fits.forEach((f, i) => {
-    const y = 1.25 + i * 0.85;
-    badge(s, 0.5, y, String(i + 1), AMB);
-    s.addText(f[0], { x: 1.2, y: y - 0.05, w: 6.5, h: 0.32, fontFace: BF, fontSize: 15, bold: true, color: WHITE, margin: 0, isTextBox: true });
-    s.addText(f[1], { x: 1.2, y: y + 0.27, w: 6.5, h: 0.3, fontFace: BF, fontSize: 12, color: "DCD3EE", margin: 0, isTextBox: true });
+  const s = pres.addSlide(); s.background = { color: WHITE };
+  title(s, "Risk register and exit plan", "Every risk named, and four exits defined in advance");
+  const hdr = ["Risk", "Assessment and mitigant"].map((t) => ({ text: t, options: { bold: true, color: WHITE, fill: { color: P } } }));
+  const rows = [
+    ["Model", "Correlation and skew drive B and C. Price with surface vols; show correlation sensitivity"],
+    ["Liquidity", "OTC note: ~1.9% margin in, ~1% bid/offer out. Hedges trade in deep KOSPI 200, Brent and USD/KRW markets"],
+    ["Counterparty", "Natixis issuer risk: disclose rating and CDS. ISDA/CSA for the OTC hedges"],
+    ["Operational", "Daily Brent trigger monitoring, independent fixing source, monthly MTM report"],
+    ["KRW mechanics", "CCS basis and offshore non-deliverability: settlement terms agreed up front"],
+  ];
+  s.addTable([hdr, ...rows.map((r, i) => r.map((t, j) => ({ text: t, options: { bold: j === 0, color: INK, fill: { color: i % 2 ? WHITE : LAV } } })))],
+    { x: 0.5, y: 1.4, w: 4.9, colW: [1.25, 3.65], fontFace: BF, fontSize: 9.5, border: { type: "solid", pt: 0.5, color: LINE }, rowH: 0.6, valign: "middle" });
+  const ex = [
+    ["1", "Profit target", "Sell back to Natixis when MTM ≥ 115% (net of ~1% bid/offer)"],
+    ["2", "Thesis invalidation", "Exit if WGBI flows reverse and MSCI drops Korea from review, even if P&L is positive"],
+    ["3", "Time stop", "Month 12: Engine A's trigger window closes. Hold or sell back on B and C value"],
+    ["4", "No stop-loss as risk control", "Max loss is contractual (Unit 15). Any stop triggers on Brent/KOSPI levels, not note price"],
+  ];
+  ex.forEach((e, i) => {
+    const y = 1.4 + i * 0.93;
+    badge(s, 5.7, y + 0.05, e[0], i === 3 ? RED : AMB);
+    s.addText(e[1], { x: 6.35, y, w: 3.15, h: 0.3, fontFace: BF, fontSize: 12.5, bold: true, color: P, margin: 0, isTextBox: true });
+    s.addText(e[2], { x: 6.35, y: y + 0.3, w: 3.15, h: 0.55, fontFace: BF, fontSize: 10.5, color: INK, margin: 0, isTextBox: true });
   });
-  s.addText("Next steps", { x: 0.5, y: 3.85, w: 4, h: 0.35, fontFace: HF, fontSize: 16, bold: true, color: AMB, margin: 0, isTextBox: true });
-  s.addText([
-    { text: "Agree protection level and engine weights with the PM", options: { bullet: true, breakLine: true } },
-    { text: "Indicative term sheet within 48 hours, final pricing on trade date", options: { bullet: true, breakLine: true } },
-    { text: "Natixis provides secondary market and monthly mark-to-market", options: { bullet: true } },
-  ], { x: 0.5, y: 4.2, w: 6.8, h: 1.0, fontFace: BF, fontSize: 12.5, color: WHITE, paraSpaceAfter: 4, margin: 0, isTextBox: true });
   pageNo(s, 10);
-  s.addNotes("Close on fit: exotic, asymmetric, trustworthy. Ask for the next meeting.");
+  s.addNotes("Unit 15: all four exits. On a long-convexity note a stop-loss does not limit loss; the max loss is already contractual. Thesis invalidation is the most professional exit.");
 }
 
 // ---------- Appendix ----------
@@ -312,9 +339,11 @@ const chartBase = () => ({
     { text: "Monte Carlo, 200k paths, daily steps, correlated GBM for Brent, KOSPI 200 and USD/KRW", options: { bullet: true, breakLine: true } },
     { text: "Placeholder inputs: vols 35% / 22% / 9%; KRW 2.5%, USD 3.75%; KOSPI dividend 1.8%", options: { bullet: true, breakLine: true } },
     { text: "Engine C priced with skew (130% strike at lower IV)", options: { bullet: true, breakLine: true } },
-    { text: "To finalise: Bloomberg OVDV surfaces, 25-delta risk reversals, realised correlations, CCS basis, local-vol pricing for barriers", options: { bullet: true } },
-  ], { x: 5.4, y: 1.8, w: 4.1, h: 3.0, fontFace: BF, fontSize: 11, color: INK, paraSpaceAfter: 6, margin: 0, valign: "top", isTextBox: true });
-  s.addNotes("Appendix. Pricing script: pricing/illustrative_mc.py in the team repo.");
+    { text: "To finalise: Bloomberg OVDV surfaces, 25-delta risk reversals, realised correlations, CCS basis, local-vol pricing for barriers", options: { bullet: true, breakLine: true } },
+    { text: "Considered and rejected: Korea Value-Up Index as Engine C underlying. Hedge liquidity is far thinner than KOSPI 200 (evidence OI and volume as of 17 Sep 2026)", options: { bullet: true, breakLine: true } },
+    { text: "Next steps: agree protection level and weights with the PM; indicative term sheet in 48 hours; final pricing on trade date", options: { bullet: true } },
+  ], { x: 5.4, y: 1.8, w: 4.1, h: 3.6, fontFace: BF, fontSize: 10, color: INK, paraSpaceAfter: 4, margin: 0, valign: "top", isTextBox: true });
+  s.addNotes("Appendix. Scripts: pricing/illustrative_mc.py and pricing/risk_metrics.py.");
 }
 
 pres.writeFile({ fileName: process.argv[2] }).then((f) => console.log("wrote", f));
