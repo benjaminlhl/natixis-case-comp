@@ -138,7 +138,7 @@ for i, tv in enumerate([0.08, 0.10, 0.12, 0.15]):
 
 # ---------------- MC Results ----------------
 wm = sheet("MC Results", "Monte Carlo outputs (values pasted from pricing/scenario2_vt_note.py)", [36, 13, 13, 13, 13, 13, 13, 13])
-put(wm, "A2", "Placeholder market inputs (regime vol 22%/45%, OIS 3.75%, raw-basket implied vol 30%). Forward simulation, NOT a historical backtest.", f_note)
+put(wm, "A2", "Placeholder market inputs (regime vol 27%/50%, OIS 3.75%, raw-basket implied vol 33%). Forward simulation, NOT a historical backtest.", f_note)
 put(wm, "A4", "Feature menu (same simulated paths)", f_b)
 header(wm, 5, ["Feature", "Option cost", "Participation"])
 for i, (n, c, p) in enumerate(R["menu"]):
@@ -186,16 +186,16 @@ put(wr, "A22", "Exits: (1) profit target: sell back on the issuer bid once the i
               "(3) thesis invalidation: Taiwan blockade or sweeping chip export bans; (4) time: hold to maturity.", f_note)
 
 # ---------------- Basket ----------------
-wbk = sheet("Basket", "Underlying basket: Asian digital-transformation leaders (equal weight, USD quanto)", [14, 22, 10, 22, 12, 14, 14, 12])
+wbk = sheet("Basket", "Underlying basket: Asian AI-hardware leaders (equal weight, USD quanto)", [14, 22, 10, 22, 12, 14, 14, 12])
 put(wbk, "A2", "Fill the yellow columns from Bloomberg (CUR_MKT_CAP in USD Mn; 6M average daily traded value in USD Mn). Example values in row 5 are illustrative only.", f_note)
 header(wbk, 4, ["Bloomberg", "Name", "Country", "Theme", "Weight", "Mkt cap USD Mn", "6M ADV USD Mn", "Eligible?"])
-names = [("2330 TT", "TSMC", "TW", "Foundry / AI compute"), ("005930 KS", "Samsung Electronics", "KR", "Memory / devices"),
-         ("000660 KS", "SK Hynix", "KR", "HBM memory"), ("2454 TT", "MediaTek", "TW", "Edge-AI chips"),
-         ("8035 JT", "Tokyo Electron", "JP", "Chip equipment"), ("6857 JT", "Advantest", "JP", "Chip testing"),
-         ("6758 JT", "Sony Group", "JP", "Bridge: sensors, content"), ("6501 JT", "Hitachi", "JP", "Bridge: industrial digital"),
-         ("9984 JT", "SoftBank Group", "JP", "Bridge: AI investing"), ("6861 JT", "Keyence", "JP", "Factory automation"),
-         ("700 HK", "Tencent", "HK/CN", "Platforms / cloud"), ("9988 HK", "Alibaba", "HK/CN", "Cloud / AI models"),
-         ("1810 HK", "Xiaomi", "HK/CN", "Devices / EV / IoT")]
+names = [("2330 TT", "TSMC", "TW", "Foundry / AI accelerators"), ("2454 TT", "MediaTek", "TW", "Custom AI ASICs / edge AI"),
+         ("000660 KS", "SK Hynix", "KR", "HBM memory"), ("005930 KS", "Samsung Electronics", "KR", "HBM / memory"),
+         ("8035 JT", "Tokyo Electron", "JP", "Wafer-fab equipment"), ("6857 JT", "Advantest", "JP", "AI chip testing"),
+         ("6146 JT", "Disco", "JP", "Dicing / grinding for HBM"), ("4063 JT", "Shin-Etsu Chemical", "JP", "Silicon wafers / materials"),
+         ("3711 TT", "ASE Technology", "TW", "Advanced packaging"), ("4062 JT", "Ibiden", "JP", "AI chip substrates"),
+         ("2317 TT", "Hon Hai (Foxconn)", "TW", "AI server assembly"), ("2382 TT", "Quanta Computer", "TW", "AI servers"),
+         ("2308 TT", "Delta Electronics", "TW", "Data-centre power / cooling")]
 for i, (t, n, c, th) in enumerate(names):
     r = 5 + i
     put(wbk, f"A{r}", t, f_in); put(wbk, f"B{r}", n, f_in); put(wbk, f"C{r}", c, f_in); put(wbk, f"D{r}", th, f_in)
@@ -205,7 +205,7 @@ for i, (t, n, c, th) in enumerate(names):
     put(wbk, f"H{r}", f'=IF(OR(F{r}="",G{r}=""),"fill",IF(AND(F{r}>=250,G{r}>=5),"OK","FAIL"))')
 end = 4 + len(names)
 put(wbk, f"A{end + 1}", "Total weight"); put(wbk, f"E{end + 1}", f"=SUM(E5:E{end})", fmt="0.0%")
-put(wbk, f"A{end + 3}", "Excluded on purpose: renewables, real estate, data-centre REITs (overlap with family businesses); names on US restriction lists (e.g. SMIC, Hikvision). "
+put(wbk, f"A{end + 3}", "Excluded on purpose: data-centre operators/REITs, telecom towers, renewables, real estate (overlap with family businesses); names on US restriction lists (e.g. SMIC). "
                         "Rules: market cap >= USD 250M; listed ADV > USD 5M over 6M; no OFAC-sanctioned countries; Bloomberg searchable.", f_note)
 
 # ---------------- Term Sheet ----------------
@@ -213,7 +213,7 @@ wt = sheet("Term Sheet", "Indicative term sheet (links to Pricer)", [34, 70])
 terms = [("Issuer", "Natixis (guaranteed by BPCE)"), ("Client", "NKE Private Wealth (Chak family office)"),
          ("Notional", "=TEXT(Pricer!B5,\"$#,##0\")"), ("Currency", "USD; underlying quanto (no FX exposure)"),
          ("Trade / issue date", "17 Sep 2026"), ("Maturity", "=\"Sep \"&(2026+Pricer!B6)&\" (\"&Pricer!B6&\"Y)\""),
-         ("Underlying", "Natixis Asia Digital Bridge 10% VT Index (USD, 1% decrement), on an equal-weight 13-stock basket"),
+         ("Underlying", "Natixis Asia Digital Bridge 10% VT Index (USD, 1% decrement), on an equal-weight basket of 13 Asian AI-hardware stocks"),
          ("Index rules", "Daily exposure = min(10% / max(20d, 60d realised vol), 150%), cash on the remainder, minus 1% p.a."),
          ("Capital protection", "=TEXT(Pricer!B7,\"0%\")&\" at maturity, subject to issuer credit\""),
          ("Participation", "=TEXT(Pricer!B23,\"0%\")&\" of index performance, uncapped\""),

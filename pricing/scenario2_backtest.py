@@ -2,9 +2,9 @@
 
 Input: data/scenario2_prices.csv exported from Bloomberg (daily, total-return or price in
 local currency), first column 'date', one column per ticker, e.g.
-    date,2330 TT,005930 KS,000660 KS,2454 TT,8035 JT,6857 JT,6758 JT,6501 JT,9984 JT,6861 JT,700 HK,9988 HK,1810 HK
+    date,2330 TT,2454 TT,000660 KS,005930 KS,8035 JT,6857 JT,6146 JT,4063 JT,3711 TT,4062 JT,2317 TT,2382 TT,2308 TT
 Bloomberg: BDH(tickers, "TOT_RETURN_INDEX_GROSS_DVDS", "1/1/2005", "9/17/2026", "Days=W")  (weekdays)
-Names with short histories (e.g. 9988 HK, 1810 HK) simply join the basket when they list.
+Names with short histories (e.g. 3711 TT, listed as ASE Technology in 2018) simply join the basket when they list.
 Optional column 'USD_RATE' (annualised, e.g. US0003M / SOFR) for the cash leg; else 3.75% flat.
 
 What it does (same index rules as scenario2_vt_note.py):
@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 
 TARGET, MAX_LEV, DECR, YEARS = 0.10, 1.50, 0.01, 7
-PART_DEFAULT = 1.64   # from scenario2_vt_note.py; pass the re-priced number on the command line
+PART_DEFAULT = 1.63   # from scenario2_vt_note.py; pass the re-priced number on the command line
 STRESS = {"GFC": ("2007-10-01", "2009-03-31"), "China devaluation": ("2015-06-01", "2016-02-29"),
           "Trade war": ("2018-01-26", "2018-12-31"), "COVID": ("2020-01-17", "2020-03-23"),
           "Tech/rates 2022": ("2021-02-17", "2022-10-31")}

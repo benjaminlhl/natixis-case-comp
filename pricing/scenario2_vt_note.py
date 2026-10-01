@@ -1,7 +1,7 @@
 """Pricing for the Asia Digital Bridge Note (Scenario 2, NKE Private Wealth).
 
 7Y USD 100% capital-protected note on a volatility-target (VT) index built on an
-equal-weighted basket of Asian digital-transformation leaders (USD quanto).
+equal-weighted basket of 13 Asian AI-hardware leaders (USD quanto).
 
 VT index (daily, excess-return over cash, then a fixed decrement):
     w_t      = min(TARGET / max(rv20, rv60), MAX_LEV)       (vols observed with a 1-day lag)
@@ -29,11 +29,11 @@ R_OIS = 0.0375                                       # USD rate for option prici
 FEE = 0.02                                           # issuer margin + distribution, upfront
 PROT = 1.00
 TARGET, MAX_LEV, DECR = 0.10, 1.50, 0.01             # recommended index design (see design table)
-VOL_CALM, VOL_STRESS = 0.22, 0.45                    # basket regimes (diversified Asian tech)
+VOL_CALM, VOL_STRESS = 0.27, 0.50                    # basket regimes (concentrated Asian AI hardware)
 P_C2S, P_S2C = 1 / 500, 1 / 60                       # daily regime transition probabilities
 QUANTO = -0.002                                      # -rho*vol_S*vol_FX, small for USD quanto
 MU_REAL = 0.09                                       # real-world basket total return (base case)
-RAW_IV = 0.30                                        # 7Y implied vol a dealer would charge on the raw basket
+RAW_IV = 0.33                                        # 7Y implied vol a dealer would charge on the raw basket
 SEED = 11
 
 
@@ -224,7 +224,7 @@ def main():
     # Stress: VT exposure before the shock ~ TARGET / calm vol, plus 1-2 weeks of lag in a crash
     w0 = TARGET / VOL_CALM
     stress = {
-        "Asia tech crash: basket -30% in 1M, vol 22->45%, rates -50bp": (1 - 0.30 * w0 * 0.85, -0.005),
+        f"AI hardware crash: basket -30% in 1M, vol {VOL_CALM:.0%}->{VOL_STRESS:.0%}, rates -50bp": (1 - 0.30 * w0 * 0.85, -0.005),
         "Taiwan gap: basket -20% overnight, rates unchanged": (1 - 0.20 * w0, 0.0),
         "Stagflation: basket -15%, rates +100bp": (1 - 0.15 * w0, 0.01),
         "Bull: basket +25%, rates -50bp": (1 + 0.25 * w0, -0.005),

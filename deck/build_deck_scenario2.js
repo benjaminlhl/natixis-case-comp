@@ -18,6 +18,8 @@ const PART = R.part, BUDGET = R.budget, ZCB = R.zcb;
 const lockAvg = R.menu.find((m) => m[0].startsWith("+ Lock + averaging"))[2];
 const rw = R.realworld, risk = R.risk;
 const worstLoss = risk.v0 - Math.min(...risk.stress.map((s) => s[3]));
+const x2 = (v) => v.toFixed(2) + "x";
+const VOLC = 27, VOLS = 50, RAWIV = 33;   // keep in sync with pricing/scenario2_vt_note.py
 
 function title(s, t, sub) {
   s.addText(t, { x: 0.5, y: 0.28, w: 9, h: 0.6, fontFace: HF, fontSize: 26, bold: true, color: INK, margin: 0, isTextBox: true });
@@ -63,7 +65,7 @@ function table(s, rows, o, headFill) {
   s.addShape(pres.shapes.OVAL, { x: 7.6, y: 3.0, w: 0.7, h: 0.7, fill: { color: VER } });
   txt(s, "Investment Strategy Challenge 2026 · Proposal for NKE Private Wealth", { x: 0.6, y: 1.0, w: 7, h: 0.4, fontSize: 13, color: "BFD8CF" });
   txt(s, "The Asia Digital Bridge Note", { x: 0.6, y: 1.45, w: 6.6, h: 1.5, fontFace: HF, fontSize: 40, bold: true, color: WHITE });
-  txt(s, "Every dollar back for the next generation, with 1.6x the upside of Asia's digital build-out", { x: 0.6, y: 3.0, w: 6.4, h: 0.9, fontSize: 17, italic: true, color: "E2EEE9" });
+  txt(s, "Every dollar back for the next generation, with 1.6x the upside of Asia's AI hardware build-out", { x: 0.6, y: 3.0, w: 6.4, h: 0.9, fontSize: 17, italic: true, color: "E2EEE9" });
   txt(s, "USD 100Mn · 7-year note · 100% capital protected · Trade date 17 Sep 2026", { x: 0.6, y: 4.5, w: 7.5, h: 0.4, fontSize: 12, bold: true, color: GOLD });
   s.addNotes("Title. One-line pitch: full capital protection for the next generation, and leveraged participation in Asia's digital transformation through an index that cuts its own risk in a panic.");
 }
@@ -73,7 +75,7 @@ function table(s, rows, o, headFill) {
   const s = pres.addSlide(); s.background = { color: WHITE };
   title(s, "Executive summary", "One note: protect the legacy, own Asia's digital build-out");
   const stats = [["100%", "Capital protected", "At maturity in 2033, subject to Natixis credit. No loss path except issuer default"],
-                 [pct(lockAvg), "Upside participation", "Uncapped, on a 10% vol-target index of 13 Asian digital leaders, with Legacy Lock"],
+                 [pct(lockAvg), "Upside participation", "Uncapped, on a 10% vol-target index of 13 Asian AI-hardware leaders, with Legacy Lock"],
                  [pct(worstLoss * 100e6 / 2e9, 2), "Of net worth at risk", "Worst stress mark-to-market (USD " + (worstLoss * 100).toFixed(1) + "Mn) before maturity"]];
   stats.forEach((st, i) => {
     const x = 0.5 + i * 3.05;
@@ -85,8 +87,8 @@ function table(s, rows, o, headFill) {
   s.addText([
     { text: "We recommend " },
     { text: "a 7-year, 100% capital-protected USD note", options: { bold: true, color: JADE } },
-    { text: " on the Asia Digital Bridge 10% Vol-Target Index, to express our view that Asia owns the hardware and platforms of the AI era, while volatility and geopolitics argue for protected exposure. " },
-    { text: "Median outcome 1.41x–1.59x of capital in our 6–9% basket-return cases (vs 1.38x for a 7Y Treasury). Maximum loss at maturity: zero, contractual, ex issuer default.", options: { bold: true } },
+    { text: " on the Asia Digital Bridge 10% Vol-Target Index, to express our view that Asia builds the hardware of the AI era, while volatility and geopolitics argue for protected exposure. " },
+    { text: "Median outcome " + x2(rw["0.06"]["VT note"].p50) + "–" + x2(rw["0.09"]["VT note"].p50) + " of capital in our 6–9% basket-return cases (vs " + x2(R.ust_multiple) + " for a 7Y Treasury). Maximum loss at maturity: zero, contractual, ex issuer default.", options: { bold: true } },
   ], { x: 0.5, y: 3.95, w: 9, h: 1.15, fontFace: BF, fontSize: 12.5, color: TXT, margin: 0, valign: "top", isTextBox: true });
   foot(s, NOTE);
   s.addNotes("Executive summary (does not count toward the 10-slide limit). Unit 15: thesis, instrument, expected return, maximum loss in one paragraph.");
@@ -110,7 +112,7 @@ function table(s, rows, o, headFill) {
   });
   card(s, 0.5, 4.3, 9, 0.78, "FBEDE9");
   s.addText([{ text: "The hidden risk: ", options: { bold: true, color: VER } },
-    { text: "the family already earns its wealth in Asian infrastructure, renewables and property. We give digital exposure through chips, AI and platforms, exclude those sectors, and pay in USD so the note adds no JPY/HKD/CNY risk." }],
+    { text: "the family already earns its wealth in Asian infrastructure, renewables and property. We own the AI hardware layer (chips, memory, equipment, servers), exclude data centres, telecom towers, renewables and property, and pay in USD so the note adds no JPY/HKD/CNY risk." }],
     { x: 0.7, y: 4.33, w: 8.6, h: 0.72, fontFace: BF, fontSize: 12, color: TXT, margin: 0, valign: "middle", isTextBox: true });
   pageNo(s, 1);
   s.addNotes("Risk profile: moderate. Willing to take equity risk on the upside, not willing to lose capital. The concentration insight is our differentiator: most proposals will simply buy more Asian infrastructure.");
@@ -119,8 +121,8 @@ function table(s, rows, o, headFill) {
 // ---------- 2. Thesis ----------
 {
   const s = pres.addSlide(); s.background = { color: WHITE };
-  title(s, "Asia owns the hardware and platforms of the AI era", "Investment thesis: three pillars (market data to be confirmed on Bloomberg as of 17 Sep 2026)");
-  const chain = [["Design", "MediaTek"], ["Foundry", "TSMC"], ["Memory", "SK Hynix · Samsung"], ["Equipment", "Tokyo Electron · Advantest"], ["Platforms", "Tencent · Alibaba · Xiaomi"]];
+  title(s, "Asia builds the hardware of the AI era", "Investment thesis: three pillars (market data to be confirmed on Bloomberg as of 17 Sep 2026)");
+  const chain = [["Chips", "TSMC · MediaTek"], ["Memory", "SK Hynix · Samsung"], ["Equipment", "Tokyo Electron · Advantest · Disco · Shin-Etsu"], ["Packaging", "ASE · Ibiden"], ["Servers", "Hon Hai · Quanta · Delta"]];
   chain.forEach((c, i) => {
     const x = 0.5 + i * 1.82;
     card(s, x, 1.38, 1.62, 1.05, i % 2 ? MIST : INK);
@@ -128,10 +130,10 @@ function table(s, rows, o, headFill) {
     txt(s, c[1], { x: x + 0.1, y: 1.8, w: 1.42, h: 0.55, fontSize: 10.5, color: i % 2 ? TXT : "D8E8E2", align: "center" });
     if (i < 4) s.addText("›", { x: x + 1.6, y: 1.65, w: 0.24, h: 0.45, fontFace: BF, fontSize: 22, bold: true, color: JADE, align: "center", margin: 0, isTextBox: true });
   });
-  txt(s, "The AI value chain runs through Taiwan, Korea, Japan and China. Our basket owns every link.", { x: 0.5, y: 2.5, w: 9, h: 0.3, fontSize: 11.5, italic: true, color: MUTED });
+  txt(s, "Every AI accelerator passes through Taiwan, Korea and Japan. Our basket owns every step from wafer to server rack.", { x: 0.5, y: 2.5, w: 9, h: 0.3, fontSize: 11.5, italic: true, color: MUTED });
   const pillars = [
-    ["A", "Structural AI capex", "Data-centre and AI spending drives demand for leading-edge chips, HBM memory and test equipment: segments Asian firms dominate.", JADE],
-    ["B", "Champions go digital", "Japan's governance reforms and Korea's Value-up programme reward incumbents moving into digital: Sony, Hitachi, SoftBank, Keyence.", INK2],
+    ["A", "Structural AI capex", "Hyperscaler AI spending flows to leading-edge chips, HBM memory, test equipment and AI servers: segments Asian firms dominate.", JADE],
+    ["B", "Old makers, new role", "Traditional manufacturers (Hon Hai, Shin-Etsu, Ibiden) are now critical AI suppliers: the bridge the family asked for. HBM and packaging are capacity-constrained.", INK2],
     ["C", "Protection is cheap now", "USD funding at 5.75% for 7Y buys the bond floor at 67.6%. Geopolitics (US–China, Taiwan, export controls) is why the family wants a floor.", VER],
   ];
   pillars.forEach((p, i) => {
@@ -141,7 +143,7 @@ function table(s, rows, o, headFill) {
     txt(s, p[2], { x, y: 3.55, w: 2.85, h: 1.5, fontSize: 11.5 });
   });
   pageNo(s, 2);
-  s.addNotes("Pull supporting data from Bloomberg: TSMC share of leading-edge foundry, HBM share for SK Hynix/Samsung, TOPIX ROE trend, AI capex forecasts. Keep claims qualitative until sourced.");
+  s.addNotes("Pull supporting data from Bloomberg: TSMC share of leading-edge foundry and CoWoS capacity, HBM share for SK Hynix/Samsung, AI-server share for Hon Hai/Quanta, hyperscaler capex forecasts. Keep claims qualitative until sourced.");
 }
 
 // ---------- 3. Why this structure ----------
@@ -149,10 +151,10 @@ function table(s, rows, o, headFill) {
   const s = pres.addSlide(); s.background = { color: WHITE };
   title(s, "Why a protected note on a vol-target index", "We tested four alternatives and rejected each for a reason the family will recognise");
   const rows = [["Alternative", "What it offers", "Why we rejected it"],
-    ["Direct equity basket", "Full upside", "28–51% chance of losing money over 7Y in our simulation; no floor for heirs"],
+    ["Direct equity basket", "Full upside", pct(rw["0.09"]["Direct basket"].p_loss) + "–" + pct(rw["0.03"]["Direct basket"].p_loss) + " chance of losing money over 7Y in our simulation; no floor for heirs"],
     ["Autocall / high-coupon note", "Income, early exit", "Client wants growth, not income; early call forces reinvestment of a legacy pool"],
     ["JPY-denominated note", "Matches home currency", "JPY 7Y funding 3.23% leaves ~half the option budget; adds to existing JPY risk"],
-    ["Protected note on raw basket", "Simple call on 13 stocks", "No liquid 7Y Asian single-stock vol: dealer charges ~30% IV, so only " + pct(R.raw_part) + " participation"],
+    ["Protected note on raw basket", "Simple call on 13 stocks", "No liquid 7Y Asian single-stock vol: dealer charges ~" + RAWIV + "% IV, so only " + pct(R.raw_part) + " participation"],
     ["Asia Digital Bridge Note", "Protected, " + pct(PART) + " participation", "Index vol fixed at 10%: hedgeable by Natixis, cheap to buy, de-risks itself in a crash"]];
   table(s, rows, { x: 0.5, y: 1.38, w: 9, colW: [2.2, 2.0, 4.8], rowH: 0.5 });
   card(s, 0.5, 4.5, 9, 0.6, MIST);
@@ -177,9 +179,9 @@ function table(s, rows, o, headFill) {
   });
   txt(s, "USD 100Mn", { x: 1.45, y: 2.33, w: 1.5, h: 0.4, fontFace: HF, fontSize: 15, bold: true, color: INK, align: "center" });
   const groups = [
-    ["Semiconductors (6)", "TSMC · Samsung · SK Hynix · MediaTek · Tokyo Electron · Advantest", JADE],
-    ["Traditional champions going digital (4)", "Sony · Hitachi · SoftBank Group · Keyence", INK2],
-    ["Platforms (3)", "Tencent · Alibaba · Xiaomi", VER],
+    ["AI chips and HBM memory (4)", "TSMC · MediaTek · SK Hynix · Samsung Electronics", JADE],
+    ["Equipment, materials and packaging (6)", "Tokyo Electron · Advantest · Disco · Shin-Etsu · ASE · Ibiden", INK2],
+    ["AI servers and data-centre power (3)", "Hon Hai (Foxconn) · Quanta Computer · Delta Electronics", VER],
   ];
   txt(s, "Underlying: 13 names, equal weight, USD quanto", { x: 4.35, y: 1.3, w: 5.2, h: 0.35, fontFace: HF, fontSize: 14, bold: true, color: INK });
   groups.forEach((g, i) => {
@@ -189,7 +191,7 @@ function table(s, rows, o, headFill) {
     txt(s, g[1], { x: 4.7, y: y + 0.3, w: 4.85, h: 0.4, fontSize: 11, color: MUTED });
   });
   card(s, 4.35, 4.15, 5.2, 0.95, MIST);
-  txt(s, "Excluded on purpose: renewables, real estate, data-centre REITs (family overlap) and US-restricted names (e.g. SMIC). All names > USD 250M market cap, > USD 5M daily volume, on Bloomberg.", { x: 4.5, y: 4.2, w: 4.95, h: 0.85, fontSize: 10.5, valign: "middle" });
+  txt(s, "Excluded on purpose: data-centre operators and REITs, telecom towers, renewables (family overlap) and US-restricted chipmakers (e.g. SMIC). All names > USD 250M market cap, > USD 5M daily volume, on Bloomberg.", { x: 4.5, y: 4.2, w: 4.95, h: 0.85, fontSize: 10.5, valign: "middle" });
   foot(s, NOTE);
   pageNo(s, 4);
   s.addNotes("67.6% buys the 7Y zero-coupon bond at 5.75% USD funding, which guarantees 100 back. 30.4% buys the call on the VT index. 2% is Natixis margin. Eligibility check sits in the Excel Basket tab.");
@@ -215,12 +217,12 @@ function table(s, rows, o, headFill) {
     txt(s, st[2], { x: 6.3, y: y + 0.28, w: 3.2, h: 0.6, fontSize: 11 });
   });
   card(s, 5.75, 4.2, 3.8, 0.9, INK);
-  s.addText([{ text: "Calm market (22% vol): ", options: { bold: true, color: GOLD } }, { text: "~45% exposure. " },
-             { text: "Crash (45% vol): ", options: { bold: true, color: GOLD } }, { text: "~22% exposure, cut automatically." }],
+  s.addText([{ text: "Calm market (" + VOLC + "% vol): ", options: { bold: true, color: GOLD } }, { text: "~" + Math.round(1000 / VOLC) + "% exposure. " },
+             { text: "Crash (" + VOLS + "% vol): ", options: { bold: true, color: GOLD } }, { text: "~" + Math.round(1000 / VOLS) + "% exposure, cut automatically." }],
     { x: 5.9, y: 4.23, w: 3.55, h: 0.84, fontFace: BF, fontSize: 11.5, color: WHITE, margin: 0, valign: "middle", isTextBox: true });
   foot(s, "Simulated: average exposure " + pct(R.w_mean) + ", realised index volatility " + pct(R.idx_vol, 1) + " vs 10% target (lag creates small gap risk, priced in the Monte Carlo).");
   pageNo(s, 5);
-  s.addNotes("Because the index volatility is fixed by construction, Natixis can hedge with delta only and price the option off a known vol. That is what makes 164% participation possible on a 7Y Asian basket.");
+  s.addNotes("Because the index volatility is fixed by construction, Natixis can hedge with delta only and price the option off a known vol. That is what makes " + pct(PART) + " participation possible on a 7Y Asian basket.");
 }
 
 // ---------- 6. Pricing & term sheet ----------
@@ -270,9 +272,9 @@ function table(s, rows, o, headFill) {
   table(s, rows, { x: 5.35, y: 1.35, w: 4.2, colW: [1.5, 0.85, 0.95, 0.9], rowH: 0.5, fontSize: 10 });
   card(s, 5.35, 3.55, 4.2, 1.3, MIST);
   s.addText([{ text: "Worst case for the note: ", options: { bold: true, color: VER } }, { text: "1.00x, contractual. " },
-    { text: "Worst 5% for direct equity: ", options: { bold: true, color: VER } }, { text: "0.32x–0.49x. The note beats direct ownership at the median in every regime and never loses capital." }],
+    { text: "Worst 5% for direct equity: ", options: { bold: true, color: VER } }, { text: x2(rw["0.03"]["Direct basket"].p5) + "–" + x2(rw["0.09"]["Direct basket"].p5) + ". The note beats direct ownership at the median in every regime and never loses capital." }],
     { x: 5.5, y: 3.6, w: 3.9, h: 1.2, fontFace: BF, fontSize: 11.5, color: TXT, margin: 0, valign: "middle", isTextBox: true });
-  foot(s, "Forward simulation (20k paths, two-regime basket volatility 22%/45%), not a historical backtest. " + NOTE.split(";")[0] + ".");
+  foot(s, "Forward simulation (20k paths, two-regime basket volatility " + VOLC + "%/" + VOLS + "%), not a historical backtest. " + NOTE.split(";")[0] + ".");
   pageNo(s, 7);
   s.addNotes("Payoff = 100% + " + pct(PART) + " x max(0, index perf). Scenario table from pricing/scenario2_vt_note.py, section 5. Historical rolling-window backtest to be added once the Bloomberg export is run (pricing/scenario2_backtest.py).");
 }
@@ -280,7 +282,7 @@ function table(s, rows, o, headFill) {
 // ---------- 8. Decrement trap ----------
 {
   const s = pres.addSlide(); s.background = { color: WHITE };
-  title(s, "We turned down a 353% headline", "The decrement trap: a bigger participation can mean a worse outcome for heirs");
+  title(s, "We turned down a " + pct(R.designs[0][3]) + " headline", "The decrement trap: a bigger participation can mean a worse outcome for heirs");
   const d = R.designs;
   const labels = ["12%/4%", "10%/2%", "10%/1% (ours)", "10%/0%", "Raw basket"];
   s.addChart(pres.charts.BAR, [{ name: "Participation", labels, values: d.map((r) => Math.round(r[3] * 100)) }], {
@@ -295,7 +297,7 @@ function table(s, rows, o, headFill) {
   });
   card(s, 0.5, 4.4, 9, 0.7, INK);
   s.addText([{ text: "Our choice (10% target, 1% decrement): ", options: { bold: true, color: GOLD } },
-    { text: "highest median (" + d[2][6].toFixed(2) + "x) with a 12% chance of only 100 back, vs 35% for the 353% design. After 7 years of ~2.5% inflation, 100 back is a 16% real loss." }],
+    { text: "top-tier median (" + d[2][6].toFixed(2) + "x) with a " + pct(d[2][7]) + " chance of only 100 back, vs " + pct(d[0][7]) + " for the " + pct(d[0][3]) + " design. After 7 years of ~2.5% inflation, 100 back is a 16% real loss." }],
     { x: 0.7, y: 4.43, w: 8.6, h: 0.64, fontFace: BF, fontSize: 11.5, color: WHITE, margin: 0, valign: "middle", isTextBox: true });
   foot(s, "Labels: target volatility / annual decrement. Forward simulation; same option budget for every design.");
   pageNo(s, 8);
@@ -324,7 +326,7 @@ function table(s, rows, o, headFill) {
     txt(s, e[0] + ": ", { x: 6.18, y: y - 0.02, w: 3.35, h: 0.25, fontSize: 11, bold: true, color: INK });
     txt(s, e[1], { x: 6.18, y: y + 0.22, w: 3.35, h: 0.36, fontSize: 9.5, color: TXT });
   });
-  txt(s, "Also disclosed: Natixis credit risk · inflation erodes the real floor · VT lags V-shaped rebounds · quanto correlation · model risk on regime parameters.", { x: 5.7, y: 4.15, w: 3.85, h: 0.95, fontSize: 10, italic: true, color: MUTED });
+  txt(s, "Also disclosed: Natixis credit · Taiwan is 6 of 13 names · semiconductor cycle · inflation erodes the real floor · VT lags V-shaped rebounds · quanto · model risk.", { x: 5.7, y: 4.15, w: 3.85, h: 0.95, fontSize: 10, italic: true, color: MUTED });
   foot(s, NOTE);
   pageNo(s, 9);
   s.addNotes("Greeks per 100 notional: delta " + (risk.delta * 100).toFixed(2) + " per 1% index move; DV01 " + (risk.dv01 * 100).toFixed(3) + ". Vega to basket close to zero by design (index vol fixed at 10%).");
@@ -335,7 +337,7 @@ function table(s, rows, o, headFill) {
   const s = pres.addSlide(); s.background = { color: INK };
   txt(s, "Why it works for the family and for Natixis", { x: 0.5, y: 0.35, w: 9, h: 0.6, fontFace: HF, fontSize: 26, bold: true, color: WHITE });
   const cols = [
-    ["For the Chak family", JADE, ["Every dollar back in 2033 for the next generation", pct(lockAvg) + " uncapped participation in Asia's digital leaders", "Diversifies away from their own sectors and currencies", "Legacy Lock banks big gains for heirs"]],
+    ["For the Chak family", JADE, ["Every dollar back in 2033 for the next generation", pct(lockAvg) + " uncapped participation in Asia's AI-hardware leaders", "Diversifies away from their own sectors and currencies", "Legacy Lock banks big gains for heirs"]],
     ["For Natixis", VER, ["Delta-only hedge: index vol fixed by design", "7Y USD funding at 5.75% for the BPCE group", "Proprietary index reusable across private-bank clients", "Long-term relationship with a third-generation family office"]],
   ];
   cols.forEach((c, i) => {
@@ -374,8 +376,8 @@ function table(s, rows, o, headFill) {
   const rows = [["Input", "Value used", "Source / to refresh"],
     ["USD funding 7Y", "5.75%", "2026 rules funding grid (linear interpolation)"],
     ["USD OIS for option pricing", "3.75%", "Assumption: Bloomberg USSO7"],
-    ["Basket volatility regimes", "22% calm / 45% stress", "Assumption: calibrate to basket history"],
-    ["Raw-basket 7Y implied vol", "30%", "Assumption: dealer quote / long-dated surface"],
+    ["Basket volatility regimes", VOLC + "% calm / " + VOLS + "% stress", "Assumption: calibrate to basket history"],
+    ["Raw-basket 7Y implied vol", RAWIV + "%", "Assumption: dealer quote / long-dated surface"],
     ["Issuer fee", "2.0% upfront", "Assumption"],
     ["Quanto adjustment", "−0.2% p.a.", "Assumption: equity–FX correlation"]];
   table(s, rows, { x: 0.5, y: 1.3, w: 5.4, colW: [1.8, 1.4, 2.2], rowH: 0.42, fontSize: 9.5 });
