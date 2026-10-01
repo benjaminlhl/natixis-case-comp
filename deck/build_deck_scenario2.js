@@ -53,7 +53,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   s.addShape(pres.shapes.OVAL, { x: 8.3, y: 3.5, w: 2.4, h: 2.4, fill: { color: GOLD, transparency: 15 } });
   txt(s, "Investment Strategy Challenge 2026 · Proposal for NKE Private Wealth (Chak family)", { x: 0.6, y: 0.6, w: 7.5, h: 0.35, fontSize: 12.5, color: "BFDCD8" });
   txt(s, "Asian Digital Transformation Snowball Note", { x: 0.6, y: 1.05, w: 6.2, h: 1.75, fontFace: HF, fontSize: 34, bold: true, color: WHITE, valign: "middle" });
-  txt(s, "Growth that compounds while Asia digitalises, with capital protected unless the basket is down more than 35% at maturity", { x: 0.6, y: 3.0, w: 6.0, h: 0.85, fontSize: 15, italic: true, color: "E3F1EF" });
+  txt(s, "Growth that accrues while Asia digitalises, with capital protected unless the basket is down more than 35% at maturity", { x: 0.6, y: 3.0, w: 6.0, h: 0.85, fontSize: 15, italic: true, color: "E3F1EF" });
   txt(s, `USD 100mn · 5-year note issued by Natixis · ${pct(CPN)} p.a. snowball coupon · ${pct(BAR, 0)} European barrier · Trade date 17 Sep 2026`, { x: 0.6, y: 4.45, w: 7.6, h: 0.4, fontSize: 11.5, bold: true, color: GOLD });
   s.addNotes("Title. One-line pitch: a growth autocall on the four Asian digital-transformation engines the Chak family already knows from its businesses. The coupon rolls up into principal instead of being paid as income, and capital is protected unless the basket is down more than 35% at maturity.");
 }
@@ -79,7 +79,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
 // ======================= Executive summary (not counted) =======================
 {
   const s = pres.addSlide(); s.background = { color: WHITE };
-  title(s, "Executive summary", "One note that turns the family's operating expertise into compounding, protected growth");
+  title(s, "Executive summary", "One note that turns the family's operating expertise into accruing, protected growth");
   const stats = [[pct(CPN), "Snowball coupon p.a.", "Accrues every quarter and is paid with principal at autocall: 109% after Y1, up to 145% at Y5"],
                  ["−35%", "Protection at maturity", "European barrier: only the final level counts, so interim drawdowns cannot hurt the capital"],
                  [pct(R.rn.p_call_by_year[0], 0), "Called at first review", `Risk-neutral. ${pct(R.rn.p_called, 0)} called within 5 years; expected life ${R.rn.exp_life_y} years`]];
@@ -94,7 +94,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
     { text: "We recommend ", options: {} },
     { text: "a USD 100mn, 5-year Natixis snowball autocallable note", options: { bold: true, color: JADE } },
     { text: " on a basket of four real, Bloomberg-listed Asian indices (Hang Seng TECH 30%, Nikkei 225 30%, TAIEX 25%, MSCI AC Asia Pacific Utilities 15%). These mirror the family's businesses in Greater China real estate, Japan technology infrastructure and renewable power. ", options: {} },
-    { text: "The coupon compounds into capital rather than paying income, which matches a growth mandate. A diversified basket (not worst-of) and a maturity-only barrier make it suitable for generational wealth. Fair value is 97.3%, so issuing at par leaves Natixis 2.7% to cover hedging and margin.", options: { bold: true } },
+    { text: "The coupon accrues and is paid with capital at call rather than as income, which matches a growth mandate. A diversified basket (not worst-of) and a maturity-only barrier make it suitable for generational wealth. Fair value is 97.3%, so issuing at par leaves Natixis 2.7% to cover hedging and margin.", options: { bold: true } },
   ], { x: 0.5, y: 3.85, w: 9, h: 1.3, fontSize: 11.5 });
   s.addNotes("Executive summary (does not count toward the 10-slide limit).");
 }
@@ -116,7 +116,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
       { x: x + 0.2, y: 1.8, w: 2.5, h: 1.7, fontSize: 10.5, color: i === 2 ? WHITE : TXT, paraSpaceAfter: 3 });
   });
   const rows = [[hdr("Client need"), hdr("Design answer in our note")],
-    ["Capital appreciation", "Snowball coupon: 9% p.a. accrues and is paid with principal, so value compounds instead of leaking out as income"],
+    ["Capital appreciation", "Snowball coupon: 9% p.a. accrues and is paid with principal, so value builds up instead of leaking out as income"],
     ["Exposure to Asian digital transformation", "Four real indices mapped to the family's own industries (slide 3)"],
     ["Generational preservation", "European 65% barrier, diversified basket (not worst-of), BPCE-backed issuer"],
     ["Volatile markets", "Autocall locks in gains at the first good review date; drawdowns before maturity do not count"]];
@@ -186,7 +186,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
 // ======================= 4. Term sheet + design choice =======================
 {
   const s = pres.addSlide(); s.background = { color: WHITE };
-  title(s, "Term sheet: 5-year snowball autocall, 65% European barrier", "Why snowball: same risk as an income autocall, but a much higher coupon and true compounding");
+  title(s, "Term sheet: 5-year snowball autocall, 65% European barrier", "Why snowball: same risk as an income autocall, but a much higher coupon that accrues until paid");
   const terms = [["Issuer", "Natixis SA (BPCE Group)"], ["Notional / currency", "USD 100,000,000 · quanto USD"], ["Trade / maturity", "17 Sep 2026 / 17 Sep 2031 (5Y)"],
                  ["Underlying", "Weighted basket of 4 indices (slide 3)"], ["Observation", "Quarterly, autocall from Q4 (Year 1)"],
                  ["Autocall trigger", "Basket ≥ 100% of initial level"], ["Snowball coupon", `${pct(CPN)} p.a. × years elapsed, paid at call`],
@@ -254,7 +254,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   const ann = [[1, "109%"], [2, "118%"], [3, "127%"], [4, "136%"], [5, "145%"]];
   txt(s, ann.map((a, i) => ({ text: `Y${a[0]}: ${a[1]}  (USD ${(100 * (1 + CPN * a[0])).toFixed(0)}mn)`, options: { breakLine: i < ann.length - 1 } })),
     { x: 0.55, y: 4.2, w: 2.3, h: 0.95, fontSize: 9, color: TXT });
-  txt(s, "Coupon grows linearly; there is no compounding cap until maturity. The longer the wait, the bigger the payout.", { x: 2.85, y: 4.2, w: 1.95, h: 0.95, fontSize: 9, italic: true, color: MUTED });
+  txt(s, "Coupon accrues as simple interest: 2.25% per quarter. The longer the wait, the bigger the payout (145% at Y5 ≈ 7.7% p.a. compounded).", { x: 2.85, y: 4.2, w: 1.95, h: 0.95, fontSize: 9, italic: true, color: MUTED });
 
   const xs = []; for (let x = 30; x <= 160; x += 0.5) xs.push(x);
   const note = xs.map((x) => (x >= 100 ? 100 + CPN * 100 * 5 : x >= BAR * 100 ? 100 : x));
