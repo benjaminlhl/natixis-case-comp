@@ -35,7 +35,7 @@ if __name__ == "__main__":
     base_B = m.simulate(n=N)
     base_pv = m.protected(base_B)[0].mean()
     rates = {}
-    for bp in (-100, -50, 50, 100):
+    for bp in (-200, -150, -100, -50, 50, 100, 150, 200):
         set_shift(bp)
         B = m.simulate(n=N)                 # drift follows the shifted curve
         pv = m.protected(B)[0].mean()       # existing note, coupon unchanged

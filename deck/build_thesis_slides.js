@@ -11,6 +11,16 @@ const { FaMicrochip, FaMemory, FaTools } = require("react-icons/fa");
 const VT = require(path.join(__dirname, "..", "pricing", "scenario2_vs_traditional.json"));
 const RES = require(path.join(__dirname, "..", "pricing", "scenario2_results.json"));
 const TN = require(path.join(__dirname, "..", "pricing", "scenario2_thesis_numbers.json"));
+const MD = require(path.join(__dirname, "thesis_market_data.json"));
+// Index levels rebased to 100 at end-2021
+const idxSeries = () => ["TAIEX", "KOSPI", "Nikkei 225"].map((k) => ({ name: k, labels: MD.index_levels.labels,
+  values: MD.index_levels[k].map((v) => +(v / MD.index_levels[k][0] * 100).toFixed(1)) }));
+const RATE_KEYS = ["-200bp", "-150bp", "-100bp", "-50bp", "base", "+50bp", "+100bp", "+150bp", "+200bp"];
+const rateSeries = () => [
+  { name: "5Y USD bond", labels: RATE_KEYS.map((k) => k === "base" ? "0" : (parseInt(k) / 100).toFixed(1).replace(/^(\d)/, "+$1") + "%"),
+    values: RATE_KEYS.map((k) => k === "base" ? 0 : +(TN.rates[k].bond_value_change * 100).toFixed(2)) },
+  { name: "Our protected autocall", labels: RATE_KEYS.map((k) => k === "base" ? "0" : (parseInt(k) / 100).toFixed(1).replace(/^(\d)/, "+$1") + "%"),
+    values: RATE_KEYS.map((k) => k === "base" ? 0 : +(TN.rates[k].note_value_change * 100).toFixed(2)) }];
 
 const BLUE = "2C5F82", BLUE_L = "E8EFF5", BLUE_M = "8DB3D1", GRAY = "F2F2F2", TXT = "262626", MUTED = "595959",
       WHITE = "FFFFFF", LINE = "BFBFBF", RED = "B23B3B", DGRAY = "7F7F7F";
@@ -78,11 +88,16 @@ async function icon(Comp, color) {
       T(bigLab, { x: 4.95, y: y + 0.61, w: 2.45, h: 0.55, fontSize: 9, color: MUTED, align: "center" });
     }
     bar(s, T, 7.75, 1.15, 5.08, "Demand is surging, but the cycle is maturing");
-    const g = [["Hyperscaler capex", 0.77], ["Global chip market (WSTS)", 0.90], ["DRAM equipment (SEMI)", 0.39], ["Chip test equipment (SEMI)", 0.31], ["All chip equipment (SEMI)", 0.232]];
-    s.addChart(pres.charts.BAR, [{ name: "2026 growth", labels: g.map((x) => x[0]), values: g.map((x) => +(x[1] * 100).toFixed(1)) }],
-      Object.assign(chartBase(), { x: 7.75, y: 1.62, w: 5.08, h: 2.25, barDir: "bar", chartColors: [BLUE], showValue: true, dataLabelPosition: "outEnd",
-        dataLabelFormatCode: '"+"0"%"', dataLabelFontSize: 9, dataLabelColor: TXT, valAxisHidden: true, valGridLine: { style: "none" }, valAxisMinVal: 0, valAxisMaxVal: 110,
-        title: "2026 growth vs 2025 (forecast / guidance)", titleFontSize: 10, showLegend: false, catAxisOrientation: "maxMin", catAxisLabelFontSize: 9 }));
+    const cm = MD.chip_market_bn;
+    s.addChart(pres.charts.BAR, [{ name: "Chip market", labels: cm.labels, values: cm.values }],
+      Object.assign(chartBase(), { x: 7.75, y: 1.62, w: 2.45, h: 2.25, barDir: "col", chartColors: [BLUE, BLUE, BLUE_M, BLUE_M], showValue: true, dataLabelPosition: "outEnd",
+        dataLabelFormatCode: '"$"#,##0', dataLabelFontSize: 8, dataLabelColor: TXT, valAxisHidden: true, valGridLine: { style: "none" }, valAxisMinVal: 0, valAxisMaxVal: 2200,
+        title: "Chip market, US$bn (WSTS)", titleFontSize: 9.5, showLegend: false, catAxisLabelFontSize: 8.5 }));
+    const cx = MD.hyperscaler_capex_bn;
+    s.addChart(pres.charts.BAR, [{ name: "2025", labels: cx.labels, values: cx["2025"] }, { name: "2026 guidance", labels: cx.labels, values: cx["2026 guidance (mid)"] }],
+      Object.assign(chartBase(), { x: 10.3, y: 1.62, w: 2.53, h: 2.25, barDir: "col", barGrouping: "clustered", chartColors: [BLUE_M, BLUE], showValue: true, dataLabelPosition: "outEnd",
+        dataLabelFormatCode: "0", dataLabelFontSize: 7, dataLabelColor: TXT, valAxisHidden: true, valGridLine: { style: "none" }, valAxisMinVal: 0, valAxisMaxVal: 240,
+        title: "Hyperscaler capex, US$bn", titleFontSize: 9.5, showLegend: true, legendPos: "b", legendFontSize: 7.5, legendFontFace: F, catAxisLabelFontSize: 7.5 }));
     const dr = [["Q2 2026", 47.5], ["Q3 2026", 15.5], ["Q4 2026e", 12.5]];
     s.addChart(pres.charts.BAR, [{ name: "DRAM", labels: dr.map((x) => x[0]), values: dr.map((x) => x[1]) }],
       Object.assign(chartBase(), { x: 7.75, y: 3.9, w: 2.6, h: 1.9, barDir: "col", chartColors: [BLUE_M], showValue: true, dataLabelPosition: "outEnd",
@@ -94,7 +109,7 @@ async function icon(Comp, color) {
        { text: "US 25% tariff on some advanced chips since Jan 2026 (Section 232)", options: { bullet: { indent: 8 }, breakLine: true } },
        { text: "Leads straight to thesis 2: own it with protection", options: { bullet: { indent: 8 }, bold: true } }],
       { x: 10.55, y: 4.02, w: 2.2, h: 1.75, fontSize: 8.5, color: TXT, paraSpaceAfter: 2 });
-    note(T, "Sources: Counterpoint (foundry, HBM); TSMC; Trading Economics / TWSE (TAIEX, 2025 close 28,963.6); TrendForce (DRAM); Siblis Research (P/E, 1 Jul 2026); SEMI (14 Jul 2026); WSTS (Jun 2026); company capex guidance; Nikkei; White House Proclamation 11002. Full list in appendix.");
+    note(T, "Sources: Counterpoint (foundry, HBM); TSMC; Trading Economics / TWSE; TrendForce (DRAM, range midpoints); Siblis (P/E, 1 Jul 2026); SEMI (14 Jul 2026); WSTS (2025 actual $795.6bn; 2024 implied; 2026–27 Spring 2026 forecast); company reports and guidance midpoints (capex; Microsoft 2025 calendar-year estimate); White House Proclamation 11002.");
     banner(s, T, "We buy the picks and shovels: whichever AI model wins, it needs Taiwan's chips, Korea's memory and Japan's tools.");
     s.addNotes("Thesis 1. AI is a hardware story and our three markets each own a bottleneck. The boom is visible in earnings, not just prices: KOSPI's forward P/E of 7.8x against 23x trailing means analysts expect earnings to roughly triple. But the cycle is maturing: memory price increases are decelerating and US tariffs are a live risk. That tension (great theme, risky path) is the bridge to thesis 2.");
   }
@@ -161,32 +176,28 @@ async function icon(Comp, color) {
     // Economic
     const LX = 0.5, LW = 6.0;
     col(LX, LW, "Economic aspect: why this theme needs protection", "Structural growth, but a violent, concentrated and late-cycle path");
-    const vk = [["Oct 2008 (GFC)", 89.3], ["5 Mar 2026 (Iran war)", 83.6], ["9 Jun 2026", 91.2]];
-    s.addChart(pres.charts.BAR, [{ name: "VKOSPI", labels: vk.map((x) => x[0]), values: vk.map((x) => x[1]) }],
-      Object.assign(chartBase(), { x: LX, y: 1.95, w: 2.6, h: 1.75, barDir: "col", chartColors: [DGRAY, DGRAY, RED], showValue: true, dataLabelPosition: "outEnd",
-        dataLabelFormatCode: "0.0", dataLabelFontSize: 9, dataLabelColor: TXT, valAxisHidden: true, valGridLine: { style: "none" }, valAxisMinVal: 0, valAxisMaxVal: 110,
-        title: "Korea 'fear index' (VKOSPI) closes", titleFontSize: 9.5, showLegend: false, catAxisLabelFontSize: 7.5 }));
+    s.addChart(pres.charts.LINE, idxSeries(), Object.assign(chartBase(), { x: LX, y: 1.95, w: 3.75, h: 1.8, chartColors: [BLUE, RED, "A6A6A6"], lineSize: 2,
+      lineDataSymbol: "circle", lineDataSymbolSize: 4, valAxisMinVal: 50, valAxisMaxVal: 325, valAxisMajorUnit: 50, valAxisLabelFontSize: 7.5, catAxisLabelFontSize: 7,
+      title: "Index level, end-2021 = 100", titleFontSize: 9.5, showLegend: true, legendPos: "b", legendFontSize: 7.5, legendFontFace: F }));
     T([{ text: "Growth is structural…", options: { bold: true, color: BLUE, breakLine: true } },
-       { text: "Capex +77%, chip market +90% in 2026 (thesis 1).", options: { breakLine: true } },
+       { text: "Capex +77%, chip market +90% in 2026.", options: { breakLine: true } },
        { text: "…but the path is violent", options: { bold: true, color: RED, breakLine: true } },
-       { text: "VKOSPI closed at an all-time high of 91.2 on 9 Jun 2026, above the 2008 crisis peak. Circuit breakers fired three times in June." }],
-      { x: LX + 2.7, y: 1.98, w: LW - 2.75, h: 1.7, fontSize: 9.5, color: TXT, paraSpaceAfter: 3 });
+       { text: "Down 10–25% in 2022, ~2–3× since. VKOSPI record 91.2 (9 Jun 2026, above 2008); KOSPI −8.95% in one day (13 Jul)." }],
+      { x: LX + 3.85, y: 1.98, w: LW - 3.9, h: 1.75, fontSize: 9, color: TXT, paraSpaceAfter: 2 });
     point(LX, LW, 3.8, 1, "−25%", RED, "Round trips happen fast", "KOSPI hit 9,000+ in June (~+110% YTD), then 6,789 on 28 Aug: about −25% in ten weeks. J.P. Morgan's 2026 base case includes a 10–15% correction.");
     point(LX, LW, 4.66, 2, ">40%", BLUE, "Returns hinge on a few names", "TSMC is >40% of the TAIEX, and ~92% of advanced chips are made in Taiwan, which J.P. Morgan calls the most blockade-sensitive advanced economy.");
     point(LX, LW, 5.52, 3, "¥20trn", BLUE, "Reforms support a recovery to 100%", "Record Japanese buybacks (~¥20trn FY2025 forecast) and Korea's Value-up programme help the basket get back to its start, which is all the coupon needs.");
     // Finance
     const RX = 6.83, RW = 6.0;
     col(RX, RW, "Finance aspect: why an autocall with protection", "Rates are high and rising; volatility is at records. Both favour this structure");
-    const rr = [["5Y USD bond", R100.bond_value_change], ["Our protected autocall", R100.note_value_change]];
-    s.addChart(pres.charts.BAR, [{ name: "+1% rates", labels: rr.map((x) => x[0]), values: rr.map((x) => +(x[1] * 100).toFixed(1)) }],
-      Object.assign(chartBase(), { x: RX, y: 1.95, w: 2.6, h: 1.75, barDir: "col", chartColors: [DGRAY, BLUE], showValue: true, dataLabelPosition: "outEnd",
-        dataLabelFormatCode: '0.0"%"', dataLabelFontSize: 9, dataLabelColor: TXT, valAxisHidden: true, valGridLine: { style: "none" }, valAxisMinVal: -5, valAxisMaxVal: 0,
-        title: "Value change if rates rise 1%", titleFontSize: 9.5, showLegend: false, catAxisLabelFontSize: 8 }));
+    s.addChart(pres.charts.LINE, rateSeries(), Object.assign(chartBase(), { x: RX, y: 1.95, w: 3.75, h: 1.8, chartColors: ["404040", BLUE], lineSize: 2,
+      lineDataSymbol: "circle", lineDataSymbolSize: 4, valAxisMinVal: -10, valAxisMaxVal: 10, valAxisMajorUnit: 5, valAxisLabelFormatCode: '0"%"', valAxisLabelFontSize: 7.5,
+      catAxisLabelFontSize: 7, title: "Value change vs parallel rate move", titleFontSize: 9.5, showLegend: true, legendPos: "b", legendFontSize: 7.5, legendFontFace: F }));
     T([{ text: "The Fed is hiking again", options: { bold: true, color: BLUE, breakLine: true } },
-       { text: "16 Sep 2026: +0.25% to 3.75–4.00%, the first hike since 2023; the median dot points to 4.1% by year end.", options: { breakLine: true } },
+       { text: "16 Sep 2026: +0.25% to 3.75–4.00%, first hike since 2023; median dot 4.1% by year end.", options: { breakLine: true } },
        { text: "So: avoid long duration", options: { bold: true, color: BLUE, breakLine: true } },
-       { text: `Our note has ~${Math.round(R100.note_value_change / R100.bond_value_change * 100)}% of a 5Y bond's rate risk: it usually ends within ~${RN.exp_life_y.toFixed(0)} years.` }],
-      { x: RX + 2.7, y: 1.98, w: RW - 2.75, h: 1.7, fontSize: 9.5, color: TXT, paraSpaceAfter: 3 });
+       { text: `Our note carries ~${Math.round(R100.note_value_change / R100.bond_value_change * 100)}% of a 5Y bond's rate risk across ±2%.` }],
+      { x: RX + 3.85, y: 1.98, w: RW - 3.9, h: 1.75, fontSize: 9, color: TXT, paraSpaceAfter: 2 });
     point(RX, RW, 3.8, 1, pct(RES.inputs.zcb_5y), BLUE, "High rates make protection cheap",
       `At 5.69% 5Y funding, USD 100 at year 5 costs USD ${(RES.inputs.zcb_5y * 100).toFixed(1)} today; early calls lower it to ${pct(REC.pv_principal)} in our note.`);
     point(RX, RW, 4.66, 2, pct(R100.new_note_fair_coupon), BLUE, "Rising rates pay off at the roll",
@@ -214,20 +225,17 @@ async function icon(Comp, color) {
     const cap = (x, y, t) => T(t, { x, y, w: PW, h: 0.4, fontSize: 8.5, color: MUTED });
     // P1 rates
     let p = panel(0, "Rates are rising: bonds carry the duration risk");
-    const rr = [["-1%", "-100bp"], ["-0.5%", "-50bp"], ["+0.5%", "+50bp"], ["+1%", "+100bp"]];
-    s.addChart(pres.charts.BAR, [{ name: "5Y USD bond", labels: rr.map((x) => x[0]), values: rr.map((x) => +(TN.rates[x[1]].bond_value_change * 100).toFixed(1)) },
-                                 { name: "Our autocall", labels: rr.map((x) => x[0]), values: rr.map((x) => +(TN.rates[x[1]].note_value_change * 100).toFixed(1)) }],
-      Object.assign(chartBase(), { x: p.x, y: p.y, w: PW, h: 1.38, barDir: "col", barGrouping: "clustered", chartColors: ["404040", BLUE], showTitle: false,
-        showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: "0.0", dataLabelFontSize: 7, dataLabelColor: TXT, valAxisMinVal: -6, valAxisMaxVal: 6,
-        valAxisLabelFormatCode: '0"%"', catAxisLabelFontSize: 8, valAxisLabelFontSize: 8, showLegend: true, legendPos: "r", legendFontSize: 8, legendFontFace: F, catAxisLabelPos: "low" }));
-    cap(p.x, p.y + 1.42, "Value change for a parallel rate move. The Fed hiked to 3.75–4.00% on 16 Sep 2026 (first hike since 2023), with another expected.");
+    const ff = MD.fed_funds_upper;
+    s.addChart(pres.charts.LINE, [{ name: "Fed funds (upper bound)", labels: ff.labels, values: ff.values }, { name: "Case 5Y USD funding", labels: ff.labels, values: ff.labels.map(() => 5.69) }],
+      Object.assign(chartBase(), { x: p.x, y: p.y, w: PW, h: 1.38, chartColors: [BLUE, "A6A6A6"], lineSize: 2, lineDataSymbol: "none", showTitle: false,
+        valAxisMinVal: 0, valAxisMaxVal: 6, valAxisMajorUnit: 2, valAxisLabelFormatCode: '0"%"', catAxisLabelFontSize: 6.5, valAxisLabelFontSize: 8, showLegend: true, legendPos: "r", legendFontSize: 7.5, legendFontFace: F }));
+    cap(p.x, p.y + 1.42, `Hikes 2022–23, cuts 2024–25, hike again on 16 Sep 2026 (median dot 4.1%). If rates rise 1%, a 5Y bond loses ${pct(-R100.bond_value_change)}, our note ${pct(-R100.note_value_change)}.`);
     // P2 volatility
-    p = panel(1, "Volatility is at records: protection is needed");
-    const vk = [["Oct 2008", 89.3], ["Mar 2026", 83.6], ["Jun 2026", 91.2]];
-    s.addChart(pres.charts.BAR, [{ name: "VKOSPI", labels: vk.map((x) => x[0]), values: vk.map((x) => x[1]) }],
-      Object.assign(chartBase(), { x: p.x, y: p.y, w: PW, h: 1.38, barDir: "col", chartColors: [DGRAY, DGRAY, RED], showTitle: false, showValue: true, dataLabelPosition: "outEnd",
-        dataLabelFormatCode: "0.0", dataLabelFontSize: 8, dataLabelColor: TXT, valAxisHidden: true, valGridLine: { style: "none" }, valAxisMinVal: 0, valAxisMaxVal: 110, showLegend: false, catAxisLabelFontSize: 8 }));
-    cap(p.x, p.y + 1.42, "VKOSPI closing peaks: 2026 beat the 2008 crisis. KOSPI then fell ~25% (9,000+ in June to 6,789 on 28 Aug).");
+    p = panel(1, "A violent path: protection is needed");
+    s.addChart(pres.charts.LINE, idxSeries(), Object.assign(chartBase(), { x: p.x, y: p.y, w: PW, h: 1.38, chartColors: [BLUE, RED, "A6A6A6"], lineSize: 2, showTitle: false,
+      lineDataSymbol: "circle", lineDataSymbolSize: 3, valAxisMinVal: 50, valAxisMaxVal: 325, valAxisMajorUnit: 100, valAxisLabelFontSize: 8, catAxisLabelFontSize: 6.5,
+      showLegend: true, legendPos: "r", legendFontSize: 7.5, legendFontFace: F }));
+    cap(p.x, p.y + 1.42, "Index levels, end-2021 = 100: −10–25% in 2022, then 2–3×. VKOSPI closed at a record 91.2 (Jun 2026); KOSPI fell ~25% by late August.");
     // P3 regimes
     p = panel(2, "The autocall wins in most markets");
     const strat = [["Protected autocall (ours)", "Our autocall"], ["Direct basket", "Hold the basket"], ["5Y USD bond", "5Y bond"]];
@@ -298,13 +306,12 @@ async function icon(Comp, color) {
     });
     s.addTable(rows, { x: 7.75, y: 1.65, w: 5.08, colW: [1.9, 0.75, 0.8, 0.8, 0.83], fontFace: F, fontSize: 10, color: TXT, valign: "middle",
       border: { type: "solid", pt: 0.5, color: LINE }, fill: { color: WHITE }, rowH: 0.36, margin: [2, 4, 2, 4] });
-    s.addShape(pres.shapes.RECTANGLE, { x: 7.75, y: 3.6, w: 5.08, h: 2.15, fill: { color: GRAY }, line: { color: GRAY } });
-    T([{ text: "Why it works", options: { bold: true, italic: true, color: BLUE, fontSize: 12, breakLine: true } },
-       { text: "Pays in sideways markets: 6.2% vs 2.0% for the stocks when the basket goes nowhere", options: { bullet: { indent: 10 }, breakLine: true } },
-       { text: "Volatility raises the chance of touching 100%, so it funds the coupon instead of hurting the family", options: { bullet: { indent: 10 }, breakLine: true } },
-       { text: "Market evidence: Taiwan structured-note issuance +81% in 2025, snowball autocalls the favourite payoff (SRP)", options: { bullet: { indent: 10 }, breakLine: true } },
-       { text: `Honest caveat: a 5Y bond earns more in bear markets, but gives no AI exposure`, options: { bullet: { indent: 10 }, color: RED } }],
-      { x: 7.9, y: 3.68, w: 4.8, h: 2.05, fontSize: 9.5, color: TXT, paraSpaceAfter: 3 });
+    const H = base.irr_hist;
+    s.addChart(pres.charts.BAR, [{ name: "Our protected autocall", labels: H.bins, values: H["Protected autocall (ours)"].map((v) => +(v * 100).toFixed(1)) },
+                                 { name: "Hold the basket", labels: H.bins, values: H["Direct basket"].map((v) => +(v * 100).toFixed(1)) }],
+      Object.assign(chartBase(), { x: 7.75, y: 3.55, w: 5.08, h: 2.2, barDir: "col", barGrouping: "clustered", chartColors: [BLUE, "A6A6A6"], barGapWidthPct: 40,
+        valAxisLabelFormatCode: '0"%"', valAxisMaxVal: 80, valAxisMajorUnit: 20, valAxisLabelFontSize: 8, catAxisLabelFontSize: 7,
+        title: "Share of paths by annual return (IRR)", titleFontSize: 9.5, showLegend: true, legendPos: "b", legendFontSize: 8, legendFontFace: F }));
     note(T, `Our Monte Carlo (pricing/scenario2_vs_traditional.py): TAIEX 40% / KOSPI 200 30% / Nikkei 225 30%, real-world equity drift 4% p.a.; protected note participation ${Math.round(RES.ppn.participation * 100)}%. Market regime = basket's own 5Y annualised total return. Early-called notes are not assumed to be reinvested. SRP = StructuredRetailProducts.com.`);
     banner(s, T, "Best way to own the theme: equals or beats the stocks in 3 of 4 markets, beats a plain protected note in 3 of 4, and never loses capital.");
     s.addNotes("Thesis 2 evidence. Same simulated paths for all four strategies. The note beats holding the basket in bear and flat markets, ties in moderate ones and lags only in bull markets. It beats the plain principal-protected note in every market except a bull market. Be upfront about the bond: a fixed 5.69% wins in bear markets and on average unless equities return ~8% a year, but a bond gives none of the AI exposure the family asked for.");

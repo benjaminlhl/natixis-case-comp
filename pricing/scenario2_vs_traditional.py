@@ -42,7 +42,13 @@ def compare(drift):
         for name, x in [("Protected autocall (ours)", note), ("Direct basket", basket), ("5Y USD bond", bond), ("Principal-protected note", ppn)]:
             row[name] = round(float(x[mask].mean()), 4)
         reg[rname] = row
-    return {"strategies": out, "regimes": reg}
+    edges = [-1, -0.10, -0.05, 0.0 - 1e-9, 0.02, 0.04, 0.06, 0.08, 0.10, 0.15, 1]
+    labels = ["< −10%", "−10 to −5%", "−5 to 0%", "0 to 2%", "2 to 4%", "4 to 6%", "6 to 8%", "8 to 10%", "10 to 15%", "> 15%"]
+    hist = {"bins": labels}
+    for name, x in [("Protected autocall (ours)", note), ("Direct basket", basket), ("Principal-protected note", ppn)]:
+        h, _ = np.histogram(x, bins=edges)
+        hist[name] = [round(float(v) / len(x), 4) for v in h]
+    return {"strategies": out, "regimes": reg, "irr_hist": hist}
 
 
 if __name__ == "__main__":

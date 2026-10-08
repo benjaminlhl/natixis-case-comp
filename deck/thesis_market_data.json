@@ -1,0 +1,22 @@
+{
+ "_note": "Market series used by deck/build_thesis_slides.js. Sources in deck/thesis_sources.md. Values marked approx are rounded from secondary reports.",
+ "index_levels": {
+  "labels": ["YE2021", "YE2022", "YE2023", "YE2024", "YE2025", "Jun-26 peak", "Latest"],
+  "TAIEX": [18218.84, 14137.69, 17930.81, 23035.10, 28963.60, 47750, 48476],
+  "KOSPI": [2977.65, 2236.40, 2655.28, 2399.49, 4214.17, 9000, 7080.92],
+  "Nikkei 225": [28791.71, 26094.50, 33464.17, 39894.54, 50339.48, 66500, 64141.12],
+  "_dates_latest": {"TAIEX": "2 Oct 2026", "KOSPI": "23 Sep 2026", "Nikkei 225": "17 Jul 2026"},
+  "_approx": "Jun-26 peaks are approximate: TAIEX record of 22 Jun 2026 lies between 47,719 and 47,800; KOSPI 9,000+ (18 Jun 2026); Nikkei 66,500+ (secondary)"
+ },
+ "fed_funds_upper": {
+  "labels": ["Q1-22","Q2-22","Q3-22","Q4-22","Q1-23","Q2-23","Q3-23","Q4-23","Q1-24","Q2-24","Q3-24","Q4-24","Q1-25","Q2-25","Q3-25","Q4-25","Q1-26","Q2-26","Q3-26"],
+  "values": [0.50, 1.75, 3.25, 4.50, 5.00, 5.25, 5.50, 5.50, 5.50, 5.50, 5.00, 4.50, 4.50, 4.50, 4.25, 3.75, 3.75, 3.75, 4.00]
+ },
+ "chip_market_bn": {"labels": ["2024", "2025", "2026F", "2027F"], "values": [630, 795.6, 1510, 1900]},
+ "hyperscaler_capex_bn": {
+  "labels": ["Amazon", "Microsoft", "Alphabet", "Meta"],
+  "2025": [134.7, 118.0, 91.5, 72.2],
+  "2026 guidance (mid)": [200, 190, 185, 135]
+ },
+ "dram_contract_qoq_mid": {"labels": ["Q2 2026", "Q3 2026", "Q4 2026e"], "values": [47.5, 15.5, 12.5]}
+}
