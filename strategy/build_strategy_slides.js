@@ -42,19 +42,22 @@ const banner = (s, T, text, y = 6.1) => {
 const note = (T, text, y = 6.66) => T(text, { x: 0.5, y, w: 12.33, h: 0.28, fontSize: 8, italic: true, color: MUTED });
 const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { color: BLUE } } });
 
-// ---------- Slide 1: allocation + Monte Carlo on one page ----------
+// ---------- Slide 1: allocation + risk/return of the five ETFs ----------
 {
-  const { s, T } = mk("Strategy: five Asian AI-hardware ETFs, simulated over five years");
-  T("USD 100mn across five Bloomberg-listed ETFs; Monte Carlo per USD 100,000 invested (×1,000 for the mandate)",
+  const { s, T } = mk("Strategy: five Asian AI-hardware ETFs, combined to cut risk");
+  T("USD 100mn across five Bloomberg-listed ETFs; mixing them gives most of the return with less volatility than the riskiest funds",
     { x: 0.5, y: 1.06, w: 12.33, h: 0.3, fontSize: 11, italic: true, color: MUTED });
   const etfs = [
     ["3119 HK", "Pan-Asian chip leaders"], ["EWY US", "Korea: memory for AI"], ["EWT US", "Taiwan: the AI foundry"],
     ["2644 JP", "Japan: chip-making tools"], ["00878 TT", "ESG dividend anchor"]];
   const w = etfs.map((e) => R.weights[e[0]]);
   const cols = [BLUE, "4F86AE", BLUE_M, "A6A6A6", GREEN];
+  const head = (x, wd, t) => {
+    s.addShape(pres.shapes.RECTANGLE, { x, y: 1.45, w: wd, h: 0.36, fill: { color: BLUE }, line: { color: BLUE } });
+    T(t, { x, y: 1.45, w: wd, h: 0.36, fontSize: 11.5, bold: true, color: WHITE, align: "center", valign: "middle" });
+  };
   // Left: allocation
-  s.addShape(pres.shapes.RECTANGLE, { x: 0.5, y: 1.45, w: 3.75, h: 0.36, fill: { color: BLUE }, line: { color: BLUE } });
-  T("Allocation", { x: 0.5, y: 1.45, w: 3.75, h: 0.36, fontSize: 11.5, bold: true, color: WHITE, align: "center", valign: "middle" });
+  head(0.5, 3.75, "Allocation");
   s.addChart(pres.charts.DOUGHNUT, [{ name: "Weight", labels: etfs.map((e) => e[0]), values: w.map((x) => x * 100) }],
     { x: 0.85, y: 1.85, w: 2.05, h: 2.05, holeSize: 52, chartColors: cols, showPercent: false, showValue: false, showLegend: false });
   T([{ text: "USD", options: { fontSize: 9, color: MUTED, breakLine: true } }, { text: "100mn", options: { bold: true, fontSize: 13, color: BLUE } }],
@@ -68,29 +71,50 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
     { text: (w[i] * 100).toFixed(0) + "%", options: { bold: true, align: "right" } }]);
   s.addTable(rows, { x: 0.5, y: 4.05, w: 3.75, colW: [0.3, 0.85, 2.0, 0.6], fontFace: F, fontSize: 9.5, color: TXT, valign: "middle",
     border: { type: "solid", pt: 0.5, color: "E3E3E3" }, fill: { color: WHITE }, rowH: 0.36, margin: [1, 4, 1, 4] });
-  // Middle: Monte Carlo chart
-  s.addShape(pres.shapes.RECTANGLE, { x: 4.45, y: 1.45, w: 6.35, h: 0.36, fill: { color: BLUE }, line: { color: BLUE } });
-  T("5-year Monte Carlo (value per USD 100,000)", { x: 4.45, y: 1.45, w: 6.35, h: 0.36, fontSize: 11.5, bold: true, color: WHITE, align: "center", valign: "middle" });
-  s.addImage({ path: path.join(__dirname, "mc_checkpoints.png"), x: 4.45, y: 1.88, w: 6.35, h: 6.35 * 1078 / 1892 });
-  // Right: key numbers
-  const tiles = [
-    [k(last(C.median)), `Median, Year 5 (${(last(C.median) / S0).toFixed(1)}×, ${pc(cagr(last(C.median)))} a year)`, BLUE],
-    [k(last(C.p5)), "Bearish 5th percentile: above the start", RED],
-    [k(last(C.p95)), `Bullish 95th percentile (${(last(C.p95) / S0).toFixed(1)}×)`, GREEN],
-    [(last(C.prob_ge_target) * 100).toFixed(1) + "%", "Chance of ending ≥ USD 70,000", ORANGE],
-  ];
-  tiles.forEach(([v, l, c], i) => {
-    const y = 1.45 + i * 1.1;
-    s.addShape(pres.shapes.RECTANGLE, { x: 11.0, y, w: 1.83, h: 1.0, fill: { color: GRAY }, line: { color: GRAY } });
-    s.addShape(pres.shapes.RECTANGLE, { x: 11.0, y, w: 0.06, h: 1.0, fill: { color: c }, line: { color: c } });
-    T(v, { x: 11.12, y: y + 0.05, w: 1.66, h: 0.42, fontSize: 17, bold: true, color: c });
-    T(l, { x: 11.12, y: y + 0.48, w: 1.66, h: 0.5, fontSize: 8.5, color: MUTED });
-  });
-  banner(s, T, `One theme, five bottlenecks: the median grows 2.8× in five years, and even the bearish path ends above the start (${k(last(C.p5))})`);
-  note(T, "Source: team Monte Carlo app (annual checkpoints; lines connect the yearly values; target USD 70,000 = 1st percentile). Liquidity: 3119 HK is borderline against the USD 5M/day rule, verify on Bloomberg.");
+  // Middle: risk/return cloud from the team app
+  head(4.45, 5.0, "Risk vs return: single ETFs and random mixes");
+  s.addImage({ path: path.join(__dirname, "risk_return_cloud.jpg"), x: 4.5, y: 1.88, w: 4.9, h: 4.9 * 1273 / 1620 });
+  // Right: how to read + takeaways
+  head(9.65, 3.18, "How to read it");
+  T([{ text: "Orange dots: ", options: { bold: true, color: ORANGE } }, { text: "each ETF on its own (2644 is the dot near 0.26, 0.25).", options: { breakLine: true } },
+     { text: "Small dots: ", options: { bold: true, color: BLUE } }, { text: "thousands of random weightings of the five ETFs; lighter = more return per unit of risk.", options: { breakLine: true } },
+     { text: "Axes: ", options: { bold: true, color: TXT } }, { text: "annualised volatility (risk) and expected return." }],
+    { x: 9.7, y: 1.88, w: 3.1, h: 1.45, fontSize: 9, color: TXT, paraSpaceAfter: 3 });
+  s.addShape(pres.shapes.RECTANGLE, { x: 9.65, y: 3.4, w: 3.18, h: 2.55, fill: { color: BLUE_L }, line: { color: BLUE_L } });
+  T([{ text: "Takeaways", options: { bold: true, color: BLUE, fontSize: 11, breakLine: true } },
+     { text: "Mixing cuts risk: most mixes sit at 22–32% volatility, far below EWY (~49%), while still returning 25–28%.", options: { bullet: true, breakLine: true } },
+     { text: "3119 HK has the best risk/return on its own, so it gets the largest weight (35%).", options: { bullet: true, breakLine: true } },
+     { text: "EWY is the riskiest for its return, so it is held for memory exposure at 20%, not more.", options: { bullet: true, breakLine: true } },
+     { text: "EWT has the highest return (~31%) and 2644 one of the lowest volatilities (~26%): 15% each rounds out the chain.", options: { bullet: true } }],
+    { x: 9.75, y: 3.48, w: 3.0, h: 2.42, fontSize: 9.5, color: TXT, paraSpaceAfter: 4 });
+  banner(s, T, "One theme, five bottlenecks: weighted towards the best risk/return (3119 HK), diversified to keep volatility down");
+  note(T, "Risk/return chart: team analysis app (annualised from historical data; red star as marked in the app). Liquidity: 3119 HK is borderline against the USD 5M/day rule, verify on Bloomberg.");
 }
 
-// ---------- Slide 2: annual checkpoint table ----------
+// ---------- Slide 2: Monte Carlo chart ----------
+{
+  const { s, T } = mk("Monte Carlo: the median portfolio grows 2.8× in five years");
+  T("5-year simulation of the five-ETF portfolio, per USD 100,000 invested (×1,000 for the USD 100mn mandate)",
+    { x: 0.5, y: 1.06, w: 12.33, h: 0.3, fontSize: 11, italic: true, color: MUTED });
+  s.addImage({ path: path.join(__dirname, "mc_checkpoints.png"), x: 0.5, y: 1.42, w: 8.2, h: 8.2 * 1078 / 1892 });
+  const tiles = [
+    [k(last(C.median)), `Median at Year 5: ${(last(C.median) / S0).toFixed(1)}× the start, ${pc(cagr(last(C.median)))} a year`, BLUE],
+    [k(last(C.p5)), `Bearish (5th percentile): still above the start, ${pc(cagr(last(C.p5)))} a year`, RED],
+    [k(last(C.p95)), `Bullish (95th percentile): ${(last(C.p95) / S0).toFixed(1)}× the start`, GREEN],
+    [(last(C.prob_ge_target) * 100).toFixed(1) + "%", "Chance of ending at or above the USD 70,000 target", ORANGE],
+  ];
+  tiles.forEach(([v, l, c], i) => {
+    const y = 1.45 + i * 1.12;
+    s.addShape(pres.shapes.RECTANGLE, { x: 8.95, y, w: 3.88, h: 1.0, fill: { color: GRAY }, line: { color: GRAY } });
+    s.addShape(pres.shapes.RECTANGLE, { x: 8.95, y, w: 0.07, h: 1.0, fill: { color: c }, line: { color: c } });
+    T(v, { x: 9.15, y: y + 0.06, w: 3.6, h: 0.5, fontSize: 22, bold: true, color: c });
+    T(l, { x: 9.15, y: y + 0.56, w: 3.6, h: 0.4, fontSize: 9.5, color: MUTED });
+  });
+  banner(s, T, `Even the bearish path ends above the start (${k(last(C.p5))}); the USD 70,000 target is the 1st percentile`);
+  note(T, "Source: team Monte Carlo app (annual checkpoints of the simulated paths). Lines connect the yearly values. Results depend on the app's return and volatility inputs; refresh with Bloomberg data at the 17 Sep 2026 trade date.");
+}
+
+// ---------- Slide 3: annual checkpoint table ----------
 {
   const { s, T } = mk("Annual checkpoints: the downside stays above the USD 70,000 target");
   T("Simulated portfolio value at each year-end, per USD 100,000 invested", { x: 0.5, y: 1.06, w: 12.33, h: 0.3, fontSize: 11, italic: true, color: MUTED });
