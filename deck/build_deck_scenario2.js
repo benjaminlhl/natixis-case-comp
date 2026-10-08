@@ -67,9 +67,9 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   title(s, "Agenda");
   const items = [["Client & market", "Who the Chak family is, what they need, and why Asia's digital build-out now", "1–2"],
                  ["Product design", "Underlying basket, term sheet, and why a buffered autocallable (70% barrier + 70% put)", "3–4"],
-                 ["Payoffs explained", "Observation timeline, payoff diagrams, and the building blocks the client owns", "5–7"],
-                 ["Scenarios & back-testing", "Stress paths and Monte Carlo outcome distributions", "8–9"],
-                 ["Risks & hedging", "Investor risks, mitigants, and how the Natixis desk hedges", "10"]];
+                 ["Payoffs explained", "Observation timeline and the three outcomes at maturity (building blocks in the appendix)", "5"],
+                 ["Scenarios & back-testing", "Stress paths and Monte Carlo outcome distributions", "6–7"],
+                 ["Risks & hedging", "Investor risks, mitigants, and how the Natixis desk hedges", "8"]];
   items.forEach((it, i) => {
     const y = 1.15 + i * 0.8;
     dot(s, 0.6, y + 0.05, String(i + 1), i % 2 ? GOLD : JADE, 0.5);
@@ -96,7 +96,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   txt(s, [
     { text: "We recommend ", options: {} },
     { text: "a USD 100mn, 5-year Natixis buffered autocallable note", options: { bold: true, color: JADE } },
-    { text: " on a basket of five Bloomberg-listed Asian ETFs: Global X Asia Semiconductor (3119 HK) 25%, Global X Japan Semiconductor (2644 JP) 25%, iShares MSCI Taiwan (EWT) 15%, iShares MSCI South Korea (EWY) 15% and Cathay Taiwan ESG High Dividend (00878 TT) 20%. It gives the family the AI hardware layer (chips, memory and chip-making equipment) that complements, rather than duplicates, the infrastructure, power and property they already own. ", options: {} },
+    { text: " on a basket of five Bloomberg-listed Asian ETFs: Global X Asia Semiconductor (3119 HK) 35%, iShares MSCI South Korea (EWY) 20%, iShares MSCI Taiwan (EWT) 15%, Global X Japan Semiconductor (2644 JP) 15% and Cathay Taiwan ESG High Dividend (00878 TT) 15%. It gives the family the AI hardware layer (chips, memory and chip-making equipment) that complements, rather than duplicates, the infrastructure, power and property they already own. ", options: {} },
     { text: `The family earns ${pct(CPN, 2)} a year in the ${pct(RN.p_called, 0)} of paths where the basket gets back to its starting level, gets 100% back if it ends anywhere above 70%, and never less than 70% (${pct(RN.p_floor, 0)} of paths, risk-neutral). Fair value is ${pct(REC.pv)}, so issuing at par leaves Natixis ${pct(REC.natixis_margin)} for hedging and margin.`, options: { bold: true } },
   ], { x: 0.5, y: 3.85, w: 9, h: 1.3, fontSize: 11.5 });
   s.addNotes("Executive summary (does not count toward the 10-slide limit).");
@@ -222,97 +222,46 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   s.addNotes("The table is the key design argument. Full protection is safe but pays under 8%. Removing all protection pays more but exposes the family to the whole drawdown in a crash. Our design sits between: the family accepts the first 30% of loss below the barrier risk only in a deep fall, and Natixis embeds a 70% put so the worst case is 70% back. The put costs a little over 2 points of coupon, which is the price of the hard floor.");
 }
 
-// ======================= 5. How it pays: timeline =======================
+// ======================= 5. How it pays: timeline + payoff at maturity =======================
 {
   const s = pres.addSlide(); s.background = { color: WHITE };
-  title(s, "How it pays: one question every quarter", "Is the basket at or above 100% of its starting level? (checked quarterly; one date per year shown)");
+  title(s, "How it pays: one question every quarter, three outcomes", "Is the basket at or above 100% of its starting level? (checked quarterly; one date per year shown)");
   const yrs = [1, 2, 3, 4, 5];
-  s.addShape(pres.shapes.LINE, { x: 0.8, y: 1.85, w: 8.4, h: 0, line: { color: SLATE, width: 2 } });
-  dot(s, 0.55, 1.64, "0", SLATE, 0.42);
-  txt(s, "Trade date\n17 Sep 2026\nInitial = 100%", { x: 0.15, y: 2.12, w: 1.25, h: 0.6, fontSize: 8.5, color: MUTED, align: "center" });
+  txt(s, `Q1–Q3: coupon only (${pct(QC, 2)} if basket ≥ 100%). From Q4: coupon plus autocall. Missed coupons are always caught up.`, { x: 1.4, y: 1.15, w: 7.9, h: 0.25, fontSize: 9, italic: true, color: MUTED, align: "center" });
+  s.addShape(pres.shapes.LINE, { x: 0.8, y: 1.7, w: 8.4, h: 0, line: { color: SLATE, width: 2 } });
+  dot(s, 0.55, 1.49, "0", SLATE, 0.42);
+  txt(s, "Trade date\n17 Sep 2026", { x: 0.15, y: 1.95, w: 1.25, h: 0.4, fontSize: 8.5, color: MUTED, align: "center" });
   yrs.forEach((y, i) => {
     const x = 2.15 + i * 1.6;
-    dot(s, x, 1.64, "Y" + y, y === 5 ? GOLD : JADE, 0.42);
-    txt(s, `If basket ≥ 100%:\ncalled, ${pct(1 + CPN * y)} total`, { x: x - 0.5, y: 2.12, w: 1.42, h: 0.45, fontSize: 9.5, bold: true, color: y === 5 ? GOLD : JADE, align: "center" });
-    txt(s, `P(called by Y${y}) ${pct(RN.p_call_by_year[i], 0)}`, { x: x - 0.5, y: 2.55, w: 1.42, h: 0.25, fontSize: 8.5, color: MUTED, align: "center" });
+    dot(s, x, 1.49, "Y" + y, y === 5 ? GOLD : JADE, 0.42);
+    txt(s, `If ≥ 100%: called,\n${pct(1 + CPN * y)} total`, { x: x - 0.5, y: 1.95, w: 1.42, h: 0.42, fontSize: 9, bold: true, color: y === 5 ? GOLD : JADE, align: "center" });
+    txt(s, `P(called by Y${y}) ${pct(RN.p_call_by_year[i], 0)}`, { x: x - 0.5, y: 2.36, w: 1.42, h: 0.22, fontSize: 8, color: MUTED, align: "center" });
   });
-  txt(s, `Q1–Q3: coupon only (${pct(QC, 2)} if basket ≥ 100%). From Q4: coupon plus autocall. Missed coupons are always caught up.`, { x: 1.4, y: 1.25, w: 7.9, h: 0.25, fontSize: 9, italic: true, color: MUTED, align: "center" });
-  const outs = [
-    ["A", "Autocalled", `Basket ≥ 100% on any date from Q4: 100% plus every coupon to date, including missed ones. The note ends.`, pct(RN.p_called, 0), JADE],
-    ["B", "Not called, basket ≥ 70%", "Basket never back to 100% after Q3 but ends at or above 70%: 100% back at Y5, plus any early coupons.", pct(RN.p_not_called_some_cpn + RN.p_zero_return, 0), SLATE],
-    ["C", "Not called, basket < 70%", "Basket ends more than 30% down: the embedded put pays 70% back at Y5. Maximum loss 30%.", pct(RN.p_floor, 0), GOLD],
-  ];
-  outs.forEach((o, i) => {
-    const x = 0.5 + i * 3.05;
-    card(s, x, 3.05, 2.85, 2.0);
-    dot(s, x + 0.18, 3.18, o[0], o[4], 0.42);
-    txt(s, o[1], { x: x + 0.7, y: 3.2, w: 2.05, h: 0.38, fontSize: 12, bold: true, color: INK, valign: "middle" });
-    txt(s, o[2], { x: x + 0.18, y: 3.7, w: 2.5, h: 0.8, fontSize: 10, color: TXT });
-    txt(s, [{ text: o[3], options: { bold: true, color: o[4], fontSize: 16 } }, { text: "  risk-neutral probability", options: { color: MUTED, fontSize: 8.5 } }],
-      { x: x + 0.18, y: 4.55, w: 2.5, h: 0.4, valign: "middle" });
-  });
-  foot(s, "Probabilities are risk-neutral (drift = funding rate − dividends). Real-world outcomes under different equity returns are on slide 9.");
-  pageNo(s, 5);
-  s.addNotes(`Explain the note as one question asked every quarter: is the basket at or above where it started? If yes, the family is paid ${pct(QC, 2)} for that quarter plus any coupons missed before, and from Year 1 the note also ends with 100% back. If the answer is never yes, the family gets 100% back at Year 5 as long as the basket is at or above 70%, and 70% back if it is lower.`);
-}
-
-// ======================= 6. Payoff diagrams =======================
-{
-  const s = pres.addSlide(); s.background = { color: WHITE };
-  title(s, "Payoff diagrams: what the family receives, and when", "Left: total cash if called at each date. Right: payoff at Y5 if never called earlier, vs. owning the basket directly");
-  const qs = []; for (let q = 4; q <= 20; q++) qs.push(q);
-  s.addChart(pres.charts.BAR, [{ name: "Total cash if called", labels: qs.map((q) => (q % 4 === 0 ? "Y" + q / 4 : "")), values: qs.map((q) => +(100 + QC * 100 * q).toFixed(3)) }],
-    Object.assign(chartBase(), { x: 0.4, y: 1.25, w: 4.4, h: 2.85, barDir: "col", chartColors: [JADE], barGapWidthPct: 35, valAxisMinVal: 90, valAxisMaxVal: 160,
-      valAxisLabelFormatCode: '0"%"', showTitle: true, title: "Principal + all coupons (% of notional), by call quarter Q4–Q20", titleFontSize: 9.5 }));
-  txt(s, yrs5().map((y, i) => ({ text: `Y${y}: ${pct(1 + CPN * y)}  (USD ${(100 * (1 + CPN * y)).toFixed(1)}mn)`, options: { breakLine: i < 4 } })),
-    { x: 0.55, y: 4.2, w: 2.3, h: 0.95, fontSize: 9, color: TXT });
-  txt(s, "With memory, the total depends only on when the note is called, not on how many coupon dates were missed along the way.", { x: 2.85, y: 4.2, w: 1.95, h: 0.95, fontSize: 9, italic: true, color: MUTED });
-
+  // Payoff at Y5 (not called earlier)
   const xs = []; for (let x = 30; x <= 160; x += 0.5) xs.push(x);
   const note = xs.map((x) => (x >= 100 ? 100 + CPN * 100 * 5 : x >= 70 ? 100 : 70));
   s.addChart(pres.charts.SCATTER, [{ name: "X", values: xs }, { name: "Autocallable note", values: note }, { name: "Basket directly", values: xs }],
-    Object.assign(chartBase(), { x: 5.0, y: 1.25, w: 4.6, h: 3.3, chartColors: [JADE, SLATE], lineSize: 2.25, lineDataSymbol: "none", showLegend: true, legendPos: "b", legendFontSize: 9,
+    Object.assign(chartBase(), { x: 0.35, y: 2.7, w: 4.6, h: 2.45, chartColors: [JADE, SLATE], lineSize: 2.25, lineDataSymbol: "none", showLegend: true, legendPos: "b", legendFontSize: 8.5,
       valAxisMinVal: 20, valAxisMaxVal: 170, catAxisMinVal: 30, catAxisMaxVal: 160, valAxisLabelFormatCode: '0"%"', catAxisLabelFormatCode: '0"%"', catAxisMajorUnit: 20,
-      showValAxisTitle: true, valAxisTitle: "Total received at Y5", valAxisTitleFontSize: 9, valAxisTitleColor: MUTED,
-      showCatAxisTitle: true, catAxisTitle: "Final basket level (% of initial)", catAxisTitleFontSize: 9, catAxisTitleColor: MUTED,
-      showTitle: true, title: "Payoff at Y5 (note not called earlier)", titleFontSize: 9.5 }));
-  const zones = [["< 70%: 70% back (embedded put): maximum loss 30%", RED], ["70–100%: 100% back, the 30% buffer absorbs the fall", GOLD], [`≥ 100%: ${pct(1 + CPN * 5)} (principal + all 20 coupons via memory)`, JADE]];
-  zones.forEach((z, i) => {
-    s.addShape(pres.shapes.OVAL, { x: 5.15, y: 4.66 + i * 0.19, w: 0.1, h: 0.1, fill: { color: z[1] }, line: { color: z[1] } });
-    txt(s, z[0], { x: 5.32, y: 4.6 + i * 0.19, w: 4.2, h: 0.2, fontSize: 8.5, color: TXT });
-  });
-  pageNo(s, 6);
-  s.addNotes(`Left chart: the cash ladder. Each quarter the note lives adds ${pct(QC, 2)} of notional, paid either on the date or later through memory. Right chart: if the note reaches Year 5 without being called, there are three zones. At or above 100% the family receives ${pct(1 + CPN * 5)}; between 70% and 100% it receives 100%; below 70% the embedded put pays 70%, so the loss stops at 30% however far the basket falls. Above +${(CPN * 500).toFixed(1)}% the basket beats the note: that is the capped upside.`);
-}
-
-// ======================= 7. Building blocks =======================
-{
-  const s = pres.addSlide(); s.background = { color: WHITE };
-  title(s, "Under the hood: a bond, coupon digitals, and a 70% put pair", "Replication used by the Natixis desk to price and hedge (values in % of notional, at trade date)");
-  const xs = []; for (let x = 40; x <= 160; x += 1) xs.push(x);
-  const blocks = [
-    ["Principal", `100% repaid at autocall or maturity. Worth ${pct(REC.pv_principal)}`, xs.map(() => 100), INK, [0, 120], "Basket on any date"],
-    ["Coupon digitals", `${pct(QC, 2)} plus missed coupons on each date ≥ 100%. Worth ${pct(REC.pv_coupons)} (net of autocall)`, xs.map((x) => (x >= 100 ? QC * 100 : 0)), JADE, [-0.5, 3.2], "Basket on any date"],
-    ["Autocall (Natixis)", "From Q4, basket ≥ 100%: remaining coupons cancelled, note ends. Keeps the coupon affordable", xs.map((x) => (x >= 100 ? 0 : 1)), SLATE, [-0.3, 1.4], "Basket on any date"],
-    ["70% put pair", `Client sells a 70% barrier put (${pct(-REC.pv_short_barrier_put)}); the note embeds a 70% put back (${pct(REC.pv_long_put)}). Net: −30% only if < 70% at Y5`, xs.map((x) => (x < 70 ? -30 : 0)), RED, [-36, 6], "Basket at Y5"],
+      showCatAxisTitle: true, catAxisTitle: "Final basket level (% of initial)", catAxisTitleFontSize: 8.5, catAxisTitleColor: MUTED,
+      showTitle: true, title: "Total received at Y5 if never called", titleFontSize: 9.5 }));
+  const outs = [
+    ["A", "Autocalled", `Basket ≥ 100% on any date from Q4: 100% plus every coupon to date. The note ends.`, pct(RN.p_called, 0), JADE],
+    ["B", "Not called, basket ≥ 70% at Y5", "The 30% buffer absorbs the fall: 100% back, plus any early coupons.", pct(RN.p_not_called_some_cpn + RN.p_zero_return, 0), SLATE],
+    ["C", "Not called, basket < 70% at Y5", "The embedded put pays 70% back. Maximum loss 30%.", pct(RN.p_floor, 0), GOLD],
   ];
-  blocks.forEach((b, i) => {
-    const x = 0.45 + i * 2.32;
-    card(s, x, 1.3, 2.14, 3.05);
-    txt(s, b[0], { x: x + 0.12, y: 1.38, w: 1.95, h: 0.3, fontSize: 11.5, bold: true, color: b[3] === RED ? RED : INK });
-    txt(s, b[1], { x: x + 0.12, y: 1.68, w: 1.95, h: 0.8, fontSize: 8.5, color: MUTED });
-    s.addChart(pres.charts.SCATTER, [{ name: "X", values: xs }, { name: b[0], values: b[2] }], Object.assign(chartBase(), {
-      x: x + 0.03, y: 2.5, w: 2.08, h: 1.78, chartColors: [b[3]], lineSize: 2, lineDataSymbol: "none", valAxisMinVal: b[4][0], valAxisMaxVal: b[4][1], valAxisHidden: true,
-      catAxisMinVal: 40, catAxisMaxVal: 160, catAxisMajorUnit: 40, catAxisLabelFontSize: 7, catAxisLabelFormatCode: '0"%"', catAxisLabelPos: "low",
-      showCatAxisTitle: true, catAxisTitle: b[5], catAxisTitleFontSize: 7, catAxisTitleColor: MUTED }));
-    if (i < 3) txt(s, i === 0 ? "+" : "−", { x: x + 2.12, y: 2.95, w: 0.2, h: 0.4, fontSize: 16, bold: true, color: INK, align: "center" });
+  outs.forEach((o, i) => {
+    const y = 2.75 + i * 0.8;
+    card(s, 5.15, y, 4.4, 0.72);
+    dot(s, 5.27, y + 0.15, o[0], o[4], 0.42);
+    txt(s, o[1], { x: 5.8, y: y + 0.06, w: 2.85, h: 0.27, fontSize: 10.5, bold: true, color: INK });
+    txt(s, o[2], { x: 5.8, y: y + 0.32, w: 2.85, h: 0.38, fontSize: 8.5, color: TXT });
+    txt(s, [{ text: o[3], options: { bold: true, color: o[4], fontSize: 16, breakLine: true } }, { text: "risk-neutral", options: { color: MUTED, fontSize: 7.5 } }],
+      { x: 8.65, y: y + 0.05, w: 0.85, h: 0.62, align: "center", valign: "middle" });
   });
-  card(s, 0.45, 4.45, 9.1, 0.7, INK);
-  txt(s, [{ text: `Fair value ${pct(REC.pv)} = principal ${pct(REC.pv_principal)} + coupons ${pct(REC.pv_coupons)} − put pair ${pct(-REC.pv_buffer_net)}.  `, options: { bold: true, color: GOLD } },
-          { text: `Issued at 100%, leaving ${pct(REC.natixis_margin)} for hedging and margin. The short barrier put funds the higher coupon; the embedded put stops the loss at 30%.`, options: { color: WHITE } }],
-    { x: 0.6, y: 4.52, w: 8.8, h: 0.6, fontSize: 10, valign: "middle" });
-  pageNo(s, 7);
-  s.addNotes("Mini-charts show each leg's payoff against the basket level (the autocall leg is illustrative: it shows the remaining coupon stream switching off). The put pair is the key: like a classic autocall, the client sells a put at the 70% barrier, which funds the double-digit coupon; unlike a classic autocall, the note buys a 70% put back, so below 70% the loss is a fixed 30% instead of the whole fall. Together they are a 30% digital put struck at 70%, observed only at maturity.");
+  foot(s, "Probabilities are risk-neutral (drift = funding rate − dividends); real-world outcomes are on slide 7. The desk's replication (bond, coupon digitals, 70% put pair) is in Appendix B.");
+  pageNo(s, 5);
+  s.addNotes(`Explain the note as one question asked every quarter: is the basket at or above where it started? If yes, the family is paid ${pct(QC, 2)} for that quarter plus any coupons missed before, and from Year 1 the note also ends with 100% back. If the note is never called, the payoff chart shows three zones at Year 5: at or above 100% the family receives ${pct(1 + CPN * 5)}; between 70% and 100% it gets 100% back; below 70% the embedded put pays 70%, so the loss stops at 30%.`);
 }
 
 // ======================= 8. Stress scenarios =======================
@@ -339,7 +288,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
           { text: `the note earns ~${pct(Math.min(...names.filter((n) => st[n].call_q).map((n) => st[n].irr)))}–${pct(Math.max(...names.filter((n) => st[n].call_q).map((n) => st[n].irr)))} a year whenever the basket gets back to 100%, even after a 30% drawdown: memory pays all 15 missed coupons at Q15. In a lost decade (basket −12%) the buffer returns 100%; in a lasting shock (basket −45%) the embedded put returns 70%.` }],
     { x: 5.25, y: 4.03, w: 4.2, h: 1.0, fontSize: 9.5 });
   foot(s, "Paths are illustrative and not forecasts. 'Basket' = direct basket return at Y5 when the note is not called. Historical back-test to run on Bloomberg history (appendix).");
-  pageNo(s, 8);
+  pageNo(s, 6);
   s.addNotes("Walk the five scenarios. The 2022-style path is the key one: a 30% drawdown in the first year that would scare a direct investor, yet the note pays all 15 quarterly coupons at once when the basket recovers at Q15. The two bad paths show the two layers of protection: at −12% the 30% buffer returns 100%; at −45% the embedded put returns 70%, so the family loses 30% instead of 45%.");
 }
 
@@ -370,7 +319,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
     txt(s, k[1], { x: x + 1.3, y: 4.02, w: 1.45, h: 0.95, fontSize: 10, color: i === 2 ? WHITE : TXT, valign: "middle" });
   });
   foot(s, NOTE + " IRR uses actual quarterly coupon dates.");
-  pageNo(s, 9);
+  pageNo(s, 7);
   s.addNotes(`The table answers 'what if markets go nowhere?'. Even at 0% equity return the note is called in ~${pct(R.real_world["0%"].p_called, 0)} of paths, because volatility alone takes the basket back to 100% on some date. The honest cost of the higher coupon: in ~${pct(RN.p_floor, 0)} of paths (risk-neutral; ${pct(R.real_world["8%"].p_floor, 0)} at 8% equity returns) the basket ends below 70% and the family gets 70% back, but never less.`);
 }
 
@@ -380,7 +329,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   title(s, "Risks for the family, and how Natixis hedges its side", "Transparent disclosure plus a desk hedging plan for every exposure");
   const risks = [["Capital loss", `Basket below 70% at Y5: 70% back, a 30% loss (~${pct(RN.p_floor, 0)} of paths)`, "Embedded 70% put caps the loss; diversified basket; only 5% of wealth"],
                  ["Capped upside", `Basket +80% still pays ${pct(CPN, 2)} p.a. and is called at Y1`, "Rest of family wealth keeps direct equity exposure"],
-                 ["ETF structure", "00878 pays ~7.6% a year out, lowering its price path; 3119 trading is thin; ETF tracking error", "00878 capped at 20%; verify volumes; Natixis can reference total-return versions"],
+                 ["ETF structure", "00878 pays ~7.6% a year out, lowering its price path; 3119 trading is thin; ETF tracking error", "00878 held at 15%; verify volumes; Natixis can reference total-return versions"],
                  ["Issuer credit", "Repayment and the 70% floor depend on Natixis / BPCE", "BPCE senior rating; optional collateralised wrapper"],
                  ["Liquidity / MTM", "Sold before maturity, the price can be below 100%", "Natixis daily indicative price; hold to call or maturity"]];
   const rows = [[hdr("Risk"), hdr("What could happen"), hdr("Mitigant")]].concat(risks.map((r) => [{ text: r[0], options: { bold: true, color: INK } }, r[1], r[2]]));
@@ -399,7 +348,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   txt(s, [{ text: "Pricing sensitivity (fair coupon): ", options: { bold: true, color: INK } },
           { text: `base ${pct(SV.base)} · vol ±3pts ${pct(SV["vol -3pts"])}–${pct(SV["vol +3pts"])} · corr ±0.15 ${pct(SV["corr -0.15"])}–${pct(SV["corr +0.15"])} · equity drift −1/−2% ${pct(SV["drift -1%"])}–${pct(SV["drift -2%"])}. ${["base", "vol -3pts", "vol +3pts", "corr -0.15", "corr +0.15", "drift -1%", "drift -2%"].every((k) => SV[k] >= CPN - 1e-9) ? `The ${pct(CPN, 2)} offer stays fundable in every case.` : `The ${pct(CPN, 2)} offer needs re-checking if vols or correlation fall.`}` }],
     { x: 0.45, y: 4.45, w: 5.4, h: 0.7, fontSize: 9 });
-  pageNo(s, 10);
+  pageNo(s, 8);
   s.addNotes(`Investor risks on the left, desk hedges on the right. The capital-loss line is explicit: below 70% at maturity the family loses 30%, never more. The other honest risks are capped upside and Natixis credit. The ${pct(CPN, 2)} coupon sits below the ${pct(SV.base)} fair level in every sensitivity we ran, so the offer is robust to market moves before the trade date.`);
 }
 
@@ -428,10 +377,39 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   txt(s, "All variants priced at 98% with the same basket and inputs. Code: pricing/scenario2_autocall_mc.py", { x: 5.95, y: 3.7, w: 3.6, h: 0.45, fontSize: 8.5, italic: true, color: MUTED });
 }
 
-// ======================= Appendix B: alternatives =======================
+// ======================= Appendix B: building blocks =======================
 {
   const s = pres.addSlide(); s.background = { color: WHITE };
-  title(s, "Appendix B: alternatives for the investment committee", "Same basket: full protection, a higher-coupon at-risk snowball, and a pure participation note");
+  title(s, "Appendix B: how Natixis replicates the note", "Replication used by the Natixis desk to price and hedge (values in % of notional, at trade date)");
+  const xs = []; for (let x = 40; x <= 160; x += 1) xs.push(x);
+  const blocks = [
+    ["Principal", `100% repaid at autocall or maturity. Worth ${pct(REC.pv_principal)}`, xs.map(() => 100), INK, [0, 120], "Basket on any date"],
+    ["Coupon digitals", `${pct(QC, 2)} plus missed coupons on each date ≥ 100%. Worth ${pct(REC.pv_coupons)} (net of autocall)`, xs.map((x) => (x >= 100 ? QC * 100 : 0)), JADE, [-0.5, 3.2], "Basket on any date"],
+    ["Autocall (Natixis)", "From Q4, basket ≥ 100%: remaining coupons cancelled, note ends. Keeps the coupon affordable", xs.map((x) => (x >= 100 ? 0 : 1)), SLATE, [-0.3, 1.4], "Basket on any date"],
+    ["70% put pair", `Client sells a 70% barrier put (${pct(-REC.pv_short_barrier_put)}); the note embeds a 70% put back (${pct(REC.pv_long_put)}). Net: −30% only if < 70% at Y5`, xs.map((x) => (x < 70 ? -30 : 0)), RED, [-36, 6], "Basket at Y5"],
+  ];
+  blocks.forEach((b, i) => {
+    const x = 0.45 + i * 2.32;
+    card(s, x, 1.3, 2.14, 3.05);
+    txt(s, b[0], { x: x + 0.12, y: 1.38, w: 1.95, h: 0.3, fontSize: 11.5, bold: true, color: b[3] === RED ? RED : INK });
+    txt(s, b[1], { x: x + 0.12, y: 1.68, w: 1.95, h: 0.8, fontSize: 8.5, color: MUTED });
+    s.addChart(pres.charts.SCATTER, [{ name: "X", values: xs }, { name: b[0], values: b[2] }], Object.assign(chartBase(), {
+      x: x + 0.03, y: 2.5, w: 2.08, h: 1.78, chartColors: [b[3]], lineSize: 2, lineDataSymbol: "none", valAxisMinVal: b[4][0], valAxisMaxVal: b[4][1], valAxisHidden: true,
+      catAxisMinVal: 40, catAxisMaxVal: 160, catAxisMajorUnit: 40, catAxisLabelFontSize: 7, catAxisLabelFormatCode: '0"%"', catAxisLabelPos: "low",
+      showCatAxisTitle: true, catAxisTitle: b[5], catAxisTitleFontSize: 7, catAxisTitleColor: MUTED }));
+    if (i < 3) txt(s, i === 0 ? "+" : "−", { x: x + 2.12, y: 2.95, w: 0.2, h: 0.4, fontSize: 16, bold: true, color: INK, align: "center" });
+  });
+  card(s, 0.45, 4.45, 9.1, 0.7, INK);
+  txt(s, [{ text: `Fair value ${pct(REC.pv)} = principal ${pct(REC.pv_principal)} + coupons ${pct(REC.pv_coupons)} − put pair ${pct(-REC.pv_buffer_net)}.  `, options: { bold: true, color: GOLD } },
+          { text: `Issued at 100%, leaving ${pct(REC.natixis_margin)} for hedging and margin. The short barrier put funds the higher coupon; the embedded put stops the loss at 30%.`, options: { color: WHITE } }],
+    { x: 0.6, y: 4.52, w: 8.8, h: 0.6, fontSize: 10, valign: "middle" });
+  s.addNotes("Mini-charts show each leg's payoff against the basket level (the autocall leg is illustrative: it shows the remaining coupon stream switching off). The put pair is the key: like a classic autocall, the client sells a put at the 70% barrier, which funds the double-digit coupon; unlike a classic autocall, the note buys a 70% put back, so below 70% the loss is a fixed 30% instead of the whole fall. Together they are a 30% digital put struck at 70%, observed only at maturity.");
+}
+
+// ======================= Appendix C: alternatives =======================
+{
+  const s = pres.addSlide(); s.background = { color: WHITE };
+  title(s, "Appendix C: alternatives for the investment committee", "Same basket: full protection, a higher-coupon at-risk snowball, and a pure participation note");
   const p = R.ppn, sb = R.snowball_alt;
   const xs = []; for (let x = 40; x <= 180; x += 1) xs.push(x);
   s.addChart(pres.charts.SCATTER, [{ name: "X", values: xs },

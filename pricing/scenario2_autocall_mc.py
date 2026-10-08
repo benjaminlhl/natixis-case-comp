@@ -5,7 +5,7 @@ Market inputs (vols, dividends, correlations) are ASSUMPTIONS, to be refreshed w
 data as of the 17 Sep 2026 trade date. Discounting uses the USD funding grid from the game rules.
 
 Recommended product (USD, 5Y, quarterly observations), basket of five Asia semiconductor / Taiwan / Korea / ESG ETFs:
-  - Conditional memory coupon: 10.5% p.a. (2.625% per quarter), paid on each quarterly date the
+  - Conditional memory coupon: 10.25% p.a. (2.5625% per quarter), paid on each quarterly date the
     basket is >= 100% of initial, together with any coupons missed on earlier dates
   - Autocall: from Q4 (1Y) onwards, if basket >= 100% -> 100% + coupons due, note ends
   - Maturity (not called): 100% if basket >= 70% of initial; otherwise 70% (embedded 70% put: loss capped at 30%),
@@ -22,7 +22,7 @@ rng = np.random.default_rng(2026)
 NAMES = ["3119 HK Equity", "2644 JP Equity", "EWT US Equity", "EWY US Equity", "00878 TT Equity"]
 LABELS = ["Global X Asia Semiconductor ETF", "Global X Japan Semiconductor ETF", "iShares MSCI Taiwan ETF",
           "iShares MSCI South Korea ETF", "Cathay Taiwan ESG Sustainability High Dividend ETF"]
-W = np.array([0.25, 0.25, 0.15, 0.15, 0.20])
+W = np.array([0.35, 0.15, 0.15, 0.20, 0.15])
 VOL = np.array([0.32, 0.38, 0.26, 0.30, 0.18])          # assumed 5Y implied vols
 DIV = np.array([0.010, 0.008, 0.026, 0.012, 0.076])     # distribution yields (00878 ~7.6%: price-return ETF)
 CORR = np.array([[1.00, 0.70, 0.85, 0.80, 0.60],
@@ -46,7 +46,7 @@ DT = 1 / FREQ
 N_PATHS = 200_000
 ISSUE_PRICE = 0.98            # Natixis margin + hedging costs = 2% upfront
 
-COUPON, CPN_BARRIER, AC, FIRST = 0.105, 1.00, 1.00, 4
+COUPON, CPN_BARRIER, AC, FIRST = 0.1025, 1.00, 1.00, 4
 KI_BARRIER, FLOOR = 0.70, 0.70   # 70% barrier at maturity; embedded 70% put floors the repayment at 70%
 BARRIER = 0.65               # default capital barrier for the at-risk comparison designs
 

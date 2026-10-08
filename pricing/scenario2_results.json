@@ -8,11 +8,11 @@
    "00878 TT Equity": "Cathay Taiwan ESG Sustainability High Dividend ETF"
   },
   "weights": [
-   0.25,
-   0.25,
+   0.35,
    0.15,
    0.15,
-   0.2
+   0.2,
+   0.15
   ],
   "vols": [
    0.32,
@@ -66,287 +66,287 @@
    ]
   ],
   "issue_price": 0.98,
-  "coupon": 0.105,
+  "coupon": 0.1025,
   "cpn_barrier": 1.0,
   "zcb_5y": 0.7583
  },
- "basket_vol": 0.2537,
+ "basket_vol": 0.2591,
  "recommended": {
-  "pv": 0.9721,
-  "natixis_margin": 0.0279,
-  "fair_coupon": 0.1121,
-  "pv_principal": 0.8931,
-  "pv_short_barrier_put": -0.0632,
-  "pv_long_put": 0.0264,
-  "pv_buffer_net": -0.0367,
-  "pv_coupons": 0.1158
+  "pv": 0.9708,
+  "natixis_margin": 0.0292,
+  "fair_coupon": 0.1108,
+  "pv_principal": 0.8939,
+  "pv_short_barrier_put": -0.0629,
+  "pv_long_put": 0.0267,
+  "pv_buffer_net": -0.0362,
+  "pv_coupons": 0.1132
  },
- "protected_100_fair_coupon": 0.0788,
+ "protected_100_fair_coupon": 0.078,
  "designs": {
   "Classic: fixed coupon, 70% barrier": {
    "fair_coupon": 0.0737,
-   "p_loss": 0.1615
+   "p_loss": 0.1592
   },
   "Phoenix memory (80% cpn barrier), 70% barrier": {
-   "fair_coupon": 0.1001,
-   "p_loss": 0.1615
+   "fair_coupon": 0.1,
+   "p_loss": 0.1592
   },
   "Snowball, 65% barrier": {
-   "fair_coupon": 0.1385,
-   "p_loss": 0.1446
+   "fair_coupon": 0.1373,
+   "p_loss": 0.143
   },
   "Classic, 70% barrier, 10%-vol basket": {
-   "fair_coupon": 0.0416,
-   "p_loss": 0.0126
+   "fair_coupon": 0.041,
+   "p_loss": 0.0109
   },
   "Capital protected (100%), memory coupon": {
-   "fair_coupon": 0.0788,
+   "fair_coupon": 0.078,
    "p_loss": 0.0
   },
   "Memory coupon, 70% barrier, no put": {
-   "fair_coupon": 0.1361,
-   "p_loss": 0.1615
+   "fair_coupon": 0.1349,
+   "p_loss": 0.1592
   },
   "70% barrier + 70% put, memory coupon (ours)": {
-   "fair_coupon": 0.1121,
-   "p_loss": 0.1615
+   "fair_coupon": 0.1108,
+   "p_loss": 0.1592
   }
  },
- "draft_8_5_fixed_70_pv": 1.003,
+ "draft_8_5_fixed_70_pv": 1.0029,
  "snowball_alt": {
   "coupon": 0.09,
   "barrier": 0.65,
-  "p_loss": 0.1446,
-  "fair_coupon": 0.1385
+  "p_loss": 0.143,
+  "fair_coupon": 0.1373
  },
  "rn": {
-  "pv": 0.9721,
-  "p_called": 0.7862,
+  "pv": 0.9708,
+  "p_called": 0.7898,
   "p_call_by_year": [
-   0.4817,
-   0.659,
-   0.7237,
-   0.7606,
-   0.7862
+   0.4857,
+   0.6631,
+   0.7278,
+   0.7646,
+   0.7898
   ],
-  "p_zero_return": 0.0316,
-  "p_not_called_some_cpn": 0.0206,
-  "p_floor": 0.1615,
-  "p_loss": 0.1615,
+  "p_zero_return": 0.031,
+  "p_not_called_some_cpn": 0.02,
+  "p_floor": 0.1592,
+  "p_loss": 0.1592,
   "worst_1pct_total": 0.7,
-  "exp_life_y": 2.24,
-  "exp_total_coupons": 0.1264,
-  "irr_mean": 0.0726,
+  "exp_life_y": 2.22,
+  "exp_total_coupons": 0.1235,
+  "irr_mean": 0.0712,
   "irr_p5": -0.0689,
-  "irr_p50": 0.1064
+  "irr_p50": 0.1039
  },
  "call_profile": [
-  0.4817,
-  0.0734,
-  0.0457,
+  0.4857,
+  0.0737,
+  0.0454,
   0.0329,
-  0.0253,
-  0.0203,
+  0.0254,
+  0.02,
   0.0171,
-  0.0147,
-  0.0126,
-  0.0109,
-  0.0098,
-  0.0084,
+  0.0149,
+  0.0127,
+  0.0108,
+  0.0101,
+  0.0081,
   0.0078,
-  0.0071,
-  0.0068,
-  0.0062,
+  0.0072,
+  0.0065,
+  0.0059,
   0.0055,
-  0.2138
+  0.2102
  ],
  "coupon_sens": {
-  "base": 0.1121,
-  "vol +3pts": 0.1204,
-  "vol -3pts": 0.1056,
-  "corr +0.15": 0.1183,
-  "corr -0.15": 0.1075,
-  "cpn barrier 90%": 0.0948,
-  "cpn barrier 95%": 0.1028,
-  "first call Y2": 0.1083,
-  "drift -1%": 0.1225,
-  "drift -2%": 0.1348
+  "base": 0.1108,
+  "vol +3pts": 0.1187,
+  "vol -3pts": 0.1034,
+  "corr +0.15": 0.1159,
+  "corr -0.15": 0.1057,
+  "cpn barrier 90%": 0.094,
+  "cpn barrier 95%": 0.1017,
+  "first call Y2": 0.1071,
+  "drift -1%": 0.1204,
+  "drift -2%": 0.1321
  },
  "real_world": {
   "0%": {
-   "pv": 0.9117,
-   "p_called": 0.6705,
+   "pv": 0.913,
+   "p_called": 0.6782,
    "p_call_by_year": [
-    0.4031,
-    0.5615,
-    0.6182,
-    0.6498,
-    0.6705
+    0.4073,
+    0.5686,
+    0.6256,
+    0.6576,
+    0.6782
    ],
-   "p_zero_return": 0.0326,
-   "p_not_called_some_cpn": 0.021,
-   "p_floor": 0.2759,
-   "p_loss": 0.2759,
+   "p_zero_return": 0.0313,
+   "p_not_called_some_cpn": 0.0206,
+   "p_floor": 0.2698,
+   "p_loss": 0.2698,
    "worst_1pct_total": 0.7,
-   "exp_life_y": 2.64,
-   "exp_total_coupons": 0.1104,
-   "irr_mean": 0.0529,
+   "exp_life_y": 2.62,
+   "exp_total_coupons": 0.1088,
+   "irr_mean": 0.0524,
    "irr_p5": -0.0689,
-   "irr_p50": 0.1037
+   "irr_p50": 0.1012
   },
   "4%": {
-   "pv": 0.9594,
-   "p_called": 0.7618,
+   "pv": 0.9582,
+   "p_called": 0.7659,
    "p_call_by_year": [
-    0.4693,
-    0.6414,
-    0.7031,
-    0.7382,
-    0.7618
+    0.4728,
+    0.6461,
+    0.7066,
+    0.742,
+    0.7659
    ],
-   "p_zero_return": 0.0323,
-   "p_not_called_some_cpn": 0.0212,
-   "p_floor": 0.1846,
-   "p_loss": 0.1846,
+   "p_zero_return": 0.0311,
+   "p_not_called_some_cpn": 0.0201,
+   "p_floor": 0.1829,
+   "p_loss": 0.1829,
    "worst_1pct_total": 0.7,
-   "exp_life_y": 2.31,
-   "exp_total_coupons": 0.1222,
-   "irr_mean": 0.0686,
+   "exp_life_y": 2.3,
+   "exp_total_coupons": 0.1196,
+   "irr_mean": 0.0672,
    "irr_p5": -0.0689,
-   "irr_p50": 0.1056
+   "irr_p50": 0.1033
   },
   "8%": {
-   "pv": 0.9966,
-   "p_called": 0.837,
+   "pv": 0.995,
+   "p_called": 0.8403,
    "p_call_by_year": [
-    0.53,
-    0.7105,
-    0.7754,
-    0.8125,
-    0.837
+    0.5325,
+    0.7138,
+    0.7785,
+    0.8157,
+    0.8403
    ],
-   "p_zero_return": 0.0284,
-   "p_not_called_some_cpn": 0.0181,
-   "p_floor": 0.1164,
-   "p_loss": 0.1164,
+   "p_zero_return": 0.0272,
+   "p_not_called_some_cpn": 0.0177,
+   "p_floor": 0.1148,
+   "p_loss": 0.1148,
    "worst_1pct_total": 0.7,
-   "exp_life_y": 2.03,
-   "exp_total_coupons": 0.1305,
-   "irr_mean": 0.0811,
+   "exp_life_y": 2.02,
+   "exp_total_coupons": 0.1278,
+   "irr_mean": 0.0794,
    "irr_p5": -0.0689,
-   "irr_p50": 0.107
+   "irr_p50": 0.1044
   }
  },
  "fan": {
   "5": [
-   0.811,
-   0.744,
-   0.695,
-   0.655,
-   0.624,
-   0.597,
-   0.572,
-   0.551,
-   0.531,
-   0.513,
-   0.496,
-   0.481,
-   0.466,
-   0.453,
-   0.441,
-   0.429,
-   0.418,
-   0.407,
-   0.398,
-   0.388
+   0.807,
+   0.739,
+   0.689,
+   0.65,
+   0.619,
+   0.591,
+   0.567,
+   0.545,
+   0.525,
+   0.508,
+   0.49,
+   0.475,
+   0.461,
+   0.448,
+   0.436,
+   0.424,
+   0.413,
+   0.402,
+   0.392,
+   0.382
   ],
   "25": [
-   0.916,
-   0.882,
-   0.856,
-   0.834,
-   0.816,
-   0.799,
-   0.785,
-   0.771,
-   0.758,
-   0.747,
-   0.737,
+   0.915,
+   0.88,
+   0.854,
+   0.833,
+   0.814,
+   0.798,
+   0.783,
+   0.77,
+   0.757,
+   0.746,
+   0.736,
    0.726,
-   0.717,
-   0.708,
+   0.716,
+   0.707,
    0.699,
    0.691,
    0.683,
    0.675,
    0.668,
-   0.661
+   0.663
   ],
   "50": [
-   0.997,
-   0.994,
+   0.998,
+   0.995,
+   0.992,
    0.991,
-   0.989,
+   0.99,
+   0.987,
    0.986,
-   0.984,
+   0.985,
+   0.983,
    0.982,
    0.981,
+   0.981,
+   0.98,
    0.979,
-   0.977,
-   0.976,
-   0.975,
-   0.973,
-   0.972,
-   0.971,
-   0.972,
-   0.97,
-   0.97,
-   0.971,
-   0.968
+   0.979,
+   0.979,
+   0.979,
+   0.98,
+   0.979,
+   0.979
   ],
   "75": [
-   1.086,
-   1.122,
-   1.15,
-   1.174,
-   1.196,
-   1.215,
-   1.236,
-   1.252,
-   1.268,
-   1.285,
-   1.302,
-   1.315,
-   1.334,
-   1.347,
-   1.362,
-   1.377,
-   1.393,
-   1.406,
-   1.42,
-   1.434
+   1.089,
+   1.126,
+   1.155,
+   1.181,
+   1.204,
+   1.224,
+   1.245,
+   1.263,
+   1.282,
+   1.298,
+   1.317,
+   1.332,
+   1.351,
+   1.365,
+   1.382,
+   1.397,
+   1.413,
+   1.429,
+   1.446,
+   1.458
   ],
   "95": [
-   1.229,
-   1.339,
-   1.431,
-   1.512,
-   1.59,
-   1.664,
-   1.731,
-   1.798,
-   1.864,
-   1.93,
-   1.991,
-   2.053,
-   2.119,
-   2.181,
-   2.246,
-   2.315,
-   2.372,
-   2.439,
-   2.5,
-   2.57
+   1.236,
+   1.348,
+   1.442,
+   1.526,
+   1.606,
+   1.684,
+   1.751,
+   1.823,
+   1.89,
+   1.961,
+   2.022,
+   2.086,
+   2.157,
+   2.22,
+   2.29,
+   2.362,
+   2.422,
+   2.483,
+   2.551,
+   2.625
   ]
  },
  "stress": {
@@ -375,7 +375,7 @@
    ],
    "call_q": 4,
    "years": 1.0,
-   "coupons": 0.105,
+   "coupons": 0.1025,
    "redemption": 1.0,
    "cpn_quarters": [
     1,
@@ -383,8 +383,8 @@
     3,
     4
    ],
-   "total": 1.105,
-   "irr": 0.1092
+   "total": 1.1025,
+   "irr": 0.1065
   },
   "Range-bound Asia": {
    "path": [
@@ -411,13 +411,13 @@
    ],
    "call_q": 6,
    "years": 1.5,
-   "coupons": 0.1575,
+   "coupons": 0.1538,
    "redemption": 1.0,
    "cpn_quarters": [
     6
    ],
-   "total": 1.1575,
-   "irr": 0.1024
+   "total": 1.1538,
+   "irr": 0.1
   },
   "2022-style tech drawdown, slow recovery": {
    "path": [
@@ -444,13 +444,13 @@
    ],
    "call_q": 15,
    "years": 3.75,
-   "coupons": 0.3938,
+   "coupons": 0.3844,
    "redemption": 1.0,
    "cpn_quarters": [
     15
    ],
-   "total": 1.3938,
-   "irr": 0.0926
+   "total": 1.3844,
+   "irr": 0.0906
   },
   "Lost decade (sideways below par)": {
    "path": [
@@ -518,7 +518,7 @@
  "ppn": {
   "zcb": 0.7583,
   "option_budget": 0.2217,
-  "atm_call_pv": 0.2537,
-  "participation": 0.874
+  "atm_call_pv": 0.265,
+  "participation": 0.837
  }
 }
