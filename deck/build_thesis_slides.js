@@ -182,7 +182,7 @@ async function icon(Comp, color) {
     point(LX, LW, 3.8, 1, "−25%", RED, "Round trips happen fast", "KOSPI went from 9,000+ in June to 6,789 on 28 Aug; J.P. Morgan expects a 10–15% correction in 2026.",
       "Autocall coupons are paid when the basket gets back to its start: no need to time the bottom");
     point(LX, LW, 4.66, 2, ">40%", BLUE, "Returns hinge on a few names", "TSMC >40% of TAIEX; Samsung + SK hynix ~48% of KOSPI; ~92% of advanced chips from Taiwan.",
-      "Use a diversified index basket, not a worst-of on single names");
+      "Use a diversified ETF basket, not a worst-of on single names");
     point(LX, LW, 5.52, 3, "38.6×", BLUE, "Valuations price in a lot", "Nikkei CAPE 38.6×; Taiwan among the most expensive markets; DRAM price gains slowing.",
       "Capping upside at the coupon costs little when the good news is already priced");
     // Finance
@@ -263,7 +263,7 @@ async function icon(Comp, color) {
       { x: IX, y: 1.8, w: IW, h: 0.3, fontSize: 8, italic: true, color: MUTED, align: "center" });
     const imp = [["Early exit beats duration", `Bonds lose ~${pct(-R100.bond_value_change)} per 1% rate rise; autocalls can redeem from year 1`],
                  ["Paid on recovery, not timing", "−25% in ten weeks (KOSPI 2026): autocall coupons pay once the basket is back at its start"],
-                 ["Diversify the basket", "TSMC >40% of TAIEX, ~92% of advanced chips from Taiwan: use an index basket, not worst-of"],
+                 ["Diversify the basket", "TSMC >40% of TAIEX, ~92% of advanced chips from Taiwan: use a diversified ETF basket, not worst-of"],
                  ["Volatility funds the coupon", "VKOSPI at a record 91.2: richer option premium means higher autocall coupons"],
                  ["Protection is affordable", `USD 100 in 5 years costs USD ${(RES.inputs.zcb_5y * 100).toFixed(1)} at 5.69%: capital protection fits inside an autocall`]];
     imp.forEach((m, i) => {

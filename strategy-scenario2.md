@@ -9,51 +9,65 @@
 
 ## Terms
 - Issuer Natixis SA, USD quanto, 5 years, 20 quarterly observation dates.
-- Underlying: semiconductor-heavy, Asia-only weighted basket (not worst-of): TWSE Index (Taiwan TAIEX) 40%, KOSPI2 Index (KOSPI 200) 30%, NKY Index (Nikkei 225) 30%. All three have liquid listed futures and options.
-- **Coupon:** 6.75% p.a. (1.6875% per quarter), paid on each date the basket is ≥ 100% of its initial level.
+- Underlying: weighted basket (not worst-of) of five Asian ETFs across the AI-hardware chain, with an ESG sleeve:
+
+  | ETF (Bloomberg) | Weight | Vol* | Div* | Role |
+  |---|---|---|---|---|
+  | Global X Asia Semiconductor ETF (3119 HK) | 25% | 32% | 1.0% | Pan-Asian chip leaders (core AI hardware) |
+  | Global X Japan Semiconductor ETF (2644 JP) | 20% | 38% | 0.8% | Japanese chip equipment and testers |
+  | iShares MSCI Taiwan ETF (EWT US) | 20% | 26% | 2.6% | Taiwan large caps (TSMC, MediaTek, Delta) |
+  | iShares MSCI South Korea ETF (EWY US) | 20% | 30% | 1.2% | Korea large caps (Samsung, SK hynix: memory for AI) |
+  | Cathay Taiwan ESG Sustainability High Dividend ETF (00878 TT) | 15% | 18% | 7.6% | ESG sleeve, lower-volatility anchor |
+
+  \*Assumptions. Weights are our proposal and can be changed; re-run the pricer after any change.
+- Liquidity (USD 5M/day 6-month average rule): EWY, EWT, 2644 and 00878 pass. **3119 is borderline (about USD 4–5M/day): verify on Bloomberg.** If it fails, its weight moves to EWT/EWY.
+- **Coupon:** 7.20% p.a. (1.80% per quarter), paid on each date the basket is ≥ 100% of its initial level.
 - **Memory:** missed coupons are paid on the next date the basket is ≥ 100%.
 - **Autocall:** from Q4 (Year 1), if basket ≥ 100% the note pays 100% plus coupons due and ends.
 - **At maturity:** 100% of principal whatever the basket level (capital protected, subject to Natixis credit).
-- Issued at 100%. Fair value is 97.57%, leaving about 2.43% for hedging costs and margin.
+- Issued at 100%. Fair value is 97.37%, leaving about 2.63% for hedging costs and margin.
 
 ## Why this design
 Fair coupons below are at a 98% issue price, on the same basket.
 
 | Autocall design | Fair coupon | Chance of capital loss |
 |---|---|---|
-| Classic: fixed coupon, 70% barrier | 6.3% | 11.4% |
-| Phoenix memory (80% cpn barrier), 70% barrier | 7.8% | 11.4% |
-| Snowball, 65% barrier | 10.7% | 9.5% |
-| Classic, 70% barrier, 10%-vol basket | 4.1% | 1.2% |
-| **Capital protected, memory coupon (ours)** | 7.1% | 0.0% |
+| Classic: fixed coupon, 70% barrier | 7.3% | 15.7% |
+| Phoenix memory (80% cpn barrier), 70% barrier | 9.9% | 15.7% |
+| Snowball, 65% barrier | 13.6% | 14.1% |
+| Classic, 70% barrier, 10%-vol basket | 4.1% | 1.1% |
+| **Capital protected, memory coupon (ours)** | 7.8% | 0.0% |
 
-- The draft's 8.5% fixed coupon is worth 102.3% to the client, so Natixis cannot fund it.
+- The draft's 8.5% fixed coupon is worth 100.4% to the client, so Natixis cannot fund it.
 - Getting a 70% barrier down to ~1% breach needs a ~10%-vol basket. That pays ~4%, below the 5.69% USD bond.
 - Full protection is cheap at 5.69% rates, and the autocall usually returns the principal early, so the protected design keeps a coupon above the funding rate.
-- The semiconductor-heavy basket (vol ~21%) prices the fair coupon at 7.1%. The offer is 6.75% because the lowest fair coupon across the market sensitivities is 6.84%.
-- Asia-only by mandate: a fourth chip index was considered. SSE STAR 50 was rejected for OFAC NS-CMIC exposure (SMIC; verify). MSCI AC Asia Pacific IT was rejected pending a ticker check.
+- The five-ETF basket (vol ~26%) prices the fair coupon at 7.8%. The offer is 7.20% because the lowest fair coupon across the market sensitivities is 7.5%.
+- Asia-only by mandate. Chinese chip exposure (SMIC, SSE STAR 50) is avoided for OFAC NS-CMIC reasons; check that no ETF holds sanctioned names.
+- 00878 distributes about 7.6% a year, which lowers its price path; the basket is price-return, so this is priced in.
+- Only EWT and EWY have listed options. The desk hedges 3119, 2644 and 00878 with delta (ETF shares) and vega through proxies (TAIEX, KOSPI 200 and Nikkei options).
 
 ## Key numbers (risk-neutral unless stated)
-- Called at Y1: 51%. Called within 5Y: 82%. Expected life: 2.11 years.
-- Zero return (100% back, no coupon): 11.4%. Not called but some early coupons: 6.7%. Capital loss: 0%.
-- Mean IRR 5.6%, median IRR 6.8%.
-- Real-world mean IRR: 4.7% at 0% equity return, 5.4% at 4%, 6.0% at 8%.
+- Called at Y1: 49%. Called within 5Y: 79%. Expected life: 2.22 years.
+- Zero return (100% back, no coupon): 13.2%. Not called but some early coupons: 7.7%. Capital loss: 0%.
+- Mean IRR 5.8%, median IRR 7.3%. Principal-protected note alternative: 85% participation.
+- Real-world mean IRR: 5.0% at 0% equity return, 5.6% at 4%, 6.1% at 8%.
 - Fair-coupon sensitivity:
 
   | Change | Fair coupon |
   |---|---|
-  | Vol ±3pts | 6.8%–7.5% |
-  | Correlation ±0.15 | 6.9%–7.3% |
-  | Equity drift −1% / −2% | 7.7% / 8.3% |
-  | Coupon barrier 95% | 6.5% |
-  | Coupon barrier 90% | 5.9% |
+  | Vol ±3pts | 7.5%–8.1% |
+  | Correlation ±0.15 | 7.6%–8.0% |
+  | Equity drift −1% / −2% | 8.3% / 8.9% |
+  | Coupon barrier 95% | 7.1% |
+  | Coupon barrier 90% | 6.6% |
 
 ## Changes vs. the first draft (`Natixis_.pdf`)
-1. The fixed 8.5% coupon was not fundable. It is replaced by a 6.75% memory coupon on a capital-protected note.
-2. The draft's thematic indices are not Bloomberg-listed. The basket now uses three real, semiconductor-heavy Asian indices.
+1. The fixed 8.5% coupon was not fundable. It is replaced by a 7.20% memory coupon on a capital-protected note.
+2. The draft's thematic indices are not Bloomberg-listed. The basket now uses five Bloomberg-listed Asian ETFs (3119 HK, 2644 JP, EWT US, EWY US, 00878 TT).
 3. The barrier/strike inconsistency is gone: there is no barrier, and capital is fully protected.
 
 ## To do before submission
 - Pull Bloomberg vols, correlations and dividends, then re-run the pricer.
-- Run a historical rolling-window back-test (monthly launches since 2015) and add it to slide 8 or 9.
+- Confirm 3119 HK's 6-month average daily value traded is above USD 5M.
+- Run a historical rolling-window back-test (monthly launches since 2021, when all five ETFs trade) and add it to slide 8 or 9.
 - Optionally add a quanto drift adjustment using FX-equity correlations.

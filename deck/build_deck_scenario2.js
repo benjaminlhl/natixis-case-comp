@@ -17,6 +17,8 @@ const HF = "Cambria", BF = "Calibri";
 const pct = (x, d = 1) => ((Math.abs(x) < 5e-5 ? 0 : x) * 100).toFixed(d) + "%";
 const CPN = R.inputs.coupon, QC = CPN / 4;
 const REC = R.recommended, RN = R.rn, SV = R.coupon_sens;
+const SHORT = { "3119 HK Equity": "Asia Semiconductor (3119 HK)", "2644 JP Equity": "Japan Semiconductor (2644 JP)", "EWT US Equity": "iShares MSCI Taiwan (EWT)",
+                "EWY US Equity": "iShares MSCI South Korea (EWY)", "00878 TT Equity": "Taiwan ESG High Dividend (00878 TT)" };
 const NOTE = "Monte Carlo, 200k paths. Vols, dividends and correlations are assumptions to refresh with Bloomberg data as of the 17 Sep 2026 trade date; discounting uses the USD funding grid.";
 
 function title(s, t, sub) {
@@ -56,7 +58,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   txt(s, "Asian Digital Transformation Autocallable Note", { x: 0.6, y: 1.05, w: 6.2, h: 1.75, fontFace: HF, fontSize: 34, bold: true, color: WHITE, valign: "middle" });
   txt(s, `${pct(CPN, 2)} a year from Asia's semiconductor build-out, with 100% of capital returned at maturity`, { x: 0.6, y: 3.0, w: 6.0, h: 0.85, fontSize: 15, italic: true, color: "E3F1EF" });
   txt(s, `USD 100mn · 5-year note issued by Natixis · ${pct(CPN, 2)} p.a. memory coupon · 100% capital protected · Trade date 17 Sep 2026`, { x: 0.6, y: 4.45, w: 7.6, h: 0.4, fontSize: 11.5, bold: true, color: GOLD });
-  s.addNotes("Title. One-line pitch: a capital-protected autocallable on Asia's three semiconductor powerhouses: Taiwan's chipmakers, Korea's memory makers and Japan's chip-equipment makers. It pays 6.5% a year whenever the basket is at or above its starting level, catches up any missed coupons, and returns 100% of capital at maturity whatever the basket does.");
+  s.addNotes("Title. One-line pitch: a capital-protected autocallable on five Asian ETFs covering the AI-hardware supply chain (pan-Asian and Japanese semiconductors, Taiwan, Korea) plus an ESG sleeve. It pays a coupon whenever the basket is at or above its starting level, catches up any missed coupons, and returns 100% of capital at maturity whatever the basket does.");
 }
 
 // ======================= Agenda (not counted) =======================
@@ -94,7 +96,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   txt(s, [
     { text: "We recommend ", options: {} },
     { text: "a USD 100mn, 5-year Natixis capital-protected autocallable note", options: { bold: true, color: JADE } },
-    { text: " on a semiconductor-heavy basket of three real, Bloomberg-listed Asian indices (Taiwan TAIEX 40%, KOSPI 200 30%, Nikkei 225 30%). It gives the family the AI hardware layer (chips, memory and chip-making equipment) that complements, rather than duplicates, the infrastructure, power and property they already own. ", options: {} },
+    { text: " on a basket of five Bloomberg-listed Asian ETFs: Global X Asia Semiconductor (3119 HK) 25%, Global X Japan Semiconductor (2644 JP) 20%, iShares MSCI Taiwan (EWT) 20%, iShares MSCI South Korea (EWY) 20% and Cathay Taiwan ESG High Dividend (00878 TT) 15%. It gives the family the AI hardware layer (chips, memory and chip-making equipment) that complements, rather than duplicates, the infrastructure, power and property they already own. ", options: {} },
     { text: `The family never loses capital at maturity, earns ${pct(CPN, 2)} a year in the ${pct(RN.p_called, 0)} of paths where the basket gets back to its starting level, and gets 100% back in the rest. Fair value is ${pct(REC.pv)}, so issuing at par leaves Natixis ${pct(REC.natixis_margin)} for hedging and margin.`, options: { bold: true } },
   ], { x: 0.5, y: 3.85, w: 9, h: 1.3, fontSize: 11.5 });
   s.addNotes("Executive summary (does not count toward the 10-slide limit).");
@@ -131,9 +133,9 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   const s = pres.addSlide(); s.background = { color: WHITE };
   title(s, "Why now: Asia builds the hardware of the AI economy", "Investment thesis: structural growth themes, and a rate level that makes capital protection cheap");
   const th = [["Taiwan: the AI foundry", "TSMC and its supply chain make most of the world's advanced AI chips; Taiwan's index is dominated by semiconductors."],
-              ["Korea: memory for AI", "Samsung and SK Hynix supply the high-bandwidth memory every AI accelerator needs; together a large share of KOSPI 200."],
+              ["Korea: memory for AI", "Samsung and SK hynix supply the high-bandwidth memory every AI accelerator needs; together ~44% of EWY."],
               ["Japan: chip-making tools", "Tokyo Electron, Advantest and peers make the equipment and testers chip factories need, alongside TSE governance reforms."],
-              ["Liquid and hedgeable", "TAIEX, KOSPI 200 and Nikkei 225 futures and options are among Asia's most traded, so Natixis can hedge cheaply and transparently."]];
+              ["ESG sleeve", "00878 adds ESG-screened Taiwan leaders (MSCI ESG methodology) and a lower-volatility, high-dividend anchor to the basket."]];
   th.forEach((t, i) => {
     const x = 0.5 + (i % 2) * 2.75, y = 1.3 + Math.floor(i / 2) * 1.55;
     card(s, x, y, 2.6, 1.4);
@@ -151,36 +153,39 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
     { x: 6.3, y: 3.65, w: 3.05, h: 1.4, fontSize: 10 });
   foot(s, "Thesis is qualitative; index-level data to be refreshed on Bloomberg. Funding grid: Investment Strategy Challenge 2026 rules.");
   pageNo(s, 2);
-  s.addNotes("Two arguments. (1) Structural: AI spending flows straight into Asian semiconductors: Taiwan makes the chips, Korea the memory, Japan the chip-making tools, all three with deep listed futures and options. (2) Structuring: high USD rates make the protected principal cheap, and Asian volatility makes the 100% coupon trigger likely to be hit, so we can protect capital and still pay above the funding rate.");
+  s.addNotes("Two arguments. (1) Structural: AI spending flows straight into Asian semiconductors: Taiwan makes the chips, Korea the memory, Japan the chip-making tools, plus an ESG-screened Taiwan sleeve. (2) Structuring: high USD rates make the protected principal cheap, and Asian volatility makes the 100% coupon trigger likely to be hit, so we can protect capital and still pay above the funding rate.");
 }
 
 // ======================= 3. Basket =======================
 {
   const s = pres.addSlide(); s.background = { color: WHITE };
-  title(s, "Underlying: a semiconductor-heavy basket of three Asian indices", "Bespoke weighted basket, USD quanto (FX risk sits with Natixis); all constituents searchable on Bloomberg");
+  title(s, "Underlying: five Asian ETFs across the AI-hardware chain", "Bespoke weighted basket, USD payout (quanto on the HKD, JPY and TWD lines); all Bloomberg-listed");
   const L = R.inputs.underlyings, names = Object.keys(L);
-  s.addChart(pres.charts.DOUGHNUT, [{ name: "Weight", labels: names.map((k) => L[k]), values: R.inputs.weights.map((w) => w * 100) }], {
-    x: 0.35, y: 1.25, w: 3.0, h: 3.0, holeSize: 55, chartColors: [INK, JADE, GOLD, SLATE], showLegend: false,
+  const COLS = [INK, JADE, GOLD, SLATE, "5BA37A"];
+  s.addChart(pres.charts.DOUGHNUT, [{ name: "Weight", labels: names.map((k) => SHORT[k] || L[k]), values: R.inputs.weights.map((w) => w * 100) }], {
+    x: 0.35, y: 1.2, w: 2.8, h: 2.75, holeSize: 55, chartColors: COLS, showLegend: false,
     showPercent: false, showValue: true, dataLabelColor: WHITE, dataLabelFontSize: 10, dataLabelFontBold: true, dataLabelFormatCode: '0"%"' });
-  txt(s, "Basket", { x: 1.35, y: 2.5, w: 1.0, h: 0.5, fontFace: HF, fontSize: 14, bold: true, color: INK, align: "center", valign: "middle" });
-  const legend = [INK, JADE, GOLD, SLATE];
+  txt(s, "Basket", { x: 1.25, y: 2.33, w: 1.0, h: 0.5, fontFace: HF, fontSize: 14, bold: true, color: INK, align: "center", valign: "middle" });
   names.forEach((k, i) => {
-    s.addShape(pres.shapes.RECTANGLE, { x: 0.6, y: 4.35 + i * 0.2, w: 0.13, h: 0.13, fill: { color: legend[i] }, line: { color: legend[i] } });
-    txt(s, L[k], { x: 0.8, y: 4.31 + i * 0.2, w: 2.6, h: 0.2, fontSize: 9, color: TXT });
+    s.addShape(pres.shapes.RECTANGLE, { x: 0.5, y: 4.08 + i * 0.21, w: 0.13, h: 0.13, fill: { color: COLS[i] }, line: { color: COLS[i] } });
+    txt(s, SHORT[k] || L[k], { x: 0.7, y: 4.04 + i * 0.21, w: 2.8, h: 0.2, fontSize: 8.5, color: TXT });
   });
-  const theme = ["Foundry and chip supply chain (TSMC, MediaTek, ASE): the core of AI chip production, in the family's Greater China home region",
-                 "Memory for AI (Samsung, SK Hynix): high-bandwidth memory inside every AI accelerator",
-                 "Chip-making equipment and test (Tokyo Electron, Advantest): home market of the family's tech-infrastructure business"];
-  const rows = [[hdr("Index (Bloomberg)"), hdr("Wt"), hdr("Why it belongs (link to family)"), hdr("Vol*")]];
-  names.forEach((k, i) => rows.push([{ text: `${L[k]}\n${k}`, options: { bold: true } }, pct(R.inputs.weights[i], 0), theme[i], pct(R.inputs.vols[i], 0)]));
-  s.addTable(rows, { x: 3.55, y: 1.3, w: 5.95, colW: [1.55, 0.45, 3.4, 0.55], fontFace: BF, fontSize: 9, color: TXT, valign: "middle",
-    border: { type: "solid", pt: 0.5, color: GRID }, fill: { color: WHITE }, rowH: [0.28, ...names.map(() => 0.8)], margin: [2, 5, 2, 5] });
+  const theme = {
+    "3119 HK Equity": "Pan-Asian chip leaders (40 names; TSMC, Samsung, SK hynix the largest): the core AI-hardware exposure",
+    "2644 JP Equity": "Japanese semiconductor stocks (FactSet Japan Semiconductor Index, e.g. Tokyo Electron, Advantest): the family's home market",
+    "EWT US Equity": "Taiwan large caps (TSMC, MediaTek, Delta): AI foundry and server chain in the family's Greater China region",
+    "EWY US Equity": "Korea large caps (Samsung + SK hynix ~44%): high-bandwidth memory for AI",
+    "00878 TT Equity": "ESG-screened Taiwan high-dividend leaders (Quanta, UMC, MediaTek): ESG sleeve and lower-volatility anchor" };
+  const rows = [[hdr("ETF (Bloomberg)"), hdr("Wt"), hdr("Role in the basket"), hdr("Vol*")]];
+  names.forEach((k, i) => rows.push([{ text: `${SHORT[k] || L[k]}`, options: { bold: true } }, pct(R.inputs.weights[i], 0), theme[k] || "", pct(R.inputs.vols[i], 0)]));
+  s.addTable(rows, { x: 3.4, y: 1.25, w: 6.1, colW: [1.6, 0.42, 3.55, 0.53], fontFace: BF, fontSize: 8.5, color: TXT, valign: "middle",
+    border: { type: "solid", pt: 0.5, color: GRID }, fill: { color: WHITE }, rowH: [0.26, ...names.map(() => 0.52)], margin: [2, 4, 2, 4] });
   txt(s, [{ text: "Why a weighted basket, not worst-of: ", options: { bold: true, color: JADE } },
-          { text: `a shock to one market (e.g. Taiwan geopolitics) is cushioned by the other two. Basket vol is ~${pct(R.basket_vol, 0)} vs ${pct(Math.min(...R.inputs.vols), 0)}–${pct(Math.max(...R.inputs.vols), 0)} for each index alone, and correlation risk stays with the desk.` }],
-    { x: 3.55, y: 4.35, w: 5.95, h: 0.6, fontSize: 10 });
-  foot(s, "*Assumed 5Y implied vols for pricing. The draft's thematic indices (e.g. 'Greater China PropTech & NLP') are not Bloomberg-listed, so we use real indices.");
+          { text: `a shock to one ETF is cushioned by the others: basket vol ~${pct(R.basket_vol, 0)} vs ${pct(Math.min(...R.inputs.vols), 0)}–${pct(Math.max(...R.inputs.vols), 0)} alone. Overlap (TSMC, Samsung, SK hynix sit in several ETFs) keeps correlations high (0.45–0.85).` }],
+    { x: 3.4, y: 4.2, w: 6.1, h: 0.6, fontSize: 9.5 });
+  foot(s, "*Assumed 5Y vols. USD 5M/day ETF rule: EWY, EWT, 2644, 00878 pass; 3119 is borderline (~USD 4–5M/day), verify the 6-month average on Bloomberg. 00878 distributes ~7.6% a year, which lowers its price path.");
   pageNo(s, 3);
-  s.addNotes("Each index is a real Bloomberg ticker (TWSE, KOSPI2, NKY Index), all Asian, all with liquid listed futures and options. Semiconductors dominate TAIEX and KOSPI 200 through TSMC, Samsung and SK Hynix, and Nikkei 225 carries Tokyo Electron and Advantest. Check look-through weights on Bloomberg before the pitch. Quanto USD: the client takes no TWD/KRW/JPY risk.");
+  s.addNotes("Five Bloomberg-listed ETFs: 3119 HK (Asia semiconductors), 2644 JP (Japan semiconductors), EWT and EWY (US-listed Taiwan and Korea country funds) and 00878 TT (Taiwan ESG high dividend). EWT and EWY trade in USD, so no quanto is needed; the HKD, JPY and TWD lines are quantoed into USD. Check: 3119 trading value against the USD 5M/day rule, 2644 top holdings, and 00878 distributions (~7.6% a year), which reduce its price-return path and so the chance of the basket getting back to 100%.");
 }
 
 // ======================= 4. Term sheet + design choice =======================
@@ -188,7 +193,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   const s = pres.addSlide(); s.background = { color: WHITE };
   title(s, `Term sheet: 5-year capital-protected autocallable, ${pct(CPN, 2)} coupon`, "Why this design: above the funding rate, with zero chance of losing capital at maturity");
   const terms = [["Issuer", "Natixis SA (BPCE Group)"], ["Notional / currency", "USD 100,000,000 · quanto USD"], ["Trade / maturity", "17 Sep 2026 / 17 Sep 2031 (5Y)"],
-                 ["Underlying", `Weighted basket of ${R.inputs.weights.length} Asian indices (slide 3)`], ["Observation", "Quarterly, 20 dates; autocall from Q4 (Year 1)"],
+                 ["Underlying", `Weighted basket of ${R.inputs.weights.length} Asian ETFs (slide 3)`], ["Observation", "Quarterly, 20 dates; autocall from Q4 (Year 1)"],
                  ["Coupon", `${pct(CPN, 2)} p.a. (${pct(QC, 2)} per quarter), paid if basket ≥ 100%`], ["Memory", "Missed coupons paid on the next date basket ≥ 100%"],
                  ["Autocall", "Basket ≥ 100% from Q4: 100% + coupons due, note ends"], ["At maturity", "100% of principal, whatever the basket level"],
                  ["Issue price / fair value", `100% / ${pct(REC.pv)}`]];
@@ -370,15 +375,15 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   title(s, "Risks for the family, and how Natixis hedges its side", "Transparent disclosure plus a desk hedging plan for every exposure");
   const risks = [["Opportunity cost", `Basket never back to 100%: 0% for 5 years (~${pct(RN.p_zero_return, 0)} of paths)`, "Coupon above the funding rate in most paths; only 5% of wealth"],
                  ["Capped upside", `Basket +80% still pays ${pct(CPN, 2)} p.a. and is called at Y1`, "Rest of family wealth keeps direct equity exposure"],
-                 ["Reinvestment", `${pct(RN.p_call_by_year[0], 0)} called at Y1: cash back at prevailing rates`, "Natixis offers a roll into a new note at call"],
+                 ["ETF structure", "00878 pays ~7.6% a year out, lowering its price path; 3119 trading is thin; ETF tracking error", "Small 00878 weight; verify volumes; Natixis can reference total-return versions"],
                  ["Issuer credit", "Protection depends on Natixis / BPCE paying", "BPCE senior rating; optional collateralised wrapper"],
                  ["Liquidity / MTM", "Sold before maturity, the price can be below 100%", "Natixis daily indicative price; hold to call or maturity"]];
   const rows = [[hdr("Risk"), hdr("What could happen"), hdr("Mitigant")]].concat(risks.map((r) => [{ text: r[0], options: { bold: true, color: INK } }, r[1], r[2]]));
   s.addTable(rows, { x: 0.45, y: 1.25, w: 5.4, colW: [1.15, 2.15, 2.1], fontFace: BF, fontSize: 8.5, color: TXT, valign: "middle",
     border: { type: "solid", pt: 0.5, color: GRID }, fill: { color: WHITE }, rowH: [0.27, 0.56, 0.5, 0.5, 0.5, 0.56], margin: [2, 4, 2, 4] });
-  const hedges = [["Coupon digitals", "Natixis owes basket digitals struck at 100%: replicated with tight basket call spreads, delta-hedged with TAIEX / KOSPI 200 / Nikkei 225 futures"],
+  const hedges = [["Coupon digitals", "Natixis owes basket digitals struck at 100%: replicated with tight basket call spreads, delta-hedged with ETF units, constituent stocks and index futures as proxies; listed options on EWY/EWT"],
                   ["Vol & correlation", `Coupon value moves with basket vol and correlation (fair ${pct(SV["vol -3pts"])}–${pct(SV["vol +3pts"])} for vol ±3pts): managed with listed index options and correlation trades`],
-                  ["Quanto FX", "USD payout on TWD/KRW/JPY indices: FX forwards and quanto adjustment in price (FX-equity correlation)"],
+                  ["Quanto FX", "EWT and EWY already trade in USD; 3119 (HKD, pegged), 2644 (JPY) and 00878 (TWD) need FX forwards and a quanto adjustment"],
                   ["Rates & funding", "Protected principal funded at the 5.69% curve and hedged with USD swaps; the autocall shortens the liability"]];
   hedges.forEach((h, i) => {
     const y = 1.25 + i * 0.97;
@@ -398,17 +403,17 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   const s = pres.addSlide(); s.background = { color: WHITE };
   title(s, "Appendix A: pricing assumptions and methodology", "Inputs to refresh on Bloomberg at trade date (BVOL / OVDV for vols, CORR for correlations)");
   const L = R.inputs.underlyings, names = Object.keys(L);
-  const short = names.map((k) => k.replace(" Index", ""));
-  const rows = [[hdr("Index"), hdr("Weight"), hdr("Vol"), hdr("Div"), ...short.map(hdr)]];
+  const short = names.map((k) => k.replace(" Equity", "").replace(" Index", ""));
+  const rows = [[hdr("ETF"), hdr("Weight"), hdr("Vol"), hdr("Div"), ...short.map(hdr)]];
   names.forEach((k, i) => rows.push([{ text: short[i], options: { bold: true } }, pct(R.inputs.weights[i], 0), pct(R.inputs.vols[i], 0), pct(R.inputs.divs[i], 1), ...R.inputs.corr[i].map((c) => c.toFixed(2))]));
   s.addTable(rows, { x: 0.45, y: 1.3, w: 5.2, colW: [0.9, 0.62, 0.52, 0.52, ...short.map(() => 2.64 / short.length)], fontFace: BF, fontSize: 9, color: TXT, align: "center", valign: "middle",
     border: { type: "solid", pt: 0.5, color: GRID }, fill: { color: WHITE }, rowH: 0.3, margin: [2, 3, 2, 3] });
   txt(s, [
-    { text: "Model. ", options: { bold: true, color: JADE } }, { text: "Correlated GBM for each index, 200,000 paths, quarterly steps. Risk-neutral drift = USD funding (linear interpolation of case grid) − dividend yield. Quanto adjustment ignored (assumed hedged by the desk; to be added with FX-equity correlations).", options: { breakLine: true } },
+    { text: "Model. ", options: { bold: true, color: JADE } }, { text: "Correlated GBM for each ETF, 200,000 paths, quarterly steps. Risk-neutral drift = USD funding (linear interpolation of case grid) − dividend yield. Quanto adjustment ignored (assumed hedged by the desk; to be added with FX-equity correlations).", options: { breakLine: true } },
     { text: "Discounting. ", options: { bold: true, color: JADE } }, { text: "USD funding grid from the case rules; 5Y discount factor 0.758.", options: { breakLine: true } },
     { text: "Coupon solve. ", options: { bold: true, color: JADE } }, { text: "Bisection on coupon so that PV = 98% (2% hedging cost and margin).", options: { breakLine: true } },
-    { text: "Historical back-test (to run). ", options: { bold: true, color: JADE } }, { text: "Monthly Bloomberg history since 2015 for all three indices. Launch a hypothetical note every month, apply the same coupon, memory and autocall rules, and record coupons, life and IRR by launch year." },
-  ], { x: 0.45, y: 2.95, w: 5.2, h: 2.2, fontSize: 9.5, paraSpaceAfter: 4 });
+    { text: "Historical back-test (to run). ", options: { bold: true, color: JADE } }, { text: "Monthly Bloomberg history since 2021 for all five ETFs (00878 and 3119 launched in 2020–21). Launch a hypothetical note every month, apply the same coupon, memory and autocall rules, and record coupons, life and IRR by launch year." },
+  ], { x: 0.45, y: 3.25, w: 5.2, h: 2.0, fontSize: 9, paraSpaceAfter: 3 });
   const rows2 = [[hdr("Design variant (capital protected)"), hdr("Fair cpn")],
     ["Coupon barrier 100% (base)", pct(SV.base)], ["Coupon barrier 95%", pct(SV["cpn barrier 95%"])], ["Coupon barrier 90%", pct(SV["cpn barrier 90%"])],
     ["First autocall at Y2", pct(SV["first call Y2"])], ["Equity drift −1%", pct(SV["drift -1%"])], ["Equity drift −2%", pct(SV["drift -2%"])],

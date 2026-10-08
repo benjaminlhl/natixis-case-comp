@@ -4,8 +4,8 @@ Monte Carlo pricer, coupon solver, design comparison, sensitivities and scenario
 Market inputs (vols, dividends, correlations) are ASSUMPTIONS, to be refreshed with Bloomberg
 data as of the 17 Sep 2026 trade date. Discounting uses the USD funding grid from the game rules.
 
-Recommended product (USD, quanto, 5Y, quarterly observations), semiconductor-heavy Asian basket:
-  - Conditional memory coupon: 6.75% p.a. (1.6875% per quarter), paid on each quarterly date the
+Recommended product (USD, 5Y, quarterly observations), basket of five Asia semiconductor / Taiwan / Korea / ESG ETFs:
+  - Conditional memory coupon: 7.2% p.a. (1.80% per quarter), paid on each quarterly date the
     basket is >= 100% of initial, together with any coupons missed on earlier dates
   - Autocall: from Q4 (1Y) onwards, if basket >= 100% -> 100% + coupons due, note ends
   - Maturity (not called): 100% of principal (capital protected, subject to Natixis credit)
@@ -18,14 +18,17 @@ import numpy as np
 
 rng = np.random.default_rng(2026)
 
-NAMES = ["TWSE Index", "KOSPI2 Index", "NKY Index"]
-LABELS = ["Taiwan TAIEX", "KOSPI 200", "Nikkei 225"]
-W = np.array([0.40, 0.30, 0.30])
-VOL = np.array([0.24, 0.25, 0.22])                # assumed 5Y implied vols
-DIV = np.array([0.028, 0.020, 0.018])             # assumed dividend yields
-CORR = np.array([[1.00, 0.70, 0.60],
-                 [0.70, 1.00, 0.55],
-                 [0.60, 0.55, 1.00]])
+NAMES = ["3119 HK Equity", "2644 JP Equity", "EWT US Equity", "EWY US Equity", "00878 TT Equity"]
+LABELS = ["Global X Asia Semiconductor ETF", "Global X Japan Semiconductor ETF", "iShares MSCI Taiwan ETF",
+          "iShares MSCI South Korea ETF", "Cathay Taiwan ESG Sustainability High Dividend ETF"]
+W = np.array([0.25, 0.20, 0.20, 0.20, 0.15])
+VOL = np.array([0.32, 0.38, 0.26, 0.30, 0.18])          # assumed 5Y implied vols
+DIV = np.array([0.010, 0.008, 0.026, 0.012, 0.076])     # distribution yields (00878 ~7.6%: price-return ETF)
+CORR = np.array([[1.00, 0.70, 0.85, 0.80, 0.60],
+                 [0.70, 1.00, 0.60, 0.55, 0.45],
+                 [0.85, 0.60, 1.00, 0.70, 0.75],
+                 [0.80, 0.55, 0.70, 1.00, 0.55],
+                 [0.60, 0.45, 0.75, 0.55, 1.00]])
 NA = len(W)
 
 # USD funding grid (game rules), linear interpolation on tenor
@@ -42,7 +45,7 @@ DT = 1 / FREQ
 N_PATHS = 200_000
 ISSUE_PRICE = 0.98            # Natixis margin + hedging costs = 2% upfront
 
-COUPON, CPN_BARRIER, AC, FIRST = 0.0675, 1.00, 1.00, 4
+COUPON, CPN_BARRIER, AC, FIRST = 0.072, 1.00, 1.00, 4
 BARRIER = 0.65               # default capital barrier for the at-risk comparison designs
 
 
@@ -178,6 +181,17 @@ def stress_paths():
     }
 
 
+def corr_shift(d):
+    """Move the average pairwise correlation by d while keeping the matrix valid:
+    blend towards all-ones (d > 0) or towards the identity (d < 0)."""
+    off = CORR[~np.eye(NA, dtype=bool)].mean()
+    if d > 0:
+        lam = d / (1 - off)
+        return (1 - lam) * CORR + lam * np.ones((NA, NA))
+    lam = -d / off
+    return (1 - lam) * CORR + lam * np.eye(NA)
+
+
 def p_breach(fn, B, c, barrier, **kw):
     cq = fn(B, c, barrier=barrier, **kw)[1]
     return round(float(((cq == 0) & (B[:, -1] < barrier)).mean()), 4)
@@ -220,8 +234,8 @@ if __name__ == "__main__":
     # 4. Sensitivities of the fair coupon
     sens = {"base": res["recommended"]["fair_coupon"]}
     for tag, v, cr in [("vol +3pts", VOL + 0.03, CORR), ("vol -3pts", VOL - 0.03, CORR),
-                       ("corr +0.15", VOL, CORR + 0.15 * (1 - np.eye(NA))),
-                       ("corr -0.15", VOL, CORR - 0.15 * (1 - np.eye(NA)))]:
+                       ("corr +0.15", VOL, corr_shift(+0.15)),
+                       ("corr -0.15", VOL, corr_shift(-0.15))]:
         sens[tag] = solve(protected, simulate(v, cr, n=100_000))
     for cb in (0.90, 0.95):
         sens[f"cpn barrier {int(cb*100)}%"] = solve(protected, B, cpn_barrier=cb)

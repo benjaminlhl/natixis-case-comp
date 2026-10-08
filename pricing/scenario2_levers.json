@@ -1,70 +1,70 @@
 {
  "Base: 65% European barrier": {
-  "fair_coupon": 0.1068,
-  "p_loss": 0.0951,
-  "avg_loss": 0.4926,
-  "exp_loss": 0.0469,
-  "max_loss": 0.88,
-  "p_loss_rw4": 0.1166
+  "fair_coupon": 0.1359,
+  "p_loss": 0.1412,
+  "avg_loss": 0.5398,
+  "exp_loss": 0.0762,
+  "max_loss": 0.91,
+  "p_loss_rw4": 0.1641
  },
  "Barrier 60%": {
-  "fair_coupon": 0.1018,
-  "p_loss": 0.0761,
-  "avg_loss": 0.5219,
-  "exp_loss": 0.0397,
-  "max_loss": 0.88,
-  "p_loss_rw4": 0.0942
+  "fair_coupon": 0.1311,
+  "p_loss": 0.1232,
+  "avg_loss": 0.5638,
+  "exp_loss": 0.0695,
+  "max_loss": 0.91,
+  "p_loss_rw4": 0.1444
  },
  "Barrier 55%": {
-  "fair_coupon": 0.0962,
-  "p_loss": 0.0572,
-  "avg_loss": 0.5542,
-  "exp_loss": 0.0317,
-  "max_loss": 0.88,
-  "p_loss_rw4": 0.0723
+  "fair_coupon": 0.1252,
+  "p_loss": 0.1039,
+  "avg_loss": 0.5896,
+  "exp_loss": 0.0612,
+  "max_loss": 0.91,
+  "p_loss_rw4": 0.1228
  },
  "Barrier 50%": {
-  "fair_coupon": 0.0906,
-  "p_loss": 0.0401,
-  "avg_loss": 0.5882,
-  "exp_loss": 0.0236,
-  "max_loss": 0.88,
-  "p_loss_rw4": 0.0524
+  "fair_coupon": 0.1181,
+  "p_loss": 0.0831,
+  "avg_loss": 0.6183,
+  "exp_loss": 0.0514,
+  "max_loss": 0.91,
+  "p_loss_rw4": 0.0997
  },
  "Step-down autocall (100% -> 80% by Y5)": {
-  "fair_coupon": 0.0848,
-  "p_loss": 0.0838,
-  "avg_loss": 0.4995,
-  "exp_loss": 0.0418,
-  "max_loss": 0.88,
-  "p_loss_rw4": 0.1023
+  "fair_coupon": 0.1111,
+  "p_loss": 0.1259,
+  "avg_loss": 0.5488,
+  "exp_loss": 0.0691,
+  "max_loss": 0.91,
+  "p_loss_rw4": 0.1461
  },
  "Barrier 55% + step-down": {
-  "fair_coupon": 0.0771,
-  "p_loss": 0.0529,
-  "avg_loss": 0.5569,
-  "exp_loss": 0.0295,
-  "max_loss": 0.88,
-  "p_loss_rw4": 0.067
+  "fair_coupon": 0.1036,
+  "p_loss": 0.0965,
+  "avg_loss": 0.5932,
+  "exp_loss": 0.0573,
+  "max_loss": 0.91,
+  "p_loss_rw4": 0.1135
  },
  "90% capital floor (max loss 10%)": {
-  "fair_coupon": 0.0808,
-  "p_loss": 0.0951,
+  "fair_coupon": 0.0914,
+  "p_loss": 0.1412,
   "avg_loss": 0.1,
-  "exp_loss": 0.0095,
+  "exp_loss": 0.0141,
   "max_loss": 0.1,
-  "p_loss_rw4": 0.1166
+  "p_loss_rw4": 0.1641
  },
  "95% capital floor (max loss 5%)": {
-  "fair_coupon": 0.0775,
-  "p_loss": 0.0951,
+  "fair_coupon": 0.0863,
+  "p_loss": 0.1412,
   "avg_loss": 0.05,
-  "exp_loss": 0.0048,
+  "exp_loss": 0.0071,
   "max_loss": 0.05,
-  "p_loss_rw4": 0.1166
+  "p_loss_rw4": 0.1641
  },
  "100% capital protected snowball": {
-  "fair_coupon": 0.0742,
+  "fair_coupon": 0.0813,
   "p_loss": 0.0,
   "avg_loss": 0.0,
   "exp_loss": 0.0,
