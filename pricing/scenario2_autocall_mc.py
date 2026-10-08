@@ -4,8 +4,8 @@ Monte Carlo pricer, coupon solver, design comparison, sensitivities and scenario
 Market inputs (vols, dividends, correlations) are ASSUMPTIONS, to be refreshed with Bloomberg
 data as of the 17 Sep 2026 trade date. Discounting uses the USD funding grid from the game rules.
 
-Recommended product (USD, quanto, 5Y, quarterly observations):
-  - Conditional memory coupon: 6.5% p.a. (1.625% per quarter), paid on each quarterly date the
+Recommended product (USD, quanto, 5Y, quarterly observations), semiconductor-heavy basket:
+  - Conditional memory coupon: 6.8% p.a. (1.70% per quarter), paid on each quarterly date the
     basket is >= 100% of initial, together with any coupons missed on earlier dates
   - Autocall: from Q4 (1Y) onwards, if basket >= 100% -> 100% + coupons due, note ends
   - Maturity (not called): 100% of principal (capital protected, subject to Natixis credit)
@@ -18,15 +18,15 @@ import numpy as np
 
 rng = np.random.default_rng(2026)
 
-NAMES = ["HSTECH Index", "NKY Index", "TWSE Index", "MXAP0UT Index"]
-LABELS = ["Hang Seng TECH", "Nikkei 225", "Taiwan TAIEX", "MSCI AC Asia Pacific Utilities"]
-W = np.array([0.30, 0.30, 0.25, 0.15])
-VOL = np.array([0.32, 0.22, 0.22, 0.14])          # assumed 5Y implied vols
-DIV = np.array([0.010, 0.018, 0.028, 0.035])      # assumed dividend yields
-CORR = np.array([[1.00, 0.45, 0.55, 0.35],
-                 [0.45, 1.00, 0.60, 0.35],
-                 [0.55, 0.60, 1.00, 0.35],
-                 [0.35, 0.35, 0.35, 1.00]])
+NAMES = ["TWSE Index", "KOSPI2 Index", "NKY Index", "SOX Index"]
+LABELS = ["Taiwan TAIEX", "KOSPI 200", "Nikkei 225", "PHLX Semiconductor"]
+W = np.array([0.35, 0.25, 0.20, 0.20])
+VOL = np.array([0.24, 0.25, 0.22, 0.35])          # assumed 5Y implied vols
+DIV = np.array([0.028, 0.020, 0.018, 0.008])      # assumed dividend yields
+CORR = np.array([[1.00, 0.70, 0.60, 0.55],
+                 [0.70, 1.00, 0.55, 0.45],
+                 [0.60, 0.55, 1.00, 0.40],
+                 [0.55, 0.45, 0.40, 1.00]])
 
 # USD funding grid (game rules), linear interpolation on tenor
 GRID_T = np.array([1, 2, 3, 5, 7, 10, 20])
@@ -42,7 +42,7 @@ DT = 1 / FREQ
 N_PATHS = 200_000
 ISSUE_PRICE = 0.98            # Natixis margin + hedging costs = 2% upfront
 
-COUPON, CPN_BARRIER, AC, FIRST = 0.065, 1.00, 1.00, 4
+COUPON, CPN_BARRIER, AC, FIRST = 0.068, 1.00, 1.00, 4
 BARRIER = 0.65               # default capital barrier for the at-risk comparison designs
 
 
