@@ -57,6 +57,8 @@ const HF = "Arial", BF = "Arial";
 const pct = (x, d = 1) => ((Math.abs(x) < 5e-5 ? 0 : x) * 100).toFixed(d) + "%";
 const CPN = R.inputs.coupon, QC = CPN / 4;
 const REC = R.recommended, RN = R.rn, SV = R.coupon_sens;
+// Outcome statistics on the team outlook (app returns and vols, slides 4-5); RN = risk-neutral pricing measure
+const OUT = R.real_world.app, HALF = R.real_world.half, FLAT = R.real_world["0%"];
 const SHORT = { "3119 HK Equity": "Asia Semiconductor (3119 HK)", "2644 JP Equity": "Japan Semiconductor (2644 JP)", "EWT US Equity": "iShares MSCI Taiwan (EWT)",
                 "EWY US Equity": "iShares MSCI South Korea (EWY)", "00878 TT Equity": "Taiwan ESG High Dividend (00878 TT)" };
 const NOTE = "Monte Carlo, 200k paths. Vols, dividends and correlations are assumptions to refresh with Bloomberg data as of the 17 Sep 2026 trade date; discounting uses the USD funding grid.";
@@ -151,7 +153,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   const items = [["Client & market", "Who the Chak family is, what they need, and why Asia's digital build-out now", "1–2"],
                  ["Investment thesis & strategy", "Why Asian AI hardware, why an autocall now, our five-ETF weights and their 5-year simulation", "3–5"],
                  ["Product design", "Underlying basket, term sheet, and why a classic memory-coupon autocallable", "6–7"],
-                 ["Payoffs explained", "Observation timeline and the three outcomes at maturity (building blocks in the appendix)", "8"],
+                 ["Payoffs explained", "Observation timeline and the three possible outcomes (building blocks in the appendix)", "8"],
                  ["Simulation", "Monte Carlo outcome distribution of the note (stress paths in the appendix)", "9"],
                  ["Risks & hedging", "Investor risks, mitigants, and how the Natixis desk hedges", "10"]];
   items.forEach((it, i) => {
@@ -168,8 +170,8 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   const s = contentSlide(null);
   title(s, "Executive summary", "One note that turns the family's view on Asian AI hardware into double-digit income");
   const stats = [[pct(CPN, 2), "Memory coupon p.a.", `${pct(QC, 2)} each quarter the basket is ≥ 100%; missed coupons are paid later when it recovers`],
-                 [pct(RN.p_floor, 0), "Chance of a loss", `If never called, repaid at the basket level (on average ${pct(RN.avg_repayment_when_hit, 0)} back): the price of the higher coupon`],
-                 [pct(RN.p_call_by_year[0], 0), "Called at first review", `Risk-neutral. ${pct(RN.p_called, 0)} called within 5 years; expected life ${RN.exp_life_y} years`]];
+                 [pct(OUT.p_floor, 1), "Chance of a loss", `On the team outlook (slides 4–5). If markets go nowhere it rises to ${pct(FLAT.p_floor, 0)}: never called, repaid at the basket level`],
+                 [pct(OUT.p_call_by_year[0], 0), "Called at first review", `Team outlook. ${pct(OUT.p_called, 0)} called within 5 years; expected life ${OUT.exp_life_y.toFixed(1)} years`]];
   stats.forEach((st, i) => {
     const x = 0.5 + i * 3.05;
     card(s, x, 1.35, 2.85, 2.3);
@@ -181,7 +183,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
     { text: "We recommend ", options: {} },
     { text: "a USD 100mn, 5-year Natixis autocallable note", options: { bold: true, color: JADE } },
     { text: " on a basket of five Bloomberg-listed Asian ETFs: Global X Asia Semiconductor (3119 HK) 35%, iShares MSCI South Korea (EWY) 20%, iShares MSCI Taiwan (EWT) 15%, Global X Japan Semiconductor (2644 JP) 15% and Cathay Taiwan ESG High Dividend (00878 TT) 15%. It gives the family the AI hardware layer (chips, memory and chip-making equipment) that complements, rather than duplicates, the infrastructure, power and property they already own. ", options: {} },
-    { text: `The family earns ${pct(CPN, 2)} a year in the ${pct(RN.p_called, 0)} of paths where the basket gets back to its starting level; if it never does (${pct(RN.p_floor, 0)} of paths, risk-neutral), the note repays the basket's level at Year 5. Fair value is ${pct(REC.pv)}, so issuing at par leaves Natixis ${pct(REC.natixis_margin)} for hedging and margin.`, options: { bold: true } },
+    { text: `On the team's outlook (slides 4–5) the note is called in ${pct(OUT.p_called, 0)} of paths, usually within ${OUT.exp_life_y.toFixed(1)} years, paying ${pct(CPN, 2)} a year; if the basket never gets back to its start (${pct(OUT.p_floor, 1)}; ${pct(FLAT.p_floor, 0)} if markets go nowhere), the note repays the basket's level at Year 5. Fair value is ${pct(REC.pv)}, so issuing at par leaves Natixis ${pct(REC.natixis_margin)} for hedging and margin.`, options: { bold: true } },
   ], { x: 0.5, y: 3.85, w: 9, h: 1.3, fontSize: 11.5 });
   s.addNotes("Executive summary (does not count toward the 10-slide limit).");
 }
@@ -193,7 +195,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   const cols = [
     ["Who they are", ["Single-family office: NKE Private Wealth", "Net worth > USD 2bn; mandate USD 100mn (~5%)", "Businesses: tech infrastructure, renewable power plants, real estate in Japan and Greater China"]],
     ["What they want", ["Capital appreciation for future generations", "Meaningful exposure to Asia's digital transformation", "To bridge traditional Asian sectors with emerging tech they know"]],
-    ["What they can bear", ["Moderate risk: income first, capital usually back early", "5-year horizon; coupons can be reinvested", "Accepts limited liquidity on 5% of wealth", "Accepts equity risk on 5% of wealth"]],
+    ["What they can bear", ["Moderate risk: income first, capital usually back early", "5-year horizon; coupons can be reinvested", "Accepts limited liquidity and equity risk on 5% of wealth"]],
   ];
   cols.forEach((c, i) => {
     const x = 0.5 + i * 3.05;
@@ -205,7 +207,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   const rows = [[hdr("Client need"), hdr("Design answer in our note")],
     ["Capital appreciation", `${pct(CPN, 2)} p.a. coupon, above the 5.69% 5Y USD funding rate, in every path that autocalls; proceeds roll into the next note`],
     ["Exposure to Asian digital transformation", "Semiconductor-heavy basket: the AI hardware layer behind the family's tech-infrastructure business (slide 6)"],
-    ["Generational preservation", `Diversified basket (not worst-of); capital back early in ${pct(RN.p_called, 0)} of paths; BPCE-backed issuer`],
+    ["Generational preservation", `Diversified basket at the low-risk edge of all mixes (slide 4); capital back early in ${pct(OUT.p_called, 0)} of paths; BPCE-backed issuer`],
     ["Volatile markets", "Memory coupon: a missed coupon is paid when the basket recovers, so a temporary drawdown costs nothing"]];
   s.addTable(rows, { x: 0.5, y: 3.7, w: 9, colW: [2.6, 6.4], fontFace: BF, fontSize: 9.5, color: TXT, border: { type: "solid", pt: 0.5, color: GRID }, fill: { color: WHITE }, rowH: 0.27, margin: [2, 5, 2, 5] });
   pageNo(s, 1);
@@ -215,7 +217,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
 // ======================= 2. Market view =======================
 {
   const s = contentSlide("ANALYSIS");
-  title(s, "Why now: Asia builds the hardware of the AI economy", "Investment thesis: structural growth themes, and high rates and volatility that pay for a double-digit coupon");
+  title(s, "Why now: Asia builds the hardware of the AI economy", "Market view: structural growth themes, and high rates and volatility that pay for a double-digit coupon");
   const th = [["Taiwan: the AI foundry", "TSMC and its supply chain make most of the world's advanced AI chips; Taiwan's index is dominated by semiconductors."],
               ["Korea: memory for AI", "Samsung and SK hynix supply the high-bandwidth memory every AI accelerator needs; together ~44% of EWY."],
               ["Japan: chip-making tools", "Tokyo Electron, Advantest and peers make the equipment and testers chip factories need, alongside TSE governance reforms."],
@@ -250,7 +252,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   const s = contentSlide("STRATEGY");
   title(s, "Underlying: five Asian ETFs across the AI-hardware chain", "Bespoke weighted basket, USD payout (quanto on the HKD, JPY and TWD lines); all Bloomberg-listed");
   const L = R.inputs.underlyings, names = Object.keys(L);
-  const COLS = [BLUE, SLATE, BLUE_M, MID, GREEN];   // 3119, 2644, EWT, EWY, 00878: same colours as the strategy slide
+  const COLS = [BLUE, MID, BLUE_M, SLATE, GREEN];   // 3119, EWY, EWT, 2644, 00878: same order and colours as the strategy slide
   s.addChart(pres.charts.DOUGHNUT, [{ name: "Weight", labels: names.map((k) => SHORT[k] || L[k]), values: R.inputs.weights.map((w) => w * 100) }], {
     x: 0.35, y: 1.2, w: 2.8, h: 2.75, holeSize: 55, chartColors: COLS, showLegend: false,
     showPercent: false, showValue: true, dataLabelColor: WHITE, dataLabelFontSize: 10, dataLabelFontBold: true, dataLabelFormatCode: '0"%"' });
@@ -272,7 +274,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   txt(s, [{ text: "Why a weighted basket, not worst-of: ", options: { bold: true, color: JADE } },
           { text: `a shock to one ETF is cushioned by the others: basket vol ~${pct(R.basket_vol, 0)} vs ${pct(Math.min(...R.inputs.vols), 0)}–${pct(Math.max(...R.inputs.vols), 0)} alone. Overlap (TSMC, Samsung, SK hynix sit in several ETFs) keeps correlations high (0.45–0.85).` }],
     { x: 3.4, y: 4.2, w: 6.1, h: 0.6, fontSize: 9.5 });
-  foot(s, "*Assumed 5Y vols. USD 5M/day ETF rule: EWY, EWT, 2644, 00878 pass; 3119 is borderline (~USD 4–5M/day), verify the 6-month average on Bloomberg. 00878 distributes ~7.6% a year, which lowers its price path.");
+  foot(s, "*Annualised vols from the team risk/return app (slide 4). Basket vol ~26% with Bloomberg-style correlations, the level the slide-5 Monte Carlo implies (the app's chart estimates ~17%). USD 5M/day ETF rule: EWY, EWT, 2644, 00878 pass; 3119 is borderline (~USD 4–5M/day), verify the 6-month average on Bloomberg. 00878 distributes ~7.6% a year, which lowers its price path.");
   pageNo(s, 6);
   s.addNotes("Five Bloomberg-listed ETFs: 3119 HK (Asia semiconductors), 2644 JP (Japan semiconductors), EWT and EWY (US-listed Taiwan and Korea country funds) and 00878 TT (Taiwan ESG high dividend). EWT and EWY trade in USD, so no quanto is needed; the HKD, JPY and TWD lines are quantoed into USD. Check: 3119 trading value against the USD 5M/day rule, 2644 top holdings, and 00878 distributions (~7.6% a year), which reduce its price-return path and so the chance of the basket getting back to 100%.");
 }
@@ -294,7 +296,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
                 ["Memory coupon, 70% barrier + 70% put", "Memory coupon, 70% barrier + 70% put", "30%"],
                 ["Capital protected (100%), memory coupon", "Memory coupon, 100% protected", "None"],
                 [OURS, "Classic memory autocall, no barrier (ours)", "Up to 100%"]];
-  const drow = [[hdr("Autocall design (same basket, issued at 98%)"), hdr("Fair cpn"), hdr("Loss risk"), hdr("Max loss")]];
+  const drow = [[hdr("Autocall design (same basket, issued at 98%)"), hdr("Fair cpn"), hdr("Loss risk (pricing)"), hdr("Max loss")]];
   show.forEach(([k, lab, ml]) => {
     const o = k === OURS ? { bold: true, color: JADE, fill: { color: MINT } } : {};
     drow.push([{ text: lab, options: o }, { text: pct(D[k].fair_coupon), options: o }, { text: pct(D[k].p_loss), options: o }, { text: ml, options: o }]);
@@ -324,7 +326,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
     const x = 2.15 + i * 1.6;
     dot(s, x, 1.49, "Y" + y, y === 5 ? MID : JADE, 0.42);
     txt(s, `If ≥ 100%: called,\n${pct(1 + CPN * y)} total`, { x: x - 0.5, y: 1.95, w: 1.42, h: 0.42, fontSize: 9, bold: true, color: y === 5 ? MID : JADE, align: "center" });
-    txt(s, `P(called by Y${y}) ${pct(RN.p_call_by_year[i], 0)}`, { x: x - 0.5, y: 2.36, w: 1.42, h: 0.22, fontSize: 8, color: MUTED, align: "center" });
+    txt(s, `P(called by Y${y}) ${pct(OUT.p_call_by_year[i], 0)}`, { x: x - 0.5, y: 2.36, w: 1.42, h: 0.22, fontSize: 8, color: MUTED, align: "center" });
   });
   // Payoff at Y5 (not called earlier)
   const xs = []; for (let x = 30; x <= 160; x += 0.5) xs.push(x);
@@ -335,9 +337,9 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
       showCatAxisTitle: true, catAxisTitle: "Final basket level (% of initial)", catAxisTitleFontSize: 8.5, catAxisTitleColor: MUTED,
       showTitle: true, title: "Total received at Y5 if never called", titleFontSize: 9.5 }));
   const outs = [
-    ["A", "Autocalled", `Basket ≥ 100% on any date from Q4: 100% plus every coupon to date. The note ends.`, pct(RN.p_called, 0), JADE],
-    ["B", "Not called, basket 70–100% at Y5", "Repaid at the basket level (e.g. 85% back), plus any early coupons.", pct(RN.p_floor - RN.p_repaid_below_70, 0), SLATE],
-    ["C", "Not called, basket < 70% at Y5", "Repaid at the basket level: the family bears the full fall.", pct(RN.p_repaid_below_70, 0), RED],
+    ["A", "Autocalled", `Basket ≥ 100% on any date from Q4: 100% plus every coupon to date. The note ends.`, pct(OUT.p_called, 1), JADE],
+    ["B", "Not called, basket 70–100% at Y5", "Repaid at the basket level (e.g. 85% back), plus any early coupons.", pct(OUT.p_floor - OUT.p_repaid_below_70, 1), SLATE],
+    ["C", "Not called, basket < 70% at Y5", "Repaid at the basket level: the family bears the full fall.", pct(OUT.p_repaid_below_70, 1), RED],
   ];
   outs.forEach((o, i) => {
     const y = 2.75 + i * 0.8;
@@ -345,10 +347,10 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
     dot(s, 5.27, y + 0.15, o[0], o[4], 0.42);
     txt(s, o[1], { x: 5.8, y: y + 0.06, w: 2.85, h: 0.27, fontSize: 10.5, bold: true, color: INK });
     txt(s, o[2], { x: 5.8, y: y + 0.32, w: 2.85, h: 0.38, fontSize: 8.5, color: TXT });
-    txt(s, [{ text: o[3], options: { bold: true, color: o[4], fontSize: 16, breakLine: true } }, { text: "risk-neutral", options: { color: MUTED, fontSize: 7.5 } }],
+    txt(s, [{ text: o[3], options: { bold: true, color: o[4], fontSize: 16, breakLine: true } }, { text: "team outlook", options: { color: MUTED, fontSize: 7.5 } }],
       { x: 8.65, y: y + 0.05, w: 0.85, h: 0.62, align: "center", valign: "middle" });
   });
-  foot(s, "Probabilities are risk-neutral (drift = funding rate − dividends); real-world outcomes are on slide 9. The desk's replication (bond, coupon digitals, short put) is in Appendix C; stress paths in Appendix B.");
+  foot(s, "Probabilities on the team outlook (app returns and vols, slides 4–5); other scenarios and the pricing measure are on slide 9. The desk's replication (bond, coupon digitals, short put) is in Appendix C; stress paths in Appendix B.");
   pageNo(s, 8);
   s.addNotes(`Explain the note as one question asked every quarter: is the basket at or above where it started? If yes, the family is paid ${pct(QC, 2)} for that quarter plus any coupons missed before, and from Year 1 the note also ends with 100% back. If the note is never called, the payoff chart shows the two zones at Year 5: at or above 100% the family receives ${pct(1 + CPN * 5)}; below 100% it is repaid at the basket level.`);
 }
@@ -356,11 +358,11 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
 // ======================= 9. Simulation results =======================
 {
   const s = contentSlide("STRATEGY");
-  title(s, "Simulation back-test: most paths end early with full coupons", "Monte Carlo outcome distribution: risk-neutral and under three real-world equity return assumptions");
-  s.addChart(pres.charts.BAR, [{ name: "Cumulative call probability", labels: ["Y1", "Y2", "Y3", "Y4", "Y5"], values: RN.p_call_by_year.map((x) => +(x * 100).toFixed(1)) }],
+  title(s, `Monte Carlo: on the team outlook the note is called in ${pct(OUT.p_called, 0)} of paths`, "Note outcomes on the team outlook (slides 4–5), on half that outlook, if markets go nowhere, and under the pricing measure");
+  s.addChart(pres.charts.BAR, [{ name: "Cumulative call probability", labels: ["Y1", "Y2", "Y3", "Y4", "Y5"], values: OUT.p_call_by_year.map((x) => +(x * 100).toFixed(1)) }],
     Object.assign(chartBase(), { x: 0.35, y: 1.2, w: 3.9, h: 2.6, barDir: "col", chartColors: [JADE], showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: '0"%"',
-      dataLabelFontSize: 9, dataLabelColor: TXT, valAxisMinVal: 0, valAxisMaxVal: 100, valAxisLabelFormatCode: '0"%"', showTitle: true, title: "Cumulative autocall probability (risk-neutral)", titleFontSize: 9.5 }));
-  const sc = [["Risk-neutral", RN], ["0% equity p.a.", R.real_world["0%"]], ["4% equity p.a.", R.real_world["4%"]], ["8% equity p.a.", R.real_world["8%"]]];
+      dataLabelFontSize: 9, dataLabelColor: TXT, valAxisMinVal: 0, valAxisMaxVal: 100, valAxisLabelFormatCode: '0"%"', showTitle: true, title: "Cumulative autocall probability (team outlook)", titleFontSize: 9.5 }));
+  const sc = [["Team outlook", OUT], ["Half outlook", HALF], ["0% (flat)", FLAT], ["Pricing (RN)", RN]];
   const rows = [[hdr("Metric"), ...sc.map((x) => hdr(x[0]))]];
   const add = (lab, f) => rows.push([{ text: lab, options: { bold: true } }, ...sc.map((x) => f(x[1]))]);
   add("Called within 5Y", (m) => pct(m.p_called, 0));
@@ -372,7 +374,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   add("Capital loss (not called)", (m) => pct(m.p_floor, 0));
   s.addTable(rows, { x: 4.45, y: 1.25, w: 5.1, colW: [1.42, 0.92, 0.92, 0.92, 0.92], fontFace: BF, fontSize: 9, color: TXT, align: "center", valign: "middle",
     border: { type: "solid", pt: 0.5, color: GRID }, fill: { color: WHITE }, rowH: 0.3, margin: [2, 4, 2, 4] });
-  const kp = [[pct(RN.p_call_by_year[0], 0), `called at the first review (${pct(1 + CPN)} total)`], [pct(RN.p_floor, 0), "chance of a loss: never called, repaid at the basket level"], [pct(RN.avg_repayment_when_hit, 0), "average repayment in those paths"]];
+  const kp = [[pct(OUT.p_call_by_year[0], 0), `called at the first review (${pct(1 + CPN)} total)`], [pct(OUT.irr_p50, 1), "median return a year on the team outlook"], [pct(FLAT.p_floor, 0), "chance of a loss if markets go nowhere"]];
   kp.forEach((k, i) => {
     const x = 0.45 + i * 3.05;
     card(s, x, 3.95, 2.85, 1.1, i === 2 ? INK : MINT);
@@ -381,15 +383,15 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   });
   foot(s, NOTE + " IRR uses actual quarterly coupon dates.");
   pageNo(s, 9);
-  s.addNotes(`The table answers 'what if markets go nowhere?'. Even at 0% equity return the note is called in ~${pct(R.real_world["0%"].p_called, 0)} of paths, because volatility alone takes the basket back to 100% on some date. The honest cost of the higher coupon: in ~${pct(RN.p_floor, 0)} of paths (risk-neutral; ${pct(R.real_world["8%"].p_floor, 0)} at 8% equity returns) the basket never gets back to its start and the family is repaid the basket's level, ${pct(RN.avg_repayment_when_hit, 0)} on average.`);
+  s.addNotes(`On the team outlook (the app's returns and volatilities, which reproduce the slide-5 Monte Carlo) the note is called in ${pct(OUT.p_called, 0)} of paths. The table also answers 'what if markets go nowhere?': at 0% the note is still called in ~${pct(FLAT.p_called, 0)} of paths, because volatility alone takes the basket back to 100% on some date. The honest cost of the higher coupon: if the basket never gets back to its start (${pct(OUT.p_floor, 1)} on the team outlook, ${pct(FLAT.p_floor, 0)} if flat) the family is repaid the basket's level.`);
 }
 
 // ======================= 10. Risks & hedging =======================
 {
   const s = contentSlide("STRATEGY");
   title(s, "Risks for the family, and how Natixis hedges its side", "Transparent disclosure plus a desk hedging plan for every exposure");
-  const risks = [["Capital loss", `Never called: repaid at the basket level (~${pct(RN.p_floor, 0)} of paths, ${pct(RN.avg_repayment_when_hit, 0)} back on average)`, "Diversified basket, memory coupon; only 5% of wealth"],
-                 ["Capped upside", `Basket +80% still pays ${pct(CPN, 2)} p.a. and is called at Y1`, "Rest of family wealth keeps direct equity exposure"],
+  const risks = [["Capital loss", `Never called: repaid at the basket level (${pct(OUT.p_floor, 1)} on the team outlook; ${pct(FLAT.p_floor, 0)} if markets go nowhere)`, "Diversified basket, memory coupon; only 5% of wealth"],
+                 ["Capped upside", `Team median is 2.8× in 5 years; the note pays ${pct(CPN, 2)} p.a. and is usually called by Y1`, "Coupons lock in gains if the rally stalls; rest of family wealth keeps direct equity exposure"],
                  ["ETF structure", "00878 pays ~7.6% a year out, lowering its price path; 3119 trading is thin; ETF tracking error", "00878 held at 15%; verify volumes; Natixis can reference total-return versions"],
                  ["Issuer credit", "Coupons and repayment depend on Natixis / BPCE", "BPCE senior rating; optional collateralised wrapper"],
                  ["Liquidity / MTM", "Sold before maturity, the price can be below 100%", "Natixis daily indicative price; hold to call or maturity"]];
@@ -416,7 +418,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
 // ======================= Appendix A: assumptions & method =======================
 {
   const s = contentSlide("APPENDIX");
-  title(s, "Appendix A: pricing assumptions and methodology", "Inputs to refresh on Bloomberg at trade date (BVOL / OVDV for vols, CORR for correlations)");
+  title(s, "Appendix A: pricing assumptions and methodology", "Vols and expected returns from the team risk/return app (slides 4–5); correlations and dividends to refresh on Bloomberg");
   const L = R.inputs.underlyings, names = Object.keys(L);
   const short = names.map((k) => k.replace(" Equity", "").replace(" Index", ""));
   const rows = [[hdr("ETF"), hdr("Weight"), hdr("Vol"), hdr("Div"), ...short.map(hdr)]];
@@ -502,21 +504,21 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   const xs = []; for (let x = 40; x <= 180; x += 1) xs.push(x);
   s.addChart(pres.charts.SCATTER, [{ name: "X", values: xs },
     { name: `Our note (${pct(CPN, 2)})`, values: xs.map((x) => (x >= 100 ? 100 + CPN * 500 : x)) },
-    { name: `Snowball ${pct(sb.coupon, 0)}, 65% barrier`, values: xs.map((x) => (x >= 100 ? 100 + sb.coupon * 500 : x >= sb.barrier * 100 ? 100 : x)) },
+    { name: `Snowball ${pct(sb.coupon, 1)}, 65% barrier`, values: xs.map((x) => (x >= 100 ? 100 + sb.coupon * 500 : x >= sb.barrier * 100 ? 100 : x)) },
     { name: "PPN", values: xs.map((x) => 100 + p.participation * Math.max(x - 100, 0)) }, { name: "Basket", values: xs }],
     Object.assign(chartBase(), { x: 0.4, y: 1.25, w: 5.0, h: 3.6, chartColors: [JADE, RED, ORANGE, SLATE], lineSize: 2, lineDataSymbol: "none", showLegend: true, legendPos: "b", legendFontSize: 8.5,
       valAxisMinVal: 30, valAxisMaxVal: 190, catAxisMinVal: 40, catAxisMaxVal: 180, catAxisMajorUnit: 20, valAxisLabelFormatCode: '0"%"', catAxisLabelFormatCode: '0"%"',
       showTitle: true, title: "Total received at Y5 (not called earlier) vs final basket level", titleFontSize: 9.5 }));
   const rows = [[hdr("Option"), hdr("Return"), hdr("Loss risk")],
-                [{ text: "Classic autocallable (ours)", options: { bold: true, color: JADE } }, `${pct(CPN, 2)} p.a. memory coupon`, pct(RN.p_floor, 0)],
+                [{ text: "Classic autocallable (ours)", options: { bold: true, color: JADE } }, `${pct(CPN, 2)} p.a. memory coupon`, `${pct(OUT.p_floor, 1)} (team outlook)`],
                 ["100% protected autocallable", `~${pct(R.protected_100_fair_coupon, 1)} fair coupon`, "0%"],
-                ["Snowball, 65% barrier", `${pct(sb.coupon, 0)} p.a., paid at call`, pct(sb.p_loss)],
+                ["Snowball, 65% barrier", `${pct(sb.coupon, 1)} fair, paid at call`, `${pct(sb.p_loss)} (pricing)`],
                 ["Principal-protected note", `${pct(p.participation, 0)} of basket gain at Y5`, "0%"]];
   s.addTable(rows, { x: 5.7, y: 1.3, w: 3.85, colW: [1.6, 1.45, 0.8], fontFace: BF, fontSize: 9, color: TXT, valign: "middle",
     border: { type: "solid", pt: 0.5, color: GRID }, fill: { color: WHITE }, rowH: 0.36, margin: [2, 4, 2, 4] });
   card(s, 5.7, 3.2, 3.85, 1.25);
   txt(s, [{ text: "Trade-off: ", options: { bold: true, color: JADE } },
-          { text: `The snowball pays ${pct(sb.coupon, 0)} but loses capital in ~${pct(sb.p_loss, 0)} of paths. Full protection pays only ~${pct(R.protected_100_fair_coupon, 0)}. The PPN pays nothing unless the basket ends above 100% after 5 years. Our note pays ${pct(CPN, 2)}, with money usually back within ~2 years, but takes the basket's fall if never called.` }],
+          { text: `The snowball's fair coupon is ${pct(sb.coupon, 1)}, but it loses capital in ~${pct(sb.p_loss, 0)} of paths (pricing measure). Full protection pays only ~${pct(R.protected_100_fair_coupon, 0)}. The PPN pays nothing unless the basket ends above 100% after 5 years. Our note pays ${pct(CPN, 2)}, with money usually back within ~${OUT.exp_life_y.toFixed(0)} year on the team outlook, but takes the basket's fall if never called.` }],
     { x: 5.85, y: 3.27, w: 3.6, h: 1.12, fontSize: 9 });
   foot(s, NOTE);
 }

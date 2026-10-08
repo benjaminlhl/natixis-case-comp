@@ -73,7 +73,7 @@ const DOT = MD.fomc_dots_sep2026;
 s.addImage({ path: path.join(__dirname, "fomc_dot_plot_compact.png"), x: RX, y: 1.95, w: 3.6, h: 3.6 * 638 / 1804 });
 T("FOMC dot plot, 16 Sep 2026 (shaded: today's 3.75–4.00%)", { x: RX, y: 3.25, w: 3.6, h: 0.2, fontSize: 7.5, italic: true, color: MUTED });
 T([{ text: "Rates stay high", options: { bold: true, color: BLUE, breakLine: true } },
-   { text: `Fed median 4.125% to end-2027, cuts only from 2028; ${DOT["2026"]["4.375"] + DOT["2027"]["4.375"]} dots see 4.375%.` }],
+   { text: `Fed median 4.125% to end-2027, cuts only from 2028; 4.375% seen by ${DOT["2026"]["4.375"]} members for 2026 and ${DOT["2027"]["4.375"]} for 2027.` }],
   { x: RX + 3.75, y: 1.98, w: RW - 3.75, h: 1.3, fontSize: 9.5, color: TXT, paraSpaceAfter: 2 });
 const R100 = TN.rates["+100bp"];
 const why = [
@@ -82,7 +82,7 @@ const why = [
   ["91.2", "Volatility is at records", "VKOSPI's all-time high; KOSPI fell ~25% from June to August 2026.",
     "Coupons pay on recovery, no timing needed; rich option premium funds them"],
   ["~92%", "Concentrated and fully priced", "of advanced chips come from Taiwan; Nikkei CAPE 38.6×.",
-    "Diversified five-ETF basket; capping upside at the coupon costs little"],
+    "Diversified five-ETF basket; coupons lock in gains if the rally stalls"],
 ];
 why.forEach(([big, head, body, link], i) => {
   const y = 3.5 + i * 0.83;

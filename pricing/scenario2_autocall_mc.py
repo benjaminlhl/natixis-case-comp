@@ -22,7 +22,8 @@ NAMES = ["3119 HK Equity", "2644 JP Equity", "EWT US Equity", "EWY US Equity", "
 LABELS = ["Global X Asia Semiconductor ETF", "Global X Japan Semiconductor ETF", "iShares MSCI Taiwan ETF",
           "iShares MSCI South Korea ETF", "Cathay Taiwan ESG Sustainability High Dividend ETF"]
 W = np.array([0.35, 0.15, 0.15, 0.20, 0.15])
-VOL = np.array([0.32, 0.38, 0.26, 0.30, 0.18])          # assumed 5Y implied vols
+VOL = np.array([0.176, 0.26, 0.36, 0.49, 0.37])       # annualised vols from the team's risk/return app (strategy slide)
+APP_MU = np.array([0.257, 0.25, 0.311, 0.238, 0.272])  # app expected returns; with VOL they reproduce the app's Monte Carlo
 DIV = np.array([0.010, 0.008, 0.026, 0.012, 0.076])     # distribution yields (00878 ~7.6%: price-return ETF)
 CORR = np.array([[1.00, 0.70, 0.85, 0.80, 0.60],
                  [0.70, 1.00, 0.60, 0.55, 0.45],
@@ -30,6 +31,10 @@ CORR = np.array([[1.00, 0.70, 0.85, 0.80, 0.60],
                  [0.80, 0.55, 0.70, 1.00, 0.55],
                  [0.60, 0.45, 0.75, 0.55, 1.00]])
 NA = len(W)
+# Present the ETFs in the strategy slide's order: 3119 HK, EWY, EWT, 2644 JP, 00878 TT
+PERM = [0, 3, 2, 1, 4]
+NAMES, LABELS = [NAMES[i] for i in PERM], [LABELS[i] for i in PERM]
+W, VOL, APP_MU, DIV, CORR = W[PERM], VOL[PERM], APP_MU[PERM], DIV[PERM], CORR[np.ix_(PERM, PERM)]
 
 # USD funding grid (game rules), linear interpolation on tenor
 GRID_T = np.array([1, 2, 3, 5, 7, 10, 20])
@@ -243,7 +248,8 @@ if __name__ == "__main__":
     designs["Classic memory autocall, no barrier (ours)"] = [res["recommended"]["fair_coupon"], stats(B)["p_floor"]]
     res["designs"] = {k: {"fair_coupon": round(v[0], 4), "p_loss": v[1]} for k, v in designs.items()}
     res["draft_8_5_fixed_70_pv"] = round(float(fixed_coupon(B, 0.085, barrier=0.70)[0].mean()), 4)
-    res["snowball_alt"] = {"coupon": 0.09, "barrier": 0.65, "p_loss": p_breach(snowball, B, 0.09, 0.65),
+    csb = designs["Snowball, 65% barrier"][0]
+    res["snowball_alt"] = {"coupon": csb, "barrier": 0.65, "p_loss": p_breach(snowball, B, csb, 0.65),
                            "fair_coupon": designs["Snowball, 65% barrier"][0]}
 
     # 3. Risk-neutral statistics and call profile
@@ -267,8 +273,10 @@ if __name__ == "__main__":
     res["coupon_sens"] = sens
 
     # 5. Real-world outcome distributions (equity total-return drift scenarios)
-    res["real_world"] = {f"{int(d*100)}%": stats(simulate(real_world=True, eq_drift=d, n=100_000))
-                         for d in [0.00, 0.04, 0.08]}
+    res["real_world"] = {k: stats(simulate(real_world=True, eq_drift=d, n=100_000))
+                         for k, d in [("app", APP_MU), ("half", APP_MU / 2), ("0%", 0.0)]}
+    Bapp = simulate(real_world=True, eq_drift=APP_MU, n=100_000)
+    res["app_basket"] = {p: [round(float(np.percentile(Bapp[:, 4 * y - 1], p)), 3) for y in range(1, 6)] for p in (5, 50, 95)}
 
     # 6. Fan chart percentiles (risk-neutral)
     res["fan"] = {p: [round(float(np.percentile(B[:, q - 1], p)), 3) for q in range(1, 21)] for p in [5, 25, 50, 75, 95]}

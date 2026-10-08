@@ -41,15 +41,21 @@ Fair coupons at a 98% issue price, same basket:
 - The team chose the classic autocall: the highest coupon, in exchange for bearing the basket's fall if the note is never called.
 - The offer is 12.75% because the lowest fair coupon across the market sensitivities is 12.89% (vol −3pts).
 
-## Key numbers (risk-neutral unless stated)
-- Called at Y1: 49%. Called within 5Y: 79%. Expected life: 2.22 years.
-- Never called (loss): 21.0%; average repayment in those paths 56%; repaid below 70%: 15.9%.
-- Mean IRR 7.8%, median IRR 13.0%.
-- Real-world (equity total return 0% / 4% / 8% a year): mean IRR 4.3% / 7.1% / 9.1%; chance of a loss 32% / 23% / 16%.
-- Fair-coupon sensitivity: vol ±3pts 12.9%–15.5%; correlation ±0.15 13.2%–15.0%; equity drift −1% / −2% 15.5% / 17.2%; coupon barrier 95% / 90% 13.0% / 12.0%.
-- Basket Monte Carlo (team app, per USD 100,000): median USD 279.6k at Year 5, 5th percentile USD 103.6k, 99.0% of paths at or above USD 70,000.
+## Key numbers
+Outcome statistics use the **team outlook**: the risk/return app's single-ETF vols and expected returns (strategy slide), which reproduce the app's Monte Carlo (median 2.8× at Year 5). Pricing uses the risk-neutral measure.
+
+| | Team outlook | Half outlook | 0% (flat) | Pricing (risk-neutral) |
+|---|---|---|---|---|
+| Called within 5Y | 99% | 91% | 67% | 78% |
+| Called at Y1 | 78% | 61% | 41% | 48% |
+| Expected life (yrs) | 1.23 | 1.72 | 2.64 | 2.25 |
+| Mean / median IRR | 13.0% / 13.3% | 11.1% / 13.2% | 4.3% / 12.6% | 7.8% / 12.9% |
+| Capital loss (never called) | 0.8% | 8.6% | 32.9% | 21.6% |
+
+- Fair coupon 14.1%; lowest across sensitivities 12.9% (vol −3pts), so the 12.75% offer holds. Natixis margin 3.50%.
+- Basket vol ~26% with Bloomberg-style correlations (consistent with the app's Monte Carlo); the app's risk/return chart shows ~17% for the basket: check the app's correlation inputs.
 
 ## To do before submission
-- Pull Bloomberg vols (BVOL/OVDV), correlations and dividends, then re-run the pricer; align the ~17% basket volatility on the strategy slide (team app) with the ~26% used in pricing.
+- Pull Bloomberg correlations and dividends, then re-run the pricer; reconcile the app's ~17% basket volatility (risk/return chart) with the ~27% its Monte Carlo implies.
 - Confirm 3119 HK's 6-month average daily value traded is above USD 5M.
 - Run a historical rolling-window back-test (monthly launches since 2021).
