@@ -1,0 +1,200 @@
+{
+ "0% equity p.a.": {
+  "strategies": {
+   "Protected autocall (ours)": {
+    "mean_irr": 0.047,
+    "median_irr": 0.067,
+    "p_loss": 0.0,
+    "worst_5pct_irr": -0.0,
+    "irr_stdev": 0.0305,
+    "ret_per_risk": -0.32
+   },
+   "Direct basket": {
+    "mean_irr": -0.0167,
+    "median_irr": -0.0207,
+    "p_loss": 0.5903,
+    "worst_5pct_irr": -0.158,
+    "irr_stdev": 0.0905,
+    "ret_per_risk": -0.81
+   },
+   "5Y USD bond": {
+    "mean_irr": 0.0569,
+    "median_irr": 0.0569,
+    "p_loss": 0.0,
+    "worst_5pct_irr": 0.0569,
+    "irr_stdev": 0.0,
+    "ret_per_risk": null
+   },
+   "Principal-protected note": {
+    "mean_irr": 0.0201,
+    "median_irr": 0.0,
+    "p_loss": 0.0,
+    "worst_5pct_irr": 0.0,
+    "irr_stdev": 0.0419,
+    "ret_per_risk": -0.88
+   }
+  },
+  "regimes": {
+   "Bear (< 0% p.a.)": {
+    "share_of_paths": 0.59,
+    "Protected autocall (ours)": 0.0341,
+    "Direct basket": -0.0768,
+    "5Y USD bond": 0.0569,
+    "Principal-protected note": 0.0
+   },
+   "Flat (0-4%)": {
+    "share_of_paths": 0.153,
+    "Protected autocall (ours)": 0.0621,
+    "Direct basket": 0.0193,
+    "5Y USD bond": 0.0569,
+    "Principal-protected note": 0.0034
+   },
+   "Moderate (4-10%)": {
+    "share_of_paths": 0.154,
+    "Protected autocall (ours)": 0.0675,
+    "Direct basket": 0.0668,
+    "5Y USD bond": 0.0569,
+    "Principal-protected note": 0.0434
+   },
+   "Bull (> 10%)": {
+    "share_of_paths": 0.103,
+    "Protected autocall (ours)": 0.0683,
+    "Direct basket": 0.1502,
+    "5Y USD bond": 0.0569,
+    "Principal-protected note": 0.1256
+   }
+  }
+ },
+ "4% equity p.a.": {
+  "strategies": {
+   "Protected autocall (ours)": {
+    "mean_irr": 0.054,
+    "median_irr": 0.0681,
+    "p_loss": 0.0,
+    "worst_5pct_irr": -0.0,
+    "irr_stdev": 0.0267,
+    "ret_per_risk": -0.11
+   },
+   "Direct basket": {
+    "mean_irr": 0.023,
+    "median_irr": 0.0187,
+    "p_loss": 0.4199,
+    "worst_5pct_irr": -0.1243,
+    "irr_stdev": 0.0944,
+    "ret_per_risk": -0.36
+   },
+   "5Y USD bond": {
+    "mean_irr": 0.0569,
+    "median_irr": 0.0569,
+    "p_loss": 0.0,
+    "worst_5pct_irr": 0.0569,
+    "irr_stdev": 0.0,
+    "ret_per_risk": null
+   },
+   "Principal-protected note": {
+    "mean_irr": 0.0371,
+    "median_irr": 0.0,
+    "p_loss": 0.0,
+    "worst_5pct_irr": 0.0,
+    "irr_stdev": 0.0573,
+    "ret_per_risk": -0.35
+   }
+  },
+  "regimes": {
+   "Bear (< 0% p.a.)": {
+    "share_of_paths": 0.42,
+    "Protected autocall (ours)": 0.0372,
+    "Direct basket": -0.0638,
+    "5Y USD bond": 0.0569,
+    "Principal-protected note": 0.0
+   },
+   "Flat (0-4%)": {
+    "share_of_paths": 0.169,
+    "Protected autocall (ours)": 0.062,
+    "Direct basket": 0.0198,
+    "5Y USD bond": 0.0569,
+    "Principal-protected note": 0.0035
+   },
+   "Moderate (4-10%)": {
+    "share_of_paths": 0.209,
+    "Protected autocall (ours)": 0.0675,
+    "Direct basket": 0.0682,
+    "5Y USD bond": 0.0569,
+    "Principal-protected note": 0.0448
+   },
+   "Bull (> 10%)": {
+    "share_of_paths": 0.202,
+    "Protected autocall (ours)": 0.0683,
+    "Direct basket": 0.1593,
+    "5Y USD bond": 0.0569,
+    "Principal-protected note": 0.1345
+   }
+  }
+ },
+ "8% equity p.a.": {
+  "strategies": {
+   "Protected autocall (ours)": {
+    "mean_irr": 0.0599,
+    "median_irr": 0.0684,
+    "p_loss": 0.0,
+    "worst_5pct_irr": -0.0,
+    "irr_stdev": 0.0215,
+    "ret_per_risk": 0.14
+   },
+   "Direct basket": {
+    "mean_irr": 0.0658,
+    "median_irr": 0.0612,
+    "p_loss": 0.2597,
+    "worst_5pct_irr": -0.087,
+    "irr_stdev": 0.0982,
+    "ret_per_risk": 0.09
+   },
+   "5Y USD bond": {
+    "mean_irr": 0.0569,
+    "median_irr": 0.0569,
+    "p_loss": 0.0,
+    "worst_5pct_irr": 0.0569,
+    "irr_stdev": 0.0,
+    "ret_per_risk": null
+   },
+   "Principal-protected note": {
+    "mean_irr": 0.0626,
+    "median_irr": 0.0379,
+    "p_loss": 0.0,
+    "worst_5pct_irr": 0.0,
+    "irr_stdev": 0.0731,
+    "ret_per_risk": 0.08
+   }
+  },
+  "regimes": {
+   "Bear (< 0% p.a.)": {
+    "share_of_paths": 0.26,
+    "Protected autocall (ours)": 0.0399,
+    "Direct basket": -0.0525,
+    "5Y USD bond": 0.0569,
+    "Principal-protected note": 0.0
+   },
+   "Flat (0-4%)": {
+    "share_of_paths": 0.153,
+    "Protected autocall (ours)": 0.0625,
+    "Direct basket": 0.0203,
+    "5Y USD bond": 0.0569,
+    "Principal-protected note": 0.0038
+   },
+   "Moderate (4-10%)": {
+    "share_of_paths": 0.24,
+    "Protected autocall (ours)": 0.0675,
+    "Direct basket": 0.0693,
+    "5Y USD bond": 0.0569,
+    "Principal-protected note": 0.0459
+   },
+   "Bull (> 10%)": {
+    "share_of_paths": 0.347,
+    "Protected autocall (ours)": 0.0684,
+    "Direct basket": 0.1718,
+    "5Y USD bond": 0.0569,
+    "Principal-protected note": 0.1468
+   }
+  }
+ }
+}
