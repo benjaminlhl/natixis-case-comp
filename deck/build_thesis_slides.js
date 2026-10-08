@@ -142,6 +142,82 @@ async function icon(Comp, color) {
     s.addNotes("Thesis 2 in two halves. Economic: AI hardware demand is structural, but chip stocks move in violent cycles, 2026 prices already reflect a boom, and the indices are concentrated in a few names; governance reforms support a recovery to the starting level. Finance: high USD rates make the 100% protection cheap, Asian volatility makes the 100% coupon trigger likely, and the autocall pays as soon as the basket recovers, with memory catching up missed coupons. Together: the family keeps the theme without the drawdown.");
   }
 
+  // ===== Thesis 2, one-slide version: traditional strategies fall short, a protected autocall fits 2026 =====
+  {
+    const { s, T } = mk("Investment thesis 2: Traditional strategies fall short; a protected autocall fits 2026", "ANALYSIS");
+    T("A volatile chip boom plus high USD rates: the conditions where an autocall beats bonds, stocks and plain protected notes",
+      { x: 0.5, y: 1.05, w: 12.3, h: 0.3, fontSize: 11.5, bold: true, italic: true, color: TXT });
+    const REC = RES.recommended, RN = RES.rn, SV = RES.coupon_sens, CPN = RES.inputs.coupon;
+    const base = VT["4% equity p.a."];
+    const PW = 4.08, PX = [0.5, 0.5 + PW + 0.2], PY = [1.45, 3.7];
+    const panel = (i, head) => {
+      const x = PX[i % 2], y = PY[Math.floor(i / 2)];
+      s.addShape(pres.shapes.RECTANGLE, { x, y, w: PW, h: 0.32, fill: { color: BLUE }, line: { color: BLUE } });
+      T(head, { x, y, w: PW, h: 0.32, fontSize: 10.5, bold: true, color: WHITE, align: "center", valign: "middle" });
+      return { x, y: y + 0.36 };
+    };
+    const cap = (x, y, t) => T(t, { x, y, w: PW, h: 0.4, fontSize: 8.5, color: MUTED });
+
+    // P1: rates
+    let p = panel(0, "High USD rates make protection cheap");
+    s.addChart(pres.charts.LINE, [{ name: "USD funding", labels: ["1Y", "2Y", "3Y", "5Y", "7Y", "10Y", "20Y"], values: [4.78, 5.30, 5.52, 5.69, 5.75, 5.82, 6.04] }],
+      Object.assign(chartBase(), { x: p.x, y: p.y, w: PW, h: 1.38, chartColors: [BLUE], lineSize: 2, lineDataSymbol: "circle", lineDataSymbolSize: 4, showTitle: false,
+        valAxisMinVal: 4.5, valAxisMaxVal: 6.25, valAxisLabelFormatCode: '0.0"%"', catAxisLabelFontSize: 8, valAxisLabelFontSize: 8, showLegend: false }));
+    cap(p.x, p.y + 1.42, `Case funding grid: 5Y at 5.69%, so USD 100 repaid at year 5 costs only USD ${(RES.inputs.zcb_5y * 100).toFixed(1)} today. If rates fall, protection gets dearer.`);
+
+    // P2: volatility
+    p = panel(1, "Volatility demands protection");
+    const d = [["TAIEX", -0.316], ["KOSPI", -0.249], ["Global chip index", -0.36]];
+    s.addChart(pres.charts.BAR, [{ name: "2022", labels: d.map((x) => x[0]), values: d.map((x) => +(x[1] * 100).toFixed(1)) }],
+      Object.assign(chartBase(), { x: p.x, y: p.y, w: PW, h: 1.38, barDir: "col", chartColors: [RED], showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: '0"%"',
+        dataLabelFontSize: 8, dataLabelColor: TXT, valAxisHidden: true, valGridLine: { style: "none" }, valAxisMinVal: -45, valAxisMaxVal: 0, showTitle: false, showLegend: false, catAxisLabelFontSize: 8 }));
+    cap(p.x, p.y + 1.42, "2022 down-cycle: chip markets fell 25–36% in a year. In 2026 KOSPI roughly doubled, then had two violent one-day crashes (verify).");
+
+    // P3: regimes
+    p = panel(2, "The autocall wins in most markets");
+    const strat = [["Protected autocall (ours)", "Our autocall"], ["Direct basket", "Hold the basket"], ["5Y USD bond", "5Y bond"]];
+    const regs = Object.keys(base.regimes);
+    s.addChart(pres.charts.BAR, strat.map(([k, n]) => ({ name: n, labels: regs.map((r) => r.split(" (")[0]), values: regs.map((r) => +(base.regimes[r][k] * 100).toFixed(1)) })),
+      Object.assign(chartBase(), { x: p.x, y: p.y, w: PW, h: 1.38, barDir: "col", barGrouping: "clustered", chartColors: [BLUE, "A6A6A6", "404040"], showTitle: false,
+        showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: "0", dataLabelFontSize: 7, dataLabelColor: TXT, valAxisMinVal: -10, valAxisMaxVal: 20,
+        valAxisLabelFormatCode: '0"%"', catAxisLabelFontSize: 8, valAxisLabelFontSize: 8, showLegend: true, legendPos: "r", legendFontSize: 8, legendFontFace: F }));
+    cap(p.x, p.y + 1.42, "Mean return % p.a. by type of 5-year market (team simulation, equities +4% p.a.). Ties the stocks in moderate markets, beats them in bear and flat ones.");
+
+    // P4: summary table
+    p = panel(3, "Bonds, stocks and plain protection fall short");
+    const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { color: BLUE } } });
+    const rows = [[hdr("Strategy"), hdr("Mean"), hdr("Median"), hdr("Loss risk")]];
+    [["Protected autocall (ours)", "Our protected autocall"], ["5Y USD bond", "5Y USD bond"], ["Direct basket", "Hold the basket"], ["Principal-protected note", "Plain protected note"]].forEach(([k, n]) => {
+      const x = base.strategies[k], ours = k.startsWith("Protected");
+      const o = ours ? { bold: true, color: BLUE, fill: { color: BLUE_L } } : {};
+      rows.push([{ text: n, options: o }, { text: pct(x.mean_irr), options: o }, { text: pct(x.median_irr), options: o }, { text: pct(x.p_loss, 0), options: o }]);
+    });
+    s.addTable(rows, { x: p.x, y: p.y + 0.02, w: PW, colW: [1.85, 0.72, 0.76, 0.75], fontFace: F, fontSize: 9, color: TXT, valign: "middle",
+      border: { type: "solid", pt: 0.5, color: LINE }, fill: { color: WHITE }, rowH: 0.27, margin: [1, 4, 1, 4] });
+    cap(p.x, p.y + 1.42, "The bond is steady but gives no AI exposure; the stocks lose money in 42% of paths; a plain protected note's median outcome is 0%.");
+
+    // Implications column
+    const IX = 8.98, IW = 3.85;
+    T("Implications", { x: IX, y: 1.4, w: IW, h: 0.35, fontSize: 15, bold: true, color: TXT, align: "center" });
+    s.addShape(pres.shapes.LINE, { x: IX + 0.3, y: 1.78, w: IW - 0.6, h: 0, line: { color: BLUE, width: 0.75 } });
+    const imp = [["Lock in protection now", "High rates fund 100% capital protection; that window narrows as rates fall"],
+                 ["Volatility becomes income", `It raises the chance of touching 100%: fair coupon ${pct(SV.base)}, ${pct(SV["vol +3pts"])} if vol rises 3pts`],
+                 ["Pays without a rally", "6.2% p.a. vs 2.0% for the stocks when the basket goes sideways"],
+                 ["Early exit built in", `${pct(RN.p_call_by_year[0], 0)} called at year 1 and ${pct(RN.p_called, 0)} within 5 years: capital recycled, missed coupons caught up`],
+                 ["Proven in Asia", "Taiwan structured-note issuance +81% in 2025; snowball autocalls the favourite payoff (SRP)"]];
+    imp.forEach((m, i) => {
+      const y = 1.88 + i * 0.8;
+      s.addShape(pres.shapes.RECTANGLE, { x: IX, y, w: IW, h: 0.72, fill: { color: WHITE }, line: { color: BLUE, width: 1 } });
+      T(String(i + 1), { x: IX + 0.05, y, w: 0.45, h: 0.72, fontSize: 22, bold: true, italic: true, color: BLUE, align: "center", valign: "middle" });
+      T([{ text: m[0] + ": ", options: { bold: true, color: TXT } }, { text: m[1], options: { color: MUTED } }],
+        { x: IX + 0.55, y: y + 0.03, w: IW - 0.65, h: 0.66, fontSize: 9, valign: "middle" });
+    });
+    s.addShape(pres.shapes.RECTANGLE, { x: 0.5, y: 6.0, w: 12.33, h: 0.48, fill: { color: BLUE }, line: { color: BLUE } });
+    T(`Result: ${pct(CPN, 2)} a year whenever the basket is back at its start, 100% of capital at maturity, money back in ~${RN.exp_life_y.toFixed(1)} years on average.`, { x: 0.65, y: 6.0, w: 12.03, h: 0.48, fontSize: 12.5, bold: true, color: WHITE, align: "center", valign: "middle" });
+    note(T, "Sources: case funding grid; TWSE, Korea Times, Bloomberg/BNN (2022); BIT Research (KOSPI 2026, single source); StructuredRetailProducts.com; team Monte Carlo (pricing/scenario2_vs_traditional.py, scenario2_autocall_mc.py).", 6.56);
+    s.addNotes("One-slide version of thesis 2, modelled on the 'traditional strategies fall short' format. Four panels: rates (protection is cheap), volatility (protection is needed), the market-type comparison and the summary table (the autocall beats the alternatives). Implications on the right make the case for the autocall. Use this instead of the two-part thesis 2 plus evidence slide if you need to save a slide.");
+  }
+
   // ===== Thesis 2 evidence: autocallables beat the normal ways to own the theme =====
   {
     const { s, T } = mk("Thesis 2 evidence: the protected autocall beats the usual ways to own this theme", "STRATEGY");
