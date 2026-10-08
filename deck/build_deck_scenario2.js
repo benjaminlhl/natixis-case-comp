@@ -28,6 +28,7 @@ function scaledPres(p) {
     shapes: p.shapes, charts: p.charts,
     addSlide() {
       const s = p.addSlide();
+      this.last = s;
       return {
         set background(b) { s.background = b; },
         addText: (t, o) => s.addText(scaleText(t), scaleOpts(o, true)),
@@ -47,10 +48,11 @@ const pres = new pptxgen();
 pres.layout = "LAYOUT_16x9"; // 10 x 5.625
 pres.title = "Asian Digital Transformation Autocallable Note";
 
-// Palette: "Jade & Ink" (Asian digital, legacy wealth)
-const INK = "0B3C49", JADE = "0F8B8D", MINT = "E6F2F0", GOLD = "D9961A", RED = "B8433A",
-      TXT = "1D2B30", MUTED = "5F7176", WHITE = "FFFFFF", GRID = "DCE7E5", SLATE = "8FA6AA";
-const HF = "Cambria", BF = "Calibri";
+// Palette: team template (blue, Arial), shared with the thesis and strategy slides
+const BLUE = "2C5F82", INK = BLUE, JADE = BLUE, MID = "4F86AE", BLUE_M = "8DB3D1", MINT = "E8EFF5", GRAY = "F2F2F2",
+      RED = "B23B3B", ORANGE = "E67E22", GREEN = "2E9E44", HL = "BFD7EA", LINE = "BFBFBF",
+      TXT = "262626", MUTED = "595959", WHITE = "FFFFFF", GRID = "E3E3E3", SLATE = "A6A6A6";
+const HF = "Arial", BF = "Arial";
 
 const pct = (x, d = 1) => ((Math.abs(x) < 5e-5 ? 0 : x) * 100).toFixed(d) + "%";
 const CPN = R.inputs.coupon, QC = CPN / 4;
@@ -59,18 +61,61 @@ const SHORT = { "3119 HK Equity": "Asia Semiconductor (3119 HK)", "2644 JP Equit
                 "EWY US Equity": "iShares MSCI South Korea (EWY)", "00878 TT Equity": "Taiwan ESG High Dividend (00878 TT)" };
 const NOTE = "Monte Carlo, 200k paths. Vols, dividends and correlations are assumptions to refresh with Bloomberg data as of the 17 Sep 2026 trade date; discounting uses the USD funding grid.";
 
+// Team template geometry (the 13.33 x 7.5 template scaled by 0.75 onto this 10 x 5.625 deck)
 function title(s, t, sub) {
-  s.addText(t, { x: 0.5, y: 0.28, w: 9, h: 0.55, fontFace: HF, fontSize: 22, bold: true, color: INK, margin: 0, isTextBox: true });
-  if (sub) s.addText(sub, { x: 0.5, y: 0.82, w: 9, h: 0.32, fontFace: BF, fontSize: 12.5, italic: true, color: MUTED, margin: 0, isTextBox: true });
+  const r = s.raw || s;
+  r.addText(t, { x: 0.375, y: 0.225, w: 9.225, h: 0.45, fontFace: HF, fontSize: 16.5, color: TXT, margin: 0, valign: "middle", isTextBox: true });
+  r.addShape(pres.shapes.LINE, { x: 0.375, y: 0.735, w: 9.25, h: 0, line: { color: BLUE, width: 0.75 } });
+  if (sub) r.addText(sub, { x: 0.375, y: 0.785, w: 9.25, h: 0.23, fontFace: BF, fontSize: 8.5, italic: true, color: MUTED, margin: 0, isTextBox: true });
+}
+function sectionFooter(r, section) {
+  r.addShape(pres.shapes.LINE, { x: 0.375, y: 5.235, w: 9.25, h: 0, line: { color: LINE, width: 0.56 } });
+  [["ANALYSIS", 0.375], ["STRATEGY", 3.5175], ["APPENDIX", 6.6675]].forEach(([t, x]) => {
+    const on = t === section;
+    if (on) r.addShape(pres.shapes.RECTANGLE, { x: x + 0.45, y: 5.22, w: 2.0625, h: 0.0375, fill: { color: BLUE }, line: { color: BLUE } });
+    r.addText(t, { x, y: 5.2875, w: 2.9625, h: 0.225, fontFace: BF, fontSize: 9, bold: on, color: on ? BLUE : MUTED, align: "center", charSpacing: 1, margin: 0, isTextBox: true });
+  });
 }
 function pageNo(s, n) {
-  s.addText(String(n), { x: 9.1, y: 5.25, w: 0.4, h: 0.25, fontFace: BF, fontSize: 9, color: MUTED, align: "right", margin: 0, isTextBox: true });
+  (s.raw || s).addText(String(n), { x: 9.3, y: 5.2875, w: 0.32, h: 0.225, fontFace: BF, fontSize: 8, color: MUTED, align: "right", margin: 0, isTextBox: true });
 }
 function foot(s, txt) {
-  s.addText(txt, { x: 0.5, y: 5.22, w: 8.4, h: 0.3, fontFace: BF, fontSize: 8, italic: true, color: MUTED, margin: 0, valign: "top", isTextBox: true });
+  (s.raw || s).addText(txt, { x: 0.375, y: 4.99, w: 8.8, h: 0.23, fontFace: BF, fontSize: 6.8, italic: true, color: MUTED, margin: 0, valign: "top", isTextBox: true });
+}
+// Content of the original 16:9 layout (y 1.15-5.15) is moved into the template's body (y 1.05-4.95);
+// Arial runs wider than Calibri, so font sizes are trimmed by 8%.
+const FY = (y) => 1.05 + (y - 1.15) * 0.975, FH = 0.975, FF = 0.92;
+function fitOpts(o, top) {
+  if (Array.isArray(o)) return o.map((v) => fitOpts(v, false));
+  if (!o || typeof o !== "object") return o;
+  const r = {};
+  for (const [k, v] of Object.entries(o)) {
+    if (top && k === "y" && typeof v === "number") r[k] = FY(v);
+    else if (top && k === "h" && typeof v === "number") r[k] = v * FH;
+    else if (top && k === "rowH") r[k] = Array.isArray(v) ? v.map((z) => z * FH) : v * FH;
+    else if (/^fontSize$|FontSize$/.test(k) && typeof v === "number") r[k] = Math.round(v * FF * 10) / 10;
+    else if (k === "options" || k === "text") r[k] = fitOpts(v, false);
+    else r[k] = v;
+  }
+  return r;
+}
+const fitText = (t) => (Array.isArray(t) ? t.map((run) => (run && typeof run === "object" ? fitOpts(run, false) : run)) : t);
+function contentSlide(section) {
+  const r = pres.addSlide();
+  r.background = { color: WHITE };
+  if (section) sectionFooter(r, section);
+  return {
+    raw: r,
+    addText: (t, o) => r.addText(fitText(t), fitOpts(o, true)),
+    addShape: (type, o) => r.addShape(type, fitOpts(o, true)),
+    addImage: (o) => r.addImage(fitOpts(o, true)),
+    addChart: (type, data, o) => r.addChart(type, data, fitOpts(o, true)),
+    addTable: (rows, o) => r.addTable(rows.map((row) => row.map((c) => (c && typeof c === "object" ? fitOpts(c, false) : c))), fitOpts(o, true)),
+    addNotes: (t) => r.addNotes(t),
+  };
 }
 function card(s, x, y, w, h, fill) {
-  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w, h, fill: { color: fill || MINT }, rectRadius: 0.07, line: { color: fill || MINT } });
+  s.addShape(pres.shapes.RECTANGLE, { x, y, w, h, fill: { color: fill || MINT }, line: { color: fill || MINT } });
 }
 function dot(s, x, y, label, color, size = 0.42) {
   s.addShape(pres.shapes.OVAL, { x, y, w: size, h: size, fill: { color: color || JADE } });
@@ -91,17 +136,17 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
 {
   const s = pres.addSlide(); s.background = { color: INK };
   s.addShape(pres.shapes.OVAL, { x: 6.4, y: -1.4, w: 5.4, h: 5.4, fill: { color: JADE, transparency: 35 } });
-  s.addShape(pres.shapes.OVAL, { x: 8.3, y: 3.5, w: 2.4, h: 2.4, fill: { color: GOLD, transparency: 15 } });
+  s.addShape(pres.shapes.OVAL, { x: 8.3, y: 3.5, w: 2.4, h: 2.4, fill: { color: BLUE_M, transparency: 25 } });
   txt(s, "Investment Strategy Challenge 2026 · Proposal for NKE Private Wealth (Chak family)", { x: 0.6, y: 0.6, w: 7.5, h: 0.35, fontSize: 12.5, color: "BFDCD8" });
   txt(s, "Asian Digital Transformation Autocallable Note", { x: 0.6, y: 1.05, w: 6.2, h: 1.75, fontFace: HF, fontSize: 34, bold: true, color: WHITE, valign: "middle" });
   txt(s, `${pct(CPN, 2)} a year from Asia's semiconductor build-out, with at least 70% of capital back whatever happens`, { x: 0.6, y: 3.0, w: 6.0, h: 0.85, fontSize: 15, italic: true, color: "E3F1EF" });
-  txt(s, `USD 100mn · 5-year note issued by Natixis · ${pct(CPN, 2)} p.a. memory coupon · 70% barrier + embedded 70% put · Trade date 17 Sep 2026`, { x: 0.6, y: 4.45, w: 7.6, h: 0.4, fontSize: 11.5, bold: true, color: GOLD });
+  txt(s, `USD 100mn · 5-year note issued by Natixis · ${pct(CPN, 2)} p.a. memory coupon · 70% barrier + embedded 70% put · Trade date 17 Sep 2026`, { x: 0.6, y: 4.45, w: 7.6, h: 0.4, fontSize: 11.5, bold: true, color: HL });
   s.addNotes("Title. One-line pitch: a buffered autocallable on five Asian ETFs covering the AI-hardware supply chain (pan-Asian and Japanese semiconductors, Taiwan, Korea) plus an ESG sleeve. It pays a coupon whenever the basket is at or above its starting level and catches up any missed coupons. At maturity the family gets 100% back unless the basket has fallen more than 30%; even then an embedded 70% put returns 70%, so the loss is capped at 30%.");
 }
 
 // ======================= Agenda (not counted) =======================
 {
-  const s = pres.addSlide(); s.background = { color: WHITE };
+  const s = contentSlide(null);
   title(s, "Agenda");
   const items = [["Client & market", "Who the Chak family is, what they need, and why Asia's digital build-out now", "1–2"],
                  ["Investment thesis & strategy", "Why Asian AI hardware, why an autocall now, and why our five-ETF weights", "3–4"],
@@ -111,7 +156,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
                  ["Risks & hedging", "Investor risks, mitigants, and how the Natixis desk hedges", "10"]];
   items.forEach((it, i) => {
     const y = 1.05 + i * 0.7;
-    dot(s, 0.6, y + 0.05, String(i + 1), i % 2 ? GOLD : JADE, 0.5);
+    dot(s, 0.6, y + 0.05, String(i + 1), i % 2 ? MID : BLUE, 0.5);
     txt(s, it[0], { x: 1.35, y, w: 5, h: 0.32, fontSize: 16, bold: true, color: INK });
     txt(s, it[1], { x: 1.35, y: y + 0.33, w: 7, h: 0.3, fontSize: 11.5, color: MUTED });
     txt(s, (it[2].includes("–") ? "Slides " : "Slide ") + it[2], { x: 8.0, y: y + 0.08, w: 1.5, h: 0.3, fontSize: 11, color: MUTED, align: "right" });
@@ -120,7 +165,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
 
 // ======================= Executive summary (not counted) =======================
 {
-  const s = pres.addSlide(); s.background = { color: WHITE };
+  const s = contentSlide(null);
   title(s, "Executive summary", "One note that turns the family's operating expertise into double-digit income with a capped downside");
   const stats = [[pct(CPN, 2), "Memory coupon p.a.", `${pct(QC, 2)} each quarter the basket is ≥ 100%; missed coupons are paid later when it recovers`],
                  ["70%", "Minimum repayment", "100% back unless the basket ends below 70%; then the embedded put still pays 70%. Maximum loss 30% (plus Natixis credit)"],
@@ -128,7 +173,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   stats.forEach((st, i) => {
     const x = 0.5 + i * 3.05;
     card(s, x, 1.35, 2.85, 2.3);
-    txt(s, st[0], { x: x + 0.22, y: 1.48, w: 2.45, h: 0.8, fontFace: HF, fontSize: 38, bold: true, color: i === 1 ? GOLD : JADE, valign: "middle" });
+    txt(s, st[0], { x: x + 0.22, y: 1.48, w: 2.45, h: 0.8, fontFace: HF, fontSize: 38, bold: true, color: i === 1 ? RED : BLUE, valign: "middle" });
     txt(s, st[1], { x: x + 0.22, y: 2.3, w: 2.45, h: 0.32, fontSize: 13, bold: true, color: INK });
     txt(s, st[2], { x: x + 0.22, y: 2.65, w: 2.45, h: 0.95, fontSize: 10.5, color: MUTED });
   });
@@ -143,7 +188,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
 
 // ======================= 1. Client =======================
 {
-  const s = pres.addSlide(); s.background = { color: WHITE };
+  const s = contentSlide("ANALYSIS");
   title(s, "The family wants growth without putting the legacy at risk", "Client diagnosis: third-generation dynasty, succession done, now allocating for legacy");
   const cols = [
     ["Who they are", ["Single-family office: NKE Private Wealth", "Net worth > USD 2bn; mandate USD 100mn (~5%)", "Businesses: tech infrastructure, renewable power plants, real estate in Japan and Greater China"]],
@@ -153,7 +198,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   cols.forEach((c, i) => {
     const x = 0.5 + i * 3.05;
     card(s, x, 1.3, 2.85, 2.25, i === 2 ? INK : MINT);
-    txt(s, c[0], { x: x + 0.2, y: 1.42, w: 2.5, h: 0.32, fontSize: 14, bold: true, color: i === 2 ? GOLD : INK });
+    txt(s, c[0], { x: x + 0.2, y: 1.42, w: 2.5, h: 0.32, fontSize: 14, bold: true, color: i === 2 ? HL : INK });
     txt(s, c[1].map((t, j) => ({ text: t, options: { bullet: true, breakLine: j < c[1].length - 1 } })),
       { x: x + 0.2, y: 1.8, w: 2.5, h: 1.7, fontSize: 10.5, color: i === 2 ? WHITE : TXT, paraSpaceAfter: 3 });
   });
@@ -169,7 +214,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
 
 // ======================= 2. Market view =======================
 {
-  const s = pres.addSlide(); s.background = { color: WHITE };
+  const s = contentSlide("ANALYSIS");
   title(s, "Why now: Asia builds the hardware of the AI economy", "Investment thesis: structural growth themes, and high rates and volatility that pay for a coupon with a floor");
   const th = [["Taiwan: the AI foundry", "TSMC and its supply chain make most of the world's advanced AI chips; Taiwan's index is dominated by semiconductors."],
               ["Korea: memory for AI", "Samsung and SK hynix supply the high-bandwidth memory every AI accelerator needs; together ~44% of EWY."],
@@ -178,7 +223,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   th.forEach((t, i) => {
     const x = 0.5 + (i % 2) * 2.75, y = 1.3 + Math.floor(i / 2) * 1.55;
     card(s, x, y, 2.6, 1.4);
-    dot(s, x + 0.15, y + 0.15, String(i + 1), i === 3 ? GOLD : JADE, 0.38);
+    dot(s, x + 0.15, y + 0.15, String(i + 1), i === 3 ? GREEN : JADE, 0.38);
     txt(s, t[0], { x: x + 0.62, y: y + 0.15, w: 1.9, h: 0.42, fontSize: 11.5, bold: true, color: INK, valign: "middle" });
     txt(s, t[1], { x: x + 0.15, y: y + 0.62, w: 2.35, h: 0.75, fontSize: 9.5, color: TXT });
   });
@@ -187,7 +232,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
     showTitle: true, title: "USD funding curve (case grid, %)", valAxisMinVal: 4.5, valAxisMaxVal: 6.25, valAxisLabelFormatCode: "0.0",
     showValue: true, dataLabelPosition: "t", dataLabelFontSize: 7.5, dataLabelColor: MUTED, dataLabelFormatCode: "0.00" }));
   card(s, 6.15, 3.55, 3.35, 1.55, INK);
-  txt(s, [{ text: "What the curve means for structuring", options: { bold: true, color: GOLD, breakLine: true } },
+  txt(s, [{ text: "What the curve means for structuring", options: { bold: true, color: HL, breakLine: true } },
           { text: `High USD rates make the principal cheap to fund (5Y zero-coupon ${pct(R.inputs.zcb_5y)}). Asian volatility (basket ~${pct(R.basket_vol, 0)}) makes the basket likely to revisit 100%, which pays the ${pct(CPN, 2)} coupon, and the embedded 70% put caps the loss at 30%.`, options: { color: WHITE } }],
     { x: 6.3, y: 3.65, w: 3.05, h: 1.4, fontSize: 10 });
   foot(s, "Thesis is qualitative; index-level data to be refreshed on Bloomberg. Funding grid: Investment Strategy Challenge 2026 rules.");
@@ -196,15 +241,15 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
 }
 
 // ======================= 3–4. Investment thesis and strategy (team template) =======================
-addThesisOnePage(scaledPres(pres));
-addStrategySlides(scaledPres(pres), [1]);
+{ const sp = scaledPres(pres); addThesisOnePage(sp); pageNo(sp.last, 3); }
+{ const sp = scaledPres(pres); addStrategySlides(sp, [1]); pageNo(sp.last, 4); }
 
 // ======================= 3. Basket =======================
 {
-  const s = pres.addSlide(); s.background = { color: WHITE };
+  const s = contentSlide("STRATEGY");
   title(s, "Underlying: five Asian ETFs across the AI-hardware chain", "Bespoke weighted basket, USD payout (quanto on the HKD, JPY and TWD lines); all Bloomberg-listed");
   const L = R.inputs.underlyings, names = Object.keys(L);
-  const COLS = [INK, JADE, GOLD, SLATE, "5BA37A"];
+  const COLS = [BLUE, SLATE, BLUE_M, MID, GREEN];   // 3119, 2644, EWT, EWY, 00878: same colours as the strategy slide
   s.addChart(pres.charts.DOUGHNUT, [{ name: "Weight", labels: names.map((k) => SHORT[k] || L[k]), values: R.inputs.weights.map((w) => w * 100) }], {
     x: 0.35, y: 1.2, w: 2.8, h: 2.75, holeSize: 55, chartColors: COLS, showLegend: false,
     showPercent: false, showValue: true, dataLabelColor: WHITE, dataLabelFontSize: 10, dataLabelFontBold: true, dataLabelFormatCode: '0"%"' });
@@ -233,7 +278,7 @@ addStrategySlides(scaledPres(pres), [1]);
 
 // ======================= 4. Term sheet + design choice =======================
 {
-  const s = pres.addSlide(); s.background = { color: WHITE };
+  const s = contentSlide("STRATEGY");
   title(s, `Term sheet: 5-year buffered autocallable, ${pct(CPN, 2)} coupon`, "Why this design: a double-digit coupon, with the loss at maturity capped at 30%");
   const terms = [["Issuer", "Natixis SA (BPCE Group)"], ["Notional / currency", "USD 100,000,000 · quanto USD"], ["Trade / maturity", "17 Sep 2026 / 17 Sep 2031 (5Y)"],
                  ["Underlying", `Weighted basket of ${R.inputs.weights.length} Asian ETFs (slide 5)`], ["Observation", "Quarterly, 20 dates; autocall from Q4 (Year 1)"],
@@ -257,7 +302,7 @@ addStrategySlides(scaledPres(pres), [1]);
     border: { type: "solid", pt: 0.5, color: GRID }, fill: { color: WHITE }, rowH: [0.3, 0.33, 0.33, 0.33, 0.33, 0.33], margin: [2, 4, 2, 4] });
   card(s, 5.35, 3.45, 4.2, 1.4, INK);
   const np_ = D["Memory coupon, 70% barrier, no put"], fp = D["Capital protected (100%), memory coupon"];
-  txt(s, [{ text: "Design call: ", options: { bold: true, color: GOLD } },
+  txt(s, [{ text: "Design call: ", options: { bold: true, color: HL } },
           { text: `The draft's 8.5% fixed coupon is worth ${pct(R.draft_8_5_fixed_70_pv)}, so Natixis cannot fund it. Full protection pays only ${pct(fp.fair_coupon)}. Without a put the coupon is ${pct(np_.fair_coupon)}, but a crash can wipe out the capital. The embedded 70% put costs ~${(100 * (np_.fair_coupon - REC.fair_coupon)).toFixed(1)}pts of coupon and caps the loss at 30%: fair ${pct(REC.fair_coupon)}, we offer ${pct(CPN, 2)}.`, options: { color: WHITE } }],
     { x: 5.5, y: 3.53, w: 3.9, h: 1.28, fontSize: 9.5 });
   foot(s, NOTE + " Loss risk = probability the note returns less than 100% at maturity (risk-neutral).");
@@ -267,7 +312,7 @@ addStrategySlides(scaledPres(pres), [1]);
 
 // ======================= 5. How it pays: timeline + payoff at maturity =======================
 {
-  const s = pres.addSlide(); s.background = { color: WHITE };
+  const s = contentSlide("STRATEGY");
   title(s, "How it pays: one question every quarter, three outcomes", "Is the basket at or above 100% of its starting level? (checked quarterly; one date per year shown)");
   const yrs = [1, 2, 3, 4, 5];
   txt(s, `Q1–Q3: coupon only (${pct(QC, 2)} if basket ≥ 100%). From Q4: coupon plus autocall. Missed coupons are always caught up.`, { x: 1.4, y: 1.15, w: 7.9, h: 0.25, fontSize: 9, italic: true, color: MUTED, align: "center" });
@@ -276,8 +321,8 @@ addStrategySlides(scaledPres(pres), [1]);
   txt(s, "Trade date\n17 Sep 2026", { x: 0.15, y: 1.95, w: 1.25, h: 0.4, fontSize: 8.5, color: MUTED, align: "center" });
   yrs.forEach((y, i) => {
     const x = 2.15 + i * 1.6;
-    dot(s, x, 1.49, "Y" + y, y === 5 ? GOLD : JADE, 0.42);
-    txt(s, `If ≥ 100%: called,\n${pct(1 + CPN * y)} total`, { x: x - 0.5, y: 1.95, w: 1.42, h: 0.42, fontSize: 9, bold: true, color: y === 5 ? GOLD : JADE, align: "center" });
+    dot(s, x, 1.49, "Y" + y, y === 5 ? MID : JADE, 0.42);
+    txt(s, `If ≥ 100%: called,\n${pct(1 + CPN * y)} total`, { x: x - 0.5, y: 1.95, w: 1.42, h: 0.42, fontSize: 9, bold: true, color: y === 5 ? MID : JADE, align: "center" });
     txt(s, `P(called by Y${y}) ${pct(RN.p_call_by_year[i], 0)}`, { x: x - 0.5, y: 2.36, w: 1.42, h: 0.22, fontSize: 8, color: MUTED, align: "center" });
   });
   // Payoff at Y5 (not called earlier)
@@ -291,7 +336,7 @@ addStrategySlides(scaledPres(pres), [1]);
   const outs = [
     ["A", "Autocalled", `Basket ≥ 100% on any date from Q4: 100% plus every coupon to date. The note ends.`, pct(RN.p_called, 0), JADE],
     ["B", "Not called, basket ≥ 70% at Y5", "The 30% buffer absorbs the fall: 100% back, plus any early coupons.", pct(RN.p_not_called_some_cpn + RN.p_zero_return, 0), SLATE],
-    ["C", "Not called, basket < 70% at Y5", "The embedded put pays 70% back. Maximum loss 30%.", pct(RN.p_floor, 0), GOLD],
+    ["C", "Not called, basket < 70% at Y5", "The embedded put pays 70% back. Maximum loss 30%.", pct(RN.p_floor, 0), RED],
   ];
   outs.forEach((o, i) => {
     const y = 2.75 + i * 0.8;
@@ -309,10 +354,10 @@ addStrategySlides(scaledPres(pres), [1]);
 
 // ======================= 8. Stress scenarios =======================
 {
-  const s = pres.addSlide(); s.background = { color: WHITE };
+  const s = contentSlide("STRATEGY");
   title(s, "Scenario analysis: five paths for Asian markets", "Hypothetical quarterly basket paths and what the USD 100mn note returns in each");
   const st = R.stress, names = Object.keys(st);
-  const cols = [JADE, GOLD, INK, SLATE, RED];
+  const cols = [BLUE, ORANGE, "1F3B57", SLATE, RED];
   const qlab = []; for (let q = 0; q <= 20; q++) qlab.push(q % 4 === 0 ? "Y" + q / 4 : "");
   s.addChart(pres.charts.LINE, names.map((n) => ({ name: n, labels: qlab, values: [100].concat(st[n].path.map((v) => +(v * 100).toFixed(1))) })),
     Object.assign(chartBase(), { x: 0.35, y: 1.2, w: 4.6, h: 3.6, chartColors: cols, lineSize: 2, lineDataSymbol: "none", valAxisMinVal: 40, valAxisMaxVal: 180,
@@ -337,7 +382,7 @@ addStrategySlides(scaledPres(pres), [1]);
 
 // ======================= 9. Simulation results =======================
 {
-  const s = pres.addSlide(); s.background = { color: WHITE };
+  const s = contentSlide("STRATEGY");
   title(s, "Simulation back-test: most paths end early with full coupons", "Monte Carlo outcome distribution: risk-neutral and under three real-world equity return assumptions");
   s.addChart(pres.charts.BAR, [{ name: "Cumulative call probability", labels: ["Y1", "Y2", "Y3", "Y4", "Y5"], values: RN.p_call_by_year.map((x) => +(x * 100).toFixed(1)) }],
     Object.assign(chartBase(), { x: 0.35, y: 1.2, w: 3.9, h: 2.6, barDir: "col", chartColors: [JADE], showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: '0"%"',
@@ -358,7 +403,7 @@ addStrategySlides(scaledPres(pres), [1]);
   kp.forEach((k, i) => {
     const x = 0.45 + i * 3.05;
     card(s, x, 3.95, 2.85, 1.1, i === 2 ? INK : MINT);
-    txt(s, k[0], { x: x + 0.15, y: 4.02, w: 1.15, h: 0.95, fontFace: HF, fontSize: 24, bold: true, color: i === 2 ? GOLD : JADE, valign: "middle" });
+    txt(s, k[0], { x: x + 0.15, y: 4.02, w: 1.15, h: 0.95, fontFace: HF, fontSize: 24, bold: true, color: i === 2 ? HL : JADE, valign: "middle" });
     txt(s, k[1], { x: x + 1.3, y: 4.02, w: 1.45, h: 0.95, fontSize: 10, color: i === 2 ? WHITE : TXT, valign: "middle" });
   });
   foot(s, NOTE + " IRR uses actual quarterly coupon dates.");
@@ -368,7 +413,7 @@ addStrategySlides(scaledPres(pres), [1]);
 
 // ======================= 10. Risks & hedging =======================
 {
-  const s = pres.addSlide(); s.background = { color: WHITE };
+  const s = contentSlide("STRATEGY");
   title(s, "Risks for the family, and how Natixis hedges its side", "Transparent disclosure plus a desk hedging plan for every exposure");
   const risks = [["Capital loss", `Basket below 70% at Y5: 70% back, a 30% loss (~${pct(RN.p_floor, 0)} of paths)`, "Embedded 70% put caps the loss; diversified basket; only 5% of wealth"],
                  ["Capped upside", `Basket +80% still pays ${pct(CPN, 2)} p.a. and is called at Y1`, "Rest of family wealth keeps direct equity exposure"],
@@ -397,7 +442,7 @@ addStrategySlides(scaledPres(pres), [1]);
 
 // ======================= Appendix A: assumptions & method =======================
 {
-  const s = pres.addSlide(); s.background = { color: WHITE };
+  const s = contentSlide("APPENDIX");
   title(s, "Appendix A: pricing assumptions and methodology", "Inputs to refresh on Bloomberg at trade date (BVOL / OVDV for vols, CORR for correlations)");
   const L = R.inputs.underlyings, names = Object.keys(L);
   const short = names.map((k) => k.replace(" Equity", "").replace(" Index", ""));
@@ -422,7 +467,7 @@ addStrategySlides(scaledPres(pres), [1]);
 
 // ======================= Appendix B: building blocks =======================
 {
-  const s = pres.addSlide(); s.background = { color: WHITE };
+  const s = contentSlide("APPENDIX");
   title(s, "Appendix B: how Natixis replicates the note", "Replication used by the Natixis desk to price and hedge (values in % of notional, at trade date)");
   const xs = []; for (let x = 40; x <= 160; x += 1) xs.push(x);
   const blocks = [
@@ -443,7 +488,7 @@ addStrategySlides(scaledPres(pres), [1]);
     if (i < 3) txt(s, i === 0 ? "+" : "−", { x: x + 2.12, y: 2.95, w: 0.2, h: 0.4, fontSize: 16, bold: true, color: INK, align: "center" });
   });
   card(s, 0.45, 4.45, 9.1, 0.7, INK);
-  txt(s, [{ text: `Fair value ${pct(REC.pv)} = principal ${pct(REC.pv_principal)} + coupons ${pct(REC.pv_coupons)} − put pair ${pct(-REC.pv_buffer_net)}.  `, options: { bold: true, color: GOLD } },
+  txt(s, [{ text: `Fair value ${pct(REC.pv)} = principal ${pct(REC.pv_principal)} + coupons ${pct(REC.pv_coupons)} − put pair ${pct(-REC.pv_buffer_net)}.  `, options: { bold: true, color: HL } },
           { text: `Issued at 100%, leaving ${pct(REC.natixis_margin)} for hedging and margin. The short barrier put funds the higher coupon; the embedded put stops the loss at 30%.`, options: { color: WHITE } }],
     { x: 0.6, y: 4.52, w: 8.8, h: 0.6, fontSize: 10, valign: "middle" });
   s.addNotes("Mini-charts show each leg's payoff against the basket level (the autocall leg is illustrative: it shows the remaining coupon stream switching off). The put pair is the key: like a classic autocall, the client sells a put at the 70% barrier, which funds the double-digit coupon; unlike a classic autocall, the note buys a 70% put back, so below 70% the loss is a fixed 30% instead of the whole fall. Together they are a 30% digital put struck at 70%, observed only at maturity.");
@@ -451,7 +496,7 @@ addStrategySlides(scaledPres(pres), [1]);
 
 // ======================= Appendix C: alternatives =======================
 {
-  const s = pres.addSlide(); s.background = { color: WHITE };
+  const s = contentSlide("APPENDIX");
   title(s, "Appendix C: alternatives for the investment committee", "Same basket: full protection, a higher-coupon at-risk snowball, and a pure participation note");
   const p = R.ppn, sb = R.snowball_alt;
   const xs = []; for (let x = 40; x <= 180; x += 1) xs.push(x);
@@ -459,7 +504,7 @@ addStrategySlides(scaledPres(pres), [1]);
     { name: `Our note (${pct(CPN, 2)})`, values: xs.map((x) => (x >= 100 ? 100 + CPN * 500 : x >= 70 ? 100 : 70)) },
     { name: `Snowball ${pct(sb.coupon, 0)}, 65% barrier`, values: xs.map((x) => (x >= 100 ? 100 + sb.coupon * 500 : x >= sb.barrier * 100 ? 100 : x)) },
     { name: "PPN", values: xs.map((x) => 100 + p.participation * Math.max(x - 100, 0)) }, { name: "Basket", values: xs }],
-    Object.assign(chartBase(), { x: 0.4, y: 1.25, w: 5.0, h: 3.6, chartColors: [JADE, RED, GOLD, SLATE], lineSize: 2, lineDataSymbol: "none", showLegend: true, legendPos: "b", legendFontSize: 8.5,
+    Object.assign(chartBase(), { x: 0.4, y: 1.25, w: 5.0, h: 3.6, chartColors: [JADE, RED, ORANGE, SLATE], lineSize: 2, lineDataSymbol: "none", showLegend: true, legendPos: "b", legendFontSize: 8.5,
       valAxisMinVal: 30, valAxisMaxVal: 190, catAxisMinVal: 40, catAxisMaxVal: 180, catAxisMajorUnit: 20, valAxisLabelFormatCode: '0"%"', catAxisLabelFormatCode: '0"%"',
       showTitle: true, title: "Total received at Y5 (not called earlier) vs final basket level", titleFontSize: 9.5 }));
   const rows = [[hdr("Option"), hdr("Return"), hdr("Loss risk")],
