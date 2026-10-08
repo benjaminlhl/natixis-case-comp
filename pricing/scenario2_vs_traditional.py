@@ -1,7 +1,7 @@
-"""Scenario 2: the recommended buffered autocallable vs traditional alternatives.
+"""Scenario 2: the recommended autocallable vs traditional alternatives.
 
 Compares, on the same simulated basket paths (real-world equity total-return drifts):
-  - Our note: buffered autocallable (70% barrier + 70% put) with memory coupon (pricing/scenario2_autocall_mc.py)
+  - Our note: classic memory-coupon autocallable (pricing/scenario2_autocall_mc.py)
   - Direct basket: buy and hold the basket for 5 years (total return, dividends reinvested)
   - 5Y USD bond at the case funding rate (5.69%)
   - Principal-protected note (PPN): 100% + participation x basket price gain at Y5
@@ -28,7 +28,7 @@ def compare(drift):
     ppn = (1 + part * np.maximum(B[:, -1] - 1, 0)) ** (1 / 5) - 1
     bond = np.full(N, BOND)
     out = {}
-    for name, x in [("Buffered autocall (ours)", note), ("Direct basket", basket), ("5Y USD bond", bond), ("Principal-protected note", ppn)]:
+    for name, x in [("Autocall (ours)", note), ("Direct basket", basket), ("5Y USD bond", bond), ("Principal-protected note", ppn)]:
         out[name] = {"mean_irr": round(float(x.mean()), 4), "median_irr": round(float(np.median(x)), 4),
                      "p_loss": round(float((x < -1e-9).mean()), 4), "worst_5pct_irr": round(float(np.percentile(x, 5)), 4),
                      "irr_stdev": round(float(x.std()), 4),
@@ -39,13 +39,13 @@ def compare(drift):
     reg = {}
     for rname, mask in regimes.items():
         row = {"share_of_paths": round(float(mask.mean()), 3)}
-        for name, x in [("Buffered autocall (ours)", note), ("Direct basket", basket), ("5Y USD bond", bond), ("Principal-protected note", ppn)]:
+        for name, x in [("Autocall (ours)", note), ("Direct basket", basket), ("5Y USD bond", bond), ("Principal-protected note", ppn)]:
             row[name] = round(float(x[mask].mean()), 4)
         reg[rname] = row
     edges = [-1, -0.10, -0.05, 0.0 - 1e-9, 0.02, 0.04, 0.06, 0.08, 0.10, 0.15, 1]
     labels = ["< −10%", "−10 to −5%", "−5 to 0%", "0 to 2%", "2 to 4%", "4 to 6%", "6 to 8%", "8 to 10%", "10 to 15%", "> 15%"]
     hist = {"bins": labels}
-    for name, x in [("Buffered autocall (ours)", note), ("Direct basket", basket), ("Principal-protected note", ppn)]:
+    for name, x in [("Autocall (ours)", note), ("Direct basket", basket), ("Principal-protected note", ppn)]:
         h, _ = np.histogram(x, bins=edges)
         hist[name] = [round(float(v) / len(x), 4) for v in h]
     return {"strategies": out, "regimes": reg, "irr_hist": hist}

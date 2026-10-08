@@ -78,7 +78,7 @@ T([{ text: "Rates stay high", options: { bold: true, color: BLUE, breakLine: tru
 const R100 = TN.rates["+100bp"];
 const why = [
   [pct(R100.bond_value_change), "Long bonds carry rate risk", `a 5-year bond loses ~${pct(-R100.bond_value_change)} per 1% rise.`,
-    `Redeems from year 1; USD ${(RES.inputs.zcb_5y * 100).toFixed(1)} today buys USD 100 in 5 years, so a 70% floor fits`],
+    "Redeems from year 1 (expected life ~2 years): short duration, cash back to reinvest"],
   ["91.2", "Volatility is at records", "VKOSPI's all-time high; KOSPI fell ~25% from June to August 2026.",
     "Coupons pay on recovery, no timing needed; rich option premium funds them"],
   ["~92%", "Concentrated and fully priced", "of advanced chips come from Taiwan; Nikkei CAPE 38.6×.",
@@ -96,11 +96,11 @@ why.forEach(([big, head, body, link], i) => {
 
 // Conclusion and sources
 s.addShape(pres.shapes.RECTANGLE, { x: 0.5, y: 6.06, w: 12.33, h: 0.5, fill: { color: BLUE }, line: { color: BLUE } });
-T("Whichever AI company wins, it needs Asia's chips, memory and tools. In 2026's market, the way to own them is an autocall with a 30% buffer and a 70% floor.",
+T("Whichever AI company wins, it needs Asia's chips, memory and tools; a memory-coupon autocall pays while the market swings.",
   { x: 0.65, y: 6.06, w: 12.03, h: 0.5, fontSize: 11.5, bold: true, color: WHITE, align: "center", valign: "middle" });
 T("Sources: WSTS; company capex guidance; Counterpoint (foundry, HBM); TrendForce (DRAM); industry research (test equipment); J.P. Morgan AWM 2026 Outlook; Federal Reserve SEP (16 Sep 2026, dots read from chart); Herald / SBS (VKOSPI); FN News, BIT Research (KOSPI); Siblis (CAPE); case USD funding grid. Full list: deck/thesis_sources.md.",
   { x: 0.5, y: 6.6, w: 12.33, h: 0.32, fontSize: 7.5, italic: true, color: MUTED });
-s.addNotes("One-page thesis. Left: what we own. AI spending is a hardware boom and Asia holds the three bottlenecks: Taiwan's foundries, Korea's high-bandwidth memory, Japan's chip-making tools. Demand is structural, though the memory cycle is maturing. Right: why we hold it through an autocall now. The Fed's dot plot keeps rates high until 2028, so long bonds carry rate risk and a capital floor is cheap; volatility is at records, so buy-and-hold must sit through violent swings while autocall coupons pay on recovery and are funded by option premium; the theme is concentrated and fully priced, so a diversified basket and a capped upside cost little.");
+s.addNotes("One-page thesis. Left: what we own. AI spending is a hardware boom and Asia holds the three bottlenecks: Taiwan's foundries, Korea's high-bandwidth memory, Japan's chip-making tools. Demand is structural, though the memory cycle is maturing. Right: why we hold it through an autocall now. The Fed's dot plot keeps rates high until 2028, so long bonds carry rate risk while an autocall redeems early; volatility is at records, so buy-and-hold must sit through violent swings while autocall coupons pay on recovery and are funded by option premium; the theme is concentrated and fully priced, so a diversified basket and a capped upside cost little.");
 
 }
 module.exports = { addThesisOnePage };

@@ -1,9 +1,8 @@
-# Scenario 2 strategy: Asian Digital Transformation Buffered Autocallable Note (70% barrier + embedded 70% put)
+# Scenario 2 strategy: Asian Digital Transformation Autocallable Note (classic, memory coupon)
 
 **Client:** NKE Private Wealth (Chak family) · **Size:** USD 100mn · **Trade date:** 17 Sep 2026 · **Tenor:** 5Y
-**Deck:** `deck/Asian-Digital-Autocallable-Note.pdf` (built by `deck/build_deck_scenario2.js`)
+**Deck:** `final/Asian-Digital-Autocallable-Note.pdf` (built by `deck/build_deck_scenario2.js`, which also pulls in the team-template thesis and strategy slides)
 **Pricer:** `pricing/scenario2_autocall_mc.py` → `pricing/scenario2_results.json`
-**Supporting analysis:** `pricing/scenario2_risk_levers.py`, `pricing/scenario2_barrier70_grid.py`
 
 > Vols, dividends and correlations are **assumptions**. Refresh them on Bloomberg as of 17 Sep 2026 and re-run the pricer; the deck reads its numbers from the JSON.
 
@@ -21,56 +20,36 @@
 
   \*Assumptions. Weights are the team's allocation (35/20/15/15/15); re-run the pricer after any change.
 - Liquidity (USD 5M/day 6-month average rule): EWY, EWT, 2644 and 00878 pass. **3119 is borderline (about USD 4–5M/day): verify on Bloomberg.** If it fails, its 25% moves to EWT/EWY.
-- **Coupon:** 10.25% p.a. (2.5625% per quarter), paid on each date the basket is ≥ 100% of its initial level.
+- **Coupon:** 12.75% p.a. (3.1875% per quarter), paid on each date the basket is ≥ 100% of its initial level.
 - **Memory:** missed coupons are paid on the next date the basket is ≥ 100%.
 - **Autocall:** from Q4 (Year 1), if basket ≥ 100% the note pays 100% plus coupons due and ends.
-- **At maturity (not called):** 100% if the basket is ≥ 70% of initial; otherwise 70% (embedded 70% put). Maximum loss 30%, subject to Natixis credit.
-- Issued at 100%. Fair value is 97.08%, leaving about 2.92% for hedging costs and margin.
-- Value split: principal 89.4% + coupons 11.3% − put pair 3.6% (client sells a 70% barrier put worth 6.3%; the note embeds a 70% put worth 2.7%).
+- **At maturity (not called):** repaid at the basket level (no barrier, no floor), subject to Natixis credit.
+- Issued at 100%. Fair value is 96.45%, leaving about 3.55% for hedging costs and margin.
+- Value split: principal 89.4% + coupons 14.1% − short put 7.0% (the client's put on the basket at 100%, live only if never called).
 
 ## Why this design
-Fair coupons below are at a 98% issue price, on the same basket.
+Fair coupons at a 98% issue price, same basket:
 
 | Autocall design | Fair coupon | Chance of loss at maturity | Max loss |
 |---|---|---|---|
 | Classic: fixed coupon, 70% barrier | 7.4% | 15.9% | up to 100% |
 | Snowball, 65% barrier | 13.7% | 14.3% | up to 100% |
-| Memory coupon, 70% barrier, no put | 13.5% | 15.9% | up to 100% |
+| Memory coupon, 70% barrier + 70% put | 11.1% | 15.9% | 30% |
 | Memory coupon, 100% capital protected | 7.8% | 0.0% | none |
-| **Memory coupon, 70% barrier + 70% put (ours)** | **11.1%** | **15.9%** | **30%** |
+| **Classic memory autocall, no barrier (ours)** | **14.1%** | **21.0%** | **up to 100%** |
 
-- The draft's 8.5% fixed coupon is worth 100.3% to the client, so Natixis cannot fund it.
-- Full protection pays under 8%. Removing the put pays 13.5% but the whole crash lands on the family.
-- The embedded 70% put costs about 2.4 points of coupon and caps the loss at 30%: the worst 1% outcome is 70% back.
-- The offer is 10.25% because the lowest fair coupon across the market sensitivities is 10.34% (vol −3pts).
-- Asia-only by mandate. Chinese chip exposure (SMIC, SSE STAR 50) is avoided for OFAC NS-CMIC reasons; check that no ETF holds sanctioned names.
-- 00878 distributes about 7.6% a year, which lowers its price path; the basket is price-return, so this is priced in.
-- Only EWT and EWY have listed options. The desk hedges 3119, 2644 and 00878 with delta (ETF shares) and vega through proxies (TAIEX, KOSPI 200 and Nikkei options). The put pair (a 30% digital put at 70%) is hedged with basket put spreads.
+- The team chose the classic autocall: the highest coupon, in exchange for bearing the basket's fall if the note is never called.
+- The offer is 12.75% because the lowest fair coupon across the market sensitivities is 12.89% (vol −3pts).
 
 ## Key numbers (risk-neutral unless stated)
 - Called at Y1: 49%. Called within 5Y: 79%. Expected life: 2.22 years.
-- Not called, basket ≥ 70%: 5.1% (100% back). Basket < 70% at Y5: 15.9% (70% back).
-- Mean IRR 7.1%, median IRR 10.4%. Worst case 70% back (IRR −6.9%).
-- Real-world (equity total return 0% / 4% / 8% a year): mean IRR 5.2% / 6.7% / 7.9%; chance of 70% back 27% / 18% / 11%.
-- Fair-coupon sensitivity:
-
-  | Change | Fair coupon |
-  |---|---|
-  | Vol ±3pts | 10.3%–11.9% |
-  | Correlation ±0.15 | 10.6%–11.6% |
-  | Equity drift −1% / −2% | 12.0% / 13.2% |
-  | Coupon barrier 95% | 10.2% |
-  | Coupon barrier 90% | 9.4% |
-
-- At today's realised volatility (~48%, see `deck/Investment-Thesis-Factors.pdf`) the fair coupon would be higher and the embedded put dearer: reprice with Bloomberg implied vols at the trade date.
-
-## Changes vs. the first draft (`Natixis_.pdf`)
-1. The fixed 8.5% coupon was not fundable. It is replaced by a 10.25% memory coupon.
-2. The draft's thematic indices are not Bloomberg-listed. The basket now uses five Bloomberg-listed Asian ETFs (3119 HK, 2644 JP, EWT US, EWY US, 00878 TT).
-3. The barrier/strike inconsistency is gone: one 70% barrier at maturity, with an embedded 70% put so the loss is capped at 30%.
+- Never called (loss): 21.0%; average repayment in those paths 56%; repaid below 70%: 15.9%.
+- Mean IRR 7.8%, median IRR 13.0%.
+- Real-world (equity total return 0% / 4% / 8% a year): mean IRR 4.3% / 7.1% / 9.1%; chance of a loss 32% / 23% / 16%.
+- Fair-coupon sensitivity: vol ±3pts 12.9%–15.5%; correlation ±0.15 13.2%–15.0%; equity drift −1% / −2% 15.5% / 17.2%; coupon barrier 95% / 90% 13.0% / 12.0%.
+- Basket Monte Carlo (team app, per USD 100,000): median USD 279.6k at Year 5, 5th percentile USD 103.6k, 99.0% of paths at or above USD 70,000.
 
 ## To do before submission
-- Pull Bloomberg vols (including skew for the 70% put), correlations and dividends, then re-run the pricer.
+- Pull Bloomberg vols (BVOL/OVDV), correlations and dividends, then re-run the pricer; align the ~17% basket volatility on the strategy slide (team app) with the ~26% used in pricing.
 - Confirm 3119 HK's 6-month average daily value traded is above USD 5M.
-- Run a historical rolling-window back-test (monthly launches since 2021, when all five ETFs trade) and add it to slide 8 or 9.
-- Optionally add a quanto drift adjustment using FX-equity correlations.
+- Run a historical rolling-window back-test (monthly launches since 2021).
