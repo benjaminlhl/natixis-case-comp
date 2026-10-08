@@ -28,6 +28,19 @@ Collected 8 Oct 2026 from web search. Most pages could not be opened directly fr
 | Japan buybacks record ¥18.7trn FY2024, ~¥20trn forecast FY2025; Prime firms below 1× P/B ~50% → 44% | [portfolio institutional](https://www.portfolio-institutional.co.uk/news-and-analysis/japanese-equities-set-for-a-boost/) · [portfolio institutional (2)](https://www.portfolio-institutional.co.uk/news-and-analysis/japans-equities-to-maintain-strong-performance/) · [WisdomTree](https://www.wisdomtree.com/us/insights/blog/a-stock-exchange-impetus-to-improve-valuations) |
 | Korea Value-up Programme (Feb 2024); Korea Value-Up Index beat KOSPI 200 by >30% to 27 Feb 2026 | [AllianceBernstein](https://www.alliancebernstein.com/us/en-us/investments/insights/investment-insights/south-koreas-rising-governance-tide-how-to-ride-the-value-up-wave.html) |
 
+## Added in the deeper revision (8 Oct 2026)
+
+| Fact | Source |
+|---|---|
+| Fed raised rates 0.25% to 3.75–4.00% on 16 Sep 2026 (12–0), first hike since Jul 2023; median dot 4.1% for end-2026 | [Advisor Perspectives: Fed decision](https://www.advisorperspectives.com/dshort/updates/2026/06/17/feds-interest-rate-decision-june-17-2026) · [Admiral Markets](https://admiralmarkets.com/analytics/traders-blog/fed-raised-interest-rates) (**verify** on federalreserve.gov) |
+| VKOSPI record close 91.23 on 9 Jun 2026 (above 89.30 in Oct 2008); 83.58 on 5 Mar 2026 after the outbreak of war with Iran; circuit breakers three times in June | [SBS](https://sbsstar.net/article/N1008602024/koreas-fear-index-surges-19-amid-volatility-closes-at-alltime-high) · [Herald Corp](https://mbiz.heraldcorp.com/article/10778942) · [FN News](https://en.fnnews.com/news/202606290729343811) |
+| KOSPI closed at 6,789 on 28 Aug 2026; Shinhan September range 6,600–8,000 | [FN News, 31 Aug 2026](https://en.fnnews.com/news/202608310838266902) |
+| KOSPI forward P/E 7.82, trailing 22.95; Nikkei forward 17.18, trailing 22.09, CAPE 38.59 (1 Jul 2026); Taiwan among the most expensive markets | [Siblis Research: KOSPI](https://siblisresearch.com/data/kospi-korea-pe-earnings/) · [Siblis Research: Nikkei](https://siblisresearch.com/data/japan-nikkei-pe-cape/) |
+| TAIEX record close 48,476 on 2 Oct 2026; 2025 close 28,963.60 (+25.74% in 2025) | [Trading Economics](https://tradingeconomics.com/taiwan/stock-market/news/589028) · [TWSE 2025 Market Highlights](https://www.twse.com.tw/downloads/zh/about/company/factbook/2026/0.0105.html) |
+| DRAM contract prices: consumer DRAM +45–50% q/q in Q2 2026; +13–18% in Q3; conventional DRAM +10–15% expected in Q4 (15–20% incl. HBM) | [TrendForce via iConnect007](https://iconnect007.com/article/150656/ai-server-demand-keeps-memory-prices-up-in-3q26-but-gains-moderate/150653/pcb) · [TechNews](https://technews.tw/?p=1622115) · [UDN](https://money.udn.com/money/amp/story/5607/9426895) |
+| 25% Section 232 tariff on a narrow set of advanced logic chips from 15 Jan 2026 (Proclamation 11002); framework deals with Korea, Taiwan, Japan | [Perkins Coie](https://perkinscoie.com/insights/article/presidential-action-semiconductors-and-critical-minerals-under-section-232) · [Global Policy Watch](https://www.globalpolicywatch.com/2026/02/a-month-in-semiconductor-policy-section-232-measures-bis-rule-and-taiwan-deal-signal-strategic-push/) |
+| Rate sensitivity (+1%: bond −4.0%, note −1.2%; new-note fair coupon 8.2%), vol sensitivity (7.2% → 7.7% at +5pts), break-even vs bond (~6% equity return; 79% of paths beat the bond at +4%) | Team Monte Carlo: `pricing/scenario2_thesis_numbers.py` → `pricing/scenario2_thesis_numbers.json` |
+
 ## Thesis 3: autocallables vs traditional strategies
 
 | Fact | Source |

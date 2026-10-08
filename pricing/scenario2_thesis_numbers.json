@@ -1,0 +1,71 @@
+{
+ "rates": {
+  "-100bp": {
+   "note_value_change": 0.0131,
+   "bond_value_change": 0.0449,
+   "new_note_fair_coupon": 0.0597
+  },
+  "-50bp": {
+   "note_value_change": 0.0062,
+   "bond_value_change": 0.0228,
+   "new_note_fair_coupon": 0.0657
+  },
+  "+50bp": {
+   "note_value_change": -0.0063,
+   "bond_value_change": -0.0197,
+   "new_note_fair_coupon": 0.0767
+  },
+  "+100bp": {
+   "note_value_change": -0.0119,
+   "bond_value_change": -0.0402,
+   "new_note_fair_coupon": 0.0817
+  },
+  "base": {
+   "note_value": 0.9758,
+   "fair_coupon": 0.0712
+  }
+ },
+ "vol": {
+  "+0pts": 0.0716,
+  "+3pts": 0.0744,
+  "+5pts": 0.0767,
+  "+10pts": 0.0813
+ },
+ "breakeven": {
+  "0%": {
+   "mean_irr": 0.0469,
+   "p_beats_bond": 0.6822,
+   "p_called": 0.6822
+  },
+  "2%": {
+   "mean_irr": 0.0509,
+   "p_beats_bond": 0.7433,
+   "p_called": 0.7433
+  },
+  "4%": {
+   "mean_irr": 0.0541,
+   "p_beats_bond": 0.7914,
+   "p_called": 0.7914
+  },
+  "6%": {
+   "mean_irr": 0.0572,
+   "p_beats_bond": 0.8383,
+   "p_called": 0.8383
+  },
+  "8%": {
+   "mean_irr": 0.0598,
+   "p_beats_bond": 0.8769,
+   "p_called": 0.8769
+  },
+  "10%": {
+   "mean_irr": 0.0621,
+   "p_beats_bond": 0.9113,
+   "p_called": 0.9113
+  },
+  "12%": {
+   "mean_irr": 0.0639,
+   "p_beats_bond": 0.9367,
+   "p_called": 0.9367
+  }
+ }
+}
