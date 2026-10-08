@@ -211,71 +211,75 @@ async function icon(Comp, color) {
     s.addNotes("Thesis 2, market evidence only. Economic: AI-hardware demand is structural, but the equity path is violent (2022 falls, 2026 round trips), concentrated in a handful of names, and valuations already assume a lot while memory price momentum slows. Finance: the Fed is hiking again, so long bonds carry real rate risk; volatility is at record highs; and high rates make a capital floor unusually cheap. Each point ends with the autocall link: coupons paid on recovery (not timing), a diversified basket, capped upside that costs little, short duration, coupons funded by volatility, and a floor funded by high rates.");
   }
 
-  // ===== Thesis 2, one-slide version: traditional strategies fall short in 2026 =====
+  // ===== Thesis 2, one-slide version: a matrix of market reality vs. traditional strategy vs. autocall =====
   {
     const { s, T } = mk("Investment thesis 2: Traditional strategies fall short; autocallables fit 2026", "ANALYSIS");
-    T("The Fed sees rates high until 2028, so long bonds carry rate risk; buy-and-hold equity faces volatility, concentration and stretched valuations",
-      { x: 0.5, y: 1.05, w: 12.3, h: 0.3, fontSize: 11.5, bold: true, italic: true, color: TXT });
-    const R100 = TN.rates["+100bp"];
-    const PW = 4.08, PX = [0.5, 0.5 + PW + 0.2], PY = [1.45, 3.7];
-    const panel = (i, head) => {
-      const x = PX[i % 2], y = PY[Math.floor(i / 2)];
-      s.addShape(pres.shapes.RECTANGLE, { x, y, w: PW, h: 0.32, fill: { color: BLUE }, line: { color: BLUE } });
-      T(head, { x, y, w: PW, h: 0.32, fontSize: 10.5, bold: true, color: WHITE, align: "center", valign: "middle" });
-      return { x, y: y + 0.36 };
+    const R100 = TN.rates["+100bp"], DOT = MD.fomc_dots_sep2026;
+    // Column layout: theme tile | evidence charts | traditional outcome | autocall answer
+    const CX = [0.5, 2.2, 8.0, 10.45], CW = [1.6, 5.7, 2.35, 2.38];
+    const heads = [["", null], ["Market reality in 2026 (evidence)", null], ["Plain bonds / buy-and-hold", RED], ["Autocallable answer", BLUE]];
+    heads.forEach(([h, c], i) => {
+      if (!h) return;
+      T(h, { x: CX[i], y: 1.12, w: CW[i], h: 0.3, fontSize: 11, bold: true, color: c || TXT, align: i === 1 ? "left" : "center" });
+      s.addShape(pres.shapes.LINE, { x: CX[i], y: 1.44, w: CW[i], h: 0, line: { color: c || LINE, width: c ? 2 : 0.75 } });
+    });
+    const RY = [1.55, 3.08, 4.61], RH = 1.43;
+    const row = (i, key, sub, trad, auto) => {
+      const y = RY[i];
+      if (i > 0) s.addShape(pres.shapes.LINE, { x: 0.5, y: y - 0.06, w: 12.33, h: 0, line: { color: "D9D9D9", width: 0.5, dashType: "dash" } });
+      s.addShape(pres.shapes.RECTANGLE, { x: CX[0], y, w: CW[0], h: RH, fill: { color: BLUE }, line: { color: BLUE } });
+      T(key, { x: CX[0] + 0.1, y: y + 0.15, w: CW[0] - 0.2, h: 0.5, fontSize: 15, bold: true, color: WHITE });
+      T(sub, { x: CX[0] + 0.1, y: y + 0.68, w: CW[0] - 0.2, h: 0.7, fontSize: 9, color: "DCE6EE" });
+      [[2, trad, "F7ECEC"], [3, auto, BLUE_L]].forEach(([c, txt, fill]) => {
+        s.addShape(pres.shapes.RECTANGLE, { x: CX[c], y, w: CW[c], h: RH, fill: { color: fill }, line: { color: fill } });
+        T(txt, { x: CX[c] + 0.1, y: y + 0.06, w: CW[c] - 0.2, h: RH - 0.12, fontSize: 8.8, color: TXT, valign: "middle", paraSpaceAfter: 2 });
+      });
     };
-    const cap = (x, y, t) => T(t, { x, y, w: PW, h: 0.4, fontSize: 8.5, color: MUTED });
-    // P1 Fed dot plot (SEP, 16 Sep 2026)
-    let p = panel(0, "The Fed: rates stay high until 2028");
-    const DOT = MD.fomc_dots_sep2026;
-    s.addImage({ path: path.join(__dirname, "fomc_dot_plot_compact.png"), x: p.x + 0.09, y: p.y, w: 3.9, h: 3.9 * 638 / 1804 });
-    cap(p.x, p.y + 1.42, `FOMC dot plot, 16 Sep 2026 (one dot per participant; shaded = today's 3.75–4.00%). ${DOT["2026"]["4.375"] + DOT["2027"]["4.375"]} dots at 4.375% for 2026–27; long run 3.25%.`);
-    // P2 index path
-    p = panel(1, "Equity paths are violent");
-    s.addChart(pres.charts.LINE, idxSeries(), Object.assign(chartBase(), { x: p.x, y: p.y, w: PW, h: 1.38, chartColors: [BLUE, RED, "A6A6A6"], lineSize: 2, showTitle: false,
-      lineDataSymbol: "circle", lineDataSymbolSize: 3, valAxisMinVal: 50, valAxisMaxVal: 325, valAxisMajorUnit: 100, valAxisLabelFontSize: 8, catAxisLabelFontSize: 6.5,
-      showLegend: true, legendPos: "r", legendFontSize: 7.5, legendFontFace: F }));
-    cap(p.x, p.y + 1.42, "Index levels, end-2021 = 100: −10–25% in 2022, then 2–3×. KOSPI fell ~25% from June to late August 2026.");
-    // P3 bond rate risk
-    p = panel(2, "Long bonds carry rate risk");
+    const small = (t, x, y, w) => T(t, { x, y, w, h: 0.2, fontSize: 7.5, italic: true, color: MUTED });
+
+    // Row 1: rates
+    row(0, "Rates", "The Fed sees rates high until 2028",
+      [{ text: `A 5-year bond loses ~${pct(-R100.bond_value_change)} for every 1% rise in rates, `, options: {} },
+       { text: `and ${DOT["2026"]["4.375"] + DOT["2027"]["4.375"]} Fed dots sit at 4.375% for 2026–27: more hikes are possible.`, options: {} }],
+      [{ text: "Early exit: ", options: { bold: true, color: BLUE } }, { text: "can redeem from year 1, so duration is short.", options: { breakLine: true } },
+       { text: "Cheap floor: ", options: { bold: true, color: BLUE } }, { text: `USD ${(RES.inputs.zcb_5y * 100).toFixed(1)} today buys USD 100 in 5 years, so a 70% floor fits inside.` }]);
+    s.addImage({ path: path.join(__dirname, "fomc_dot_plot_compact.png"), x: CX[1], y: RY[0] + 0.02, w: 3.45, h: 3.45 * 638 / 1804 });
+    small("FOMC dot plot, 16 Sep 2026 (shaded: today's 3.75–4.00%)", CX[1], RY[0] + 1.24, 3.45);
     const keys = RATE_KEYS;
-    const labs = keys.map((k) => k === "base" ? "0" : (parseInt(k) / 100).toFixed(1).replace(/^(\d)/, "+$1") + "%");
+    const labs = keys.map((k) => k === "base" ? "0" : (parseInt(k) / 100).toFixed(1).replace(/^(\d)/, "+$1"));
     s.addChart(pres.charts.BAR, [{ name: "5Y USD bond", labels: labs, values: keys.map((k) => k === "base" ? 0 : +(TN.rates[k].bond_value_change * 100).toFixed(1)) }],
-      Object.assign(chartBase(), { x: p.x, y: p.y, w: PW, h: 1.38, barDir: "col", chartColors: ["404040"], showTitle: false, showValue: true, dataLabelPosition: "outEnd",
-        dataLabelFormatCode: "0.0", dataLabelFontSize: 7, dataLabelColor: TXT, valAxisMinVal: -12, valAxisMaxVal: 12, valAxisMajorUnit: 4, valAxisLabelFormatCode: '0"%"',
-        catAxisLabelFontSize: 7.5, valAxisLabelFontSize: 8, showLegend: false, catAxisLabelPos: "low" }));
-    cap(p.x, p.y + 1.42, "Value change of a 5-year USD bond (5.69% coupon) for parallel rate moves of −2% to +2%.");
-    // P4 valuations
-    p = panel(3, "Valuations already price in a lot");
+      Object.assign(chartBase(), { x: CX[1] + 3.55, y: RY[0], w: 2.15, h: 1.24, barDir: "col", chartColors: ["7F7F7F"], showTitle: false, showValue: false,
+        valAxisMinVal: -10, valAxisMaxVal: 10, valAxisMajorUnit: 5, valAxisLabelFormatCode: '0"%"', catAxisLabelFontSize: 6.5, valAxisLabelFontSize: 7,
+        showLegend: false, catAxisLabelPos: "low" }));
+    small("5Y bond value vs rate move (%)", CX[1] + 3.6, RY[0] + 1.24, 2.1);
+
+    // Row 2: volatility
+    row(1, "Volatility", "Violent paths, record fear gauges",
+      [{ text: "Index levels fell 10–25% in 2022, then rose 2–3×; KOSPI lost ~25% from June to August 2026. Buy-and-hold must sit through it or time the bottom." }],
+      [{ text: "Paid on recovery: ", options: { bold: true, color: BLUE } }, { text: "coupons pay once the basket is back at its start; memory catches up missed ones.", options: { breakLine: true } },
+       { text: "Vol funds the coupon: ", options: { bold: true, color: BLUE } }, { text: "VKOSPI hit a record 91.2." }]);
+    s.addChart(pres.charts.LINE, idxSeries(), Object.assign(chartBase(), { x: CX[1], y: RY[1], w: CW[1], h: 1.24, chartColors: [BLUE, RED, "A6A6A6"], lineSize: 2, showTitle: false,
+      lineDataSymbol: "none", valAxisMinVal: 50, valAxisMaxVal: 325, valAxisMajorUnit: 100, valAxisLabelFontSize: 7, catAxisLabelFontSize: 7,
+      showLegend: true, legendPos: "r", legendFontSize: 7.5, legendFontFace: F }));
+    small("TAIEX, KOSPI, Nikkei 225 (end-2021 = 100)", CX[1], RY[1] + 1.24, CW[1]);
+
+    // Row 3: valuation and concentration
+    row(2, "Valuation", "Much good news is priced, in a few names",
+      [{ text: "KOSPI trades at 23× trailing earnings; Nikkei CAPE 38.6×; TSMC is >40% of TAIEX and Taiwan makes ~92% of advanced chips. Upside is concentrated and partly priced." }],
+      [{ text: "Diversify: ", options: { bold: true, color: BLUE } }, { text: "five-ETF basket, not a worst-of on single names.", options: { breakLine: true } },
+       { text: "Cap costs little: ", options: { bold: true, color: BLUE } }, { text: "giving up upside beyond the coupon matters less when it is already priced." }]);
     const pe = [["KOSPI", 22.95, 7.82], ["Nikkei 225", 22.09, 17.18]];
     s.addChart(pres.charts.BAR, [{ name: "Trailing P/E", labels: pe.map((x) => x[0]), values: pe.map((x) => x[1]) }, { name: "Forward P/E", labels: pe.map((x) => x[0]), values: pe.map((x) => x[2]) }],
-      Object.assign(chartBase(), { x: p.x, y: p.y, w: PW, h: 1.38, barDir: "col", barGrouping: "clustered", chartColors: ["A6A6A6", BLUE], showTitle: false, showValue: true,
+      Object.assign(chartBase(), { x: CX[1], y: RY[2], w: CW[1], h: 1.24, barDir: "bar", barGrouping: "clustered", chartColors: ["A6A6A6", BLUE], showTitle: false, showValue: true,
         dataLabelPosition: "outEnd", dataLabelFormatCode: '0.0"×"', dataLabelFontSize: 8, dataLabelColor: TXT, valAxisHidden: true, valGridLine: { style: "none" },
-        valAxisMinVal: 0, valAxisMaxVal: 28, catAxisLabelFontSize: 8.5, showLegend: true, legendPos: "r", legendFontSize: 8, legendFontFace: F }));
-    cap(p.x, p.y + 1.42, "Siblis Research, 1 Jul 2026. Korea's gap assumes earnings roughly triple; Nikkei CAPE 38.6×; Taiwan among the most expensive markets.");
-    // Implications
-    const IX = 8.98, IW = 3.85;
-    T("Implications", { x: IX, y: 1.4, w: IW, h: 0.35, fontSize: 15, bold: true, color: TXT, align: "center" });
-    s.addShape(pres.shapes.LINE, { x: IX + 0.3, y: 1.78, w: IW - 0.6, h: 0, line: { color: BLUE, width: 0.75 } });
-    T("Market proof: Taiwan structured-note issuance +81% in 2025, snowball autocalls the favourite payoff (SRP)",
-      { x: IX, y: 1.8, w: IW, h: 0.3, fontSize: 8, italic: true, color: MUTED, align: "center" });
-    const imp = [["Early exit beats duration", `Fed median 4.125% to end-2027, some see more hikes: bonds lose ~${pct(-R100.bond_value_change)} per 1% rise; autocalls can redeem from year 1`],
-                 ["Paid on recovery, not timing", "−25% in ten weeks (KOSPI 2026): autocall coupons pay once the basket is back at its start"],
-                 ["Diversify the basket", "TSMC >40% of TAIEX, ~92% of advanced chips from Taiwan: use a diversified ETF basket, not worst-of"],
-                 ["Volatility funds the coupon", "VKOSPI at a record 91.2: richer option premium means higher autocall coupons"],
-                 ["Protection is affordable", `Rates high until 2028: USD 100 in 5 years costs USD ${(RES.inputs.zcb_5y * 100).toFixed(1)} at 5.69%, so a 70% floor fits inside an autocall`]];
-    imp.forEach((m, i) => {
-      const y = 2.12 + i * 0.76;
-      s.addShape(pres.shapes.RECTANGLE, { x: IX, y, w: IW, h: 0.68, fill: { color: WHITE }, line: { color: BLUE, width: 1 } });
-      T(String(i + 1), { x: IX + 0.05, y, w: 0.45, h: 0.68, fontSize: 22, bold: true, italic: true, color: BLUE, align: "center", valign: "middle" });
-      T([{ text: m[0] + ": ", options: { bold: true, color: TXT } }, { text: m[1], options: { color: MUTED } }],
-        { x: IX + 0.55, y: y + 0.02, w: IW - 0.65, h: 0.64, fontSize: 8.8, valign: "middle" });
-    });
-    s.addShape(pres.shapes.RECTANGLE, { x: 0.5, y: 6.0, w: 12.33, h: 0.48, fill: { color: BLUE }, line: { color: BLUE } });
-    T("Plain bonds and equities leave investors exposed; a buffered autocall with a 70% floor keeps the theme and manages the risks.",
-      { x: 0.65, y: 6.0, w: 12.03, h: 0.48, fontSize: 12, bold: true, color: WHITE, align: "center", valign: "middle" });
-    note(T, "Sources: Federal Reserve, Summary of Economic Projections (16 Sep 2026; dot counts read from Figure 2, verify); TWSE, KRX/press, Nikkei (index levels); Siblis Research (P/E); Herald / SBS (VKOSPI); TrendForce; J.P. Morgan 2026 Outlook; StructuredRetailProducts.com; case funding grid with standard bond maths.", 6.56);
-    s.addNotes("One-slide thesis 2, modelled on the 'traditional strategies fall short' format, using market evidence only: the Fed's 16 Sep dot plot (median 4.125% through 2027, cuts only from 2028, a hawkish minority at 4.375%, wide disagreement) and the bond duration risk it implies, violent equity paths, concentration, record volatility and a late, richly priced cycle. Implications link each market fact to why an autocallable structure fits; our specific note and its numbers come in the product section.");
+        valAxisMinVal: 0, valAxisMaxVal: 27, catAxisLabelFontSize: 8.5, showLegend: true, legendPos: "r", legendFontSize: 7.5, legendFontFace: F }));
+    small("Price/earnings, 1 Jul 2026 (Siblis Research)", CX[1], RY[2] + 1.24, CW[1]);
+
+    T([{ text: "Market proof: ", options: { bold: true, color: BLUE } },
+       { text: "Taiwan structured-note issuance rose 81% in 2025, with autocalls the favourite payoff (SRP). Investors facing the same market are already choosing this answer." }],
+      { x: 0.5, y: 6.2, w: 12.33, h: 0.3, fontSize: 10, color: TXT });
+    note(T, "Sources: Federal Reserve, Summary of Economic Projections (16 Sep 2026; dot counts read from Figure 2, verify); TWSE, KRX/press, Nikkei (index levels); Siblis Research (P/E); Herald / SBS (VKOSPI); J.P. Morgan 2026 Outlook; StructuredRetailProducts.com; case funding grid with standard bond maths.", 6.56);
+    s.addNotes("Read across each row: what the 2026 market looks like, what that does to plain bonds or buy-and-hold equity, and how an autocallable answers it. Rates: the Fed's dot plot keeps rates high until 2028 with a hawkish minority, so long bonds carry rate risk, while high rates make a capital floor cheap and an autocall can redeem from year 1. Volatility: violent round trips punish buy-and-hold timing; autocall coupons pay on recovery and record volatility funds them. Valuation: concentration and full prices make upside less valuable, so capping it at the coupon costs little, and a diversified ETF basket avoids single-name risk. Our specific note and its numbers come in the product section.");
   }
 
   // ===== Appendix: sources =====
