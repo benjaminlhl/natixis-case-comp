@@ -44,8 +44,8 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
 
 // ---------- Slide 1: allocation + risk/return of the five ETFs ----------
 {
-  const { s, T } = mk("Strategy: five Asian AI-hardware ETFs, combined to cut risk");
-  T("USD 100mn across five Bloomberg-listed ETFs; mixing them gives most of the return with less volatility than the riskiest funds",
+  const { s, T } = mk("Strategy: our five-ETF basket sits at the low-risk edge of every possible mix");
+  T("USD 100mn across five Bloomberg-listed ETFs; our weights (red star) deliver ~26% expected return for only ~17% volatility",
     { x: 0.5, y: 1.06, w: 12.33, h: 0.3, fontSize: 11, italic: true, color: MUTED });
   const etfs = [
     ["3119 HK", "Pan-Asian chip leaders"], ["EWY US", "Korea: memory for AI"], ["EWT US", "Taiwan: the AI foundry"],
@@ -77,18 +77,19 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   // Right: how to read + takeaways
   head(9.65, 3.18, "How to read it");
   T([{ text: "Orange dots: ", options: { bold: true, color: ORANGE } }, { text: "each ETF on its own (2644 is the dot near 0.26, 0.25).", options: { breakLine: true } },
+     { text: "Red star: ", options: { bold: true, color: RED } }, { text: "our basket (35 / 20 / 15 / 15 / 15).", options: { breakLine: true } },
      { text: "Small dots: ", options: { bold: true, color: BLUE } }, { text: "thousands of random weightings of the five ETFs; lighter = more return per unit of risk.", options: { breakLine: true } },
      { text: "Axes: ", options: { bold: true, color: TXT } }, { text: "annualised volatility (risk) and expected return." }],
     { x: 9.7, y: 1.88, w: 3.1, h: 1.45, fontSize: 9, color: TXT, paraSpaceAfter: 3 });
   s.addShape(pres.shapes.RECTANGLE, { x: 9.65, y: 3.4, w: 3.18, h: 2.55, fill: { color: BLUE_L }, line: { color: BLUE_L } });
   T([{ text: "Takeaways", options: { bold: true, color: BLUE, fontSize: 11, breakLine: true } },
-     { text: "Mixing cuts risk: most mixes sit at 22–32% volatility, far below EWY (~49%), while still returning 25–28%.", options: { bullet: true, breakLine: true } },
-     { text: "3119 HK has the best risk/return on its own, so it gets the largest weight (35%).", options: { bullet: true, breakLine: true } },
-     { text: "EWY is the riskiest for its return, so it is held for memory exposure at 20%, not more.", options: { bullet: true, breakLine: true } },
-     { text: "EWT has the highest return (~31%) and 2644 one of the lowest volatilities (~26%): 15% each rounds out the chain.", options: { bullet: true } }],
+     { text: "Our basket (red star): ~26% return at ~17% volatility, the lowest risk of all the mixes shown.", options: { bullet: true, breakLine: true } },
+     { text: "Most random mixes need 22–32% volatility for the same 25–28% return: our weights get it with less risk.", options: { bullet: true, breakLine: true } },
+     { text: "Less risk than any single ETF, about a third of EWY's (~49%), while giving up only a few points versus EWT's ~31%.", options: { bullet: true, breakLine: true } },
+     { text: "Why: 3119 HK (35%) anchors the basket; the other four move differently enough to pull risk down.", options: { bullet: true } }],
     { x: 9.75, y: 3.48, w: 3.0, h: 2.42, fontSize: 9.5, color: TXT, paraSpaceAfter: 4 });
-  banner(s, T, "One theme, five bottlenecks: weighted towards the best risk/return (3119 HK), diversified to keep volatility down");
-  note(T, "Risk/return chart: team analysis app (annualised from historical data; red star as marked in the app). Liquidity: 3119 HK is borderline against the USD 5M/day rule, verify on Bloomberg.");
+  banner(s, T, "Our basket (red star): ~26% return for ~17% volatility, less risk than any single ETF or random mix");
+  note(T, "Risk/return chart: team analysis app (annualised from historical data; red star = our basket at 35/20/15/15/15; values read from the chart). Liquidity: 3119 HK is borderline against the USD 5M/day rule, verify on Bloomberg.");
 }
 
 // ---------- Slide 2: Monte Carlo chart ----------
