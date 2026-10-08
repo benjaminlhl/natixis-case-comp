@@ -1,0 +1,52 @@
+{
+ "put_strike": 0.7,
+ "call_strike_mc": 2.4783,
+ "call_strike_bs": 2.2948,
+ "put_premium_mc": 0.0319,
+ "put_premium_bs": 0.0317,
+ "basket_vol": 0.2387,
+ "p_put_pays": 0.1847,
+ "p_call_caps": 0.0762,
+ "year5_percentiles_unhedged": {
+  "1": 32.7,
+  "5": 47.0,
+  "25": 78.8,
+  "50": 112.6,
+  "75": 162.7,
+  "95": 280.6
+ },
+ "year5_percentiles_collared": {
+  "1": 70.0,
+  "5": 70.0,
+  "25": 78.8,
+  "50": 112.6,
+  "75": 162.7,
+  "95": 247.8
+ },
+ "unhedged": {
+  "p5": 47.0156,
+  "p25": 78.7846,
+  "median": 112.5562,
+  "p75": 162.7493,
+  "p95": 280.596,
+  "mean": 131.8332,
+  "median_cagr": 0.0239,
+  "p_loss": 0.4124,
+  "p_below_70": 0.1847,
+  "p_double": 0.1481,
+  "median_max_drawdown": 0.3907
+ },
+ "collared": {
+  "p5": 70.0,
+  "p25": 78.7846,
+  "median": 112.5562,
+  "p75": 162.7493,
+  "p95": 247.83,
+  "mean": 128.5072,
+  "median_cagr": 0.0239,
+  "p_loss": 0.4124,
+  "p_below_70": 0.0,
+  "p_double": 0.1481,
+  "median_max_drawdown": 0.328
+ }
+}
