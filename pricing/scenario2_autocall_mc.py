@@ -4,8 +4,8 @@ Monte Carlo pricer, coupon solver, design comparison, sensitivities and scenario
 Market inputs (vols, dividends, correlations) are ASSUMPTIONS, to be refreshed with Bloomberg
 data as of the 17 Sep 2026 trade date. Discounting uses the USD funding grid from the game rules.
 
-Recommended product (USD, quanto, 5Y, quarterly observations), semiconductor-heavy basket:
-  - Conditional memory coupon: 6.8% p.a. (1.70% per quarter), paid on each quarterly date the
+Recommended product (USD, quanto, 5Y, quarterly observations), semiconductor-heavy Asian basket:
+  - Conditional memory coupon: 6.75% p.a. (1.6875% per quarter), paid on each quarterly date the
     basket is >= 100% of initial, together with any coupons missed on earlier dates
   - Autocall: from Q4 (1Y) onwards, if basket >= 100% -> 100% + coupons due, note ends
   - Maturity (not called): 100% of principal (capital protected, subject to Natixis credit)
@@ -18,15 +18,15 @@ import numpy as np
 
 rng = np.random.default_rng(2026)
 
-NAMES = ["TWSE Index", "KOSPI2 Index", "NKY Index", "SOX Index"]
-LABELS = ["Taiwan TAIEX", "KOSPI 200", "Nikkei 225", "PHLX Semiconductor"]
-W = np.array([0.35, 0.25, 0.20, 0.20])
-VOL = np.array([0.24, 0.25, 0.22, 0.35])          # assumed 5Y implied vols
-DIV = np.array([0.028, 0.020, 0.018, 0.008])      # assumed dividend yields
-CORR = np.array([[1.00, 0.70, 0.60, 0.55],
-                 [0.70, 1.00, 0.55, 0.45],
-                 [0.60, 0.55, 1.00, 0.40],
-                 [0.55, 0.45, 0.40, 1.00]])
+NAMES = ["TWSE Index", "KOSPI2 Index", "NKY Index"]
+LABELS = ["Taiwan TAIEX", "KOSPI 200", "Nikkei 225"]
+W = np.array([0.40, 0.30, 0.30])
+VOL = np.array([0.24, 0.25, 0.22])                # assumed 5Y implied vols
+DIV = np.array([0.028, 0.020, 0.018])             # assumed dividend yields
+CORR = np.array([[1.00, 0.70, 0.60],
+                 [0.70, 1.00, 0.55],
+                 [0.60, 0.55, 1.00]])
+NA = len(W)
 
 # USD funding grid (game rules), linear interpolation on tenor
 GRID_T = np.array([1, 2, 3, 5, 7, 10, 20])
@@ -42,7 +42,7 @@ DT = 1 / FREQ
 N_PATHS = 200_000
 ISSUE_PRICE = 0.98            # Natixis margin + hedging costs = 2% upfront
 
-COUPON, CPN_BARRIER, AC, FIRST = 0.068, 1.00, 1.00, 4
+COUPON, CPN_BARRIER, AC, FIRST = 0.0675, 1.00, 1.00, 4
 BARRIER = 0.65               # default capital barrier for the at-risk comparison designs
 
 
@@ -50,9 +50,9 @@ def simulate(vol=VOL, corr=CORR, n=N_PATHS, real_world=False, eq_drift=0.07):
     """Quarterly basket levels (n x N_OBS). Risk-neutral drift = USD funding - dividend
     (quanto adjustment ignored: FX overlay run by the desk). Real-world: eq_drift p.a. total return."""
     L = np.linalg.cholesky(corr)
-    z = np.einsum("ij,tjn->tin", L, rng.standard_normal((N_OBS, 4, n)))
+    z = np.einsum("ij,tjn->tin", L, rng.standard_normal((N_OBS, len(vol), n)))
     r = np.array([fund(t) for t in TIMES])
-    mu = np.full((N_OBS, 4), eq_drift) - DIV[None, :] if real_world else r[:, None] - DIV[None, :]
+    mu = np.full((N_OBS, len(vol)), eq_drift) - DIV[None, :] if real_world else r[:, None] - DIV[None, :]
     logret = (mu - 0.5 * vol ** 2)[:, :, None] * DT + vol[None, :, None] * np.sqrt(DT) * z
     basket = np.einsum("j,tjn->tn", W, np.exp(np.cumsum(logret, axis=0)))
     return basket.T
@@ -200,8 +200,8 @@ if __name__ == "__main__":
                           "pv_coupons": round(pv - pv_principal, 4)}
 
     # 2. Design comparison: fair coupon at 98% and probability of capital loss
-    C10 = np.full((4, 4), 0.999); np.fill_diagonal(C10, 1.0)
-    B10 = simulate(vol=np.full(4, 0.10), corr=C10)
+    C10 = np.full((NA, NA), 0.999); np.fill_diagonal(C10, 1.0)
+    B10 = simulate(vol=np.full(NA, 0.10), corr=C10)
     designs = {}
     c = solve(fixed_coupon, B, barrier=0.70); designs["Classic: fixed coupon, 70% barrier"] = [c, p_breach(fixed_coupon, B, c, 0.70)]
     c = solve(phoenix, B, barrier=0.70, cpn_barrier=0.80); designs["Phoenix memory (80% cpn barrier), 70% barrier"] = [c, p_breach(phoenix, B, c, 0.70, cpn_barrier=0.80)]
@@ -220,8 +220,8 @@ if __name__ == "__main__":
     # 4. Sensitivities of the fair coupon
     sens = {"base": res["recommended"]["fair_coupon"]}
     for tag, v, cr in [("vol +3pts", VOL + 0.03, CORR), ("vol -3pts", VOL - 0.03, CORR),
-                       ("corr +0.15", VOL, CORR + 0.15 * (1 - np.eye(4))),
-                       ("corr -0.15", VOL, CORR - 0.15 * (1 - np.eye(4)))]:
+                       ("corr +0.15", VOL, CORR + 0.15 * (1 - np.eye(NA))),
+                       ("corr -0.15", VOL, CORR - 0.15 * (1 - np.eye(NA)))]:
         sens[tag] = solve(protected, simulate(v, cr, n=100_000))
     for cb in (0.90, 0.95):
         sens[f"cpn barrier {int(cb*100)}%"] = solve(protected, B, cpn_barrier=cb)

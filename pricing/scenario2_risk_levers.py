@@ -55,7 +55,10 @@ if __name__ == "__main__":
     }
     for k, kw in designs.items():
         res[k] = row(B, Brw, **kw)
-    # Lower-vol basket: cut HSTECH, add utilities
+    # Lower-vol basket: cut HSTECH, add utilities (only for the earlier 4-index diversified basket)
+    if len(m.W) != 4:
+        json.dump(res, open(__file__.replace("scenario2_risk_levers.py", "scenario2_levers.json"), "w"), indent=1)
+        raise SystemExit
     m.W[:] = [0.20, 0.30, 0.25, 0.25]
     B2 = m.simulate(); B2rw = m.simulate(real_world=True, eq_drift=0.04, n=100_000)
     res["Lower-vol basket (HSTECH 20%, Utilities 25%)"] = row(B2, B2rw)
