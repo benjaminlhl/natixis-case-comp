@@ -1,0 +1,14 @@
+{
+ "_source": "Team Monte Carlo app (screenshots shared 8 Oct 2026): 5-year simulation of the five-ETF portfolio, per USD 100,000 invested",
+ "start_value": 100000,
+ "target": 70000,
+ "_target_note": "Target line USD 70,000 = 1st percentile of outcomes",
+ "weights": {"3119 HK": 0.35, "EWY US": 0.20, "EWT US": 0.15, "2644 JP": 0.15, "00878 TT": 0.15},
+ "checkpoints": {
+  "labels": ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5"],
+  "median": [122798.06, 150858.02, 186215.83, 228430.07, 279609.52],
+  "p5":     [77939.19, 79780.84, 83307.87, 92823.04, 103554.03],
+  "p95":    [189886.46, 286013.81, 406264.32, 564512.06, 770498.81],
+  "prob_ge_target": [0.9772, 0.9746, 0.9776, 0.9828, 0.9900]
+ }
+}
