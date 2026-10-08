@@ -12,7 +12,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 D = json.load(open(os.path.join(HERE, "thesis_market_data.json")))["fomc_dots_sep2026"]
 COLS = ["2026", "2027", "2028", "2029", "Longer run"]
-BLUE, DARK, TXT, MUTED, GRID, BAND = "#2C5F82", "#0B2A3D", "#262626", "#595959", "#E3E3E3", "#E8EFF5"
+BLUE, TXT, MUTED, GRID, BAND = "#2C5F82", "#262626", "#595959", "#E3E3E3", "#E8EFF5"
 
 
 def median(col):
@@ -35,7 +35,6 @@ def draw(fname, figsize, compact=False):
             ax.scatter(xs, [float(lvl)] * n, s=sz, color=BLUE, zorder=3, linewidths=0)
         m, cnt = median(c)
         meds[c] = (m, cnt)
-        ax.plot([i - 0.44, i + 0.44], [m, m], color=DARK, linewidth=1.6, zorder=2)
     ax.axvline(3.5, color=MUTED, linewidth=0.8, linestyle="--")
     ax.set_xticks(range(len(COLS)))
     ax.set_xticklabels([f"{c}\nmedian {meds[c][0]:g}%" for c in COLS], fontsize=11 if compact else 9.5, color=TXT)
@@ -51,7 +50,6 @@ def draw(fname, figsize, compact=False):
     ax.set_axisbelow(True)
     if not compact:
         ax.scatter([], [], s=26, color=BLUE, label="One FOMC participant (midpoint of target range)")
-        ax.plot([], [], color=DARK, linewidth=2.2, label="Median")
         ax.legend(loc="lower left", frameon=False, fontsize=8.5, labelcolor=MUTED)
     fig.tight_layout()
     fig.savefig(os.path.join(HERE, fname), facecolor="white")
