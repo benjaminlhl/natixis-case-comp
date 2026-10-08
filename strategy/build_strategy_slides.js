@@ -17,10 +17,9 @@ const cagr = (v) => Math.pow(v / S0, 1 / 5) - 1;
 const pc = (x, d = 1) => (x < 0 ? "−" : "+") + Math.abs(x * 100).toFixed(d) + "%";
 const last = (a) => a[a.length - 1];
 
-const pres = new pptxgen();
-pres.layout = "LAYOUT_WIDE"; // 13.333 x 7.5
-pres.title = "Strategy: five-ETF Asian AI-hardware portfolio";
-
+// only: list of slide numbers to add (1 allocation + risk/return, 2 Monte Carlo, 3 checkpoints); default all
+function addStrategySlides(pres, only) {
+const want = (n) => !only || only.includes(n);
 const mk = (titleText) => {
   const s = pres.addSlide();
   s.background = { color: WHITE };
@@ -43,7 +42,7 @@ const note = (T, text, y = 6.66) => T(text, { x: 0.5, y, w: 12.33, h: 0.28, font
 const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { color: BLUE } } });
 
 // ---------- Slide 1: allocation + risk/return of the five ETFs ----------
-{
+if (want(1)) {
   const { s, T } = mk("Strategy: our five-ETF basket sits at the low-risk edge of every possible mix");
   T("USD 100mn across five Bloomberg-listed ETFs; our weights (red star) deliver ~26% expected return for only ~17% volatility",
     { x: 0.5, y: 1.06, w: 12.33, h: 0.3, fontSize: 11, italic: true, color: MUTED });
@@ -93,7 +92,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
 }
 
 // ---------- Slide 2: Monte Carlo chart ----------
-{
+if (want(2)) {
   const { s, T } = mk("Monte Carlo: the median portfolio grows 2.8× in five years");
   T("5-year simulation of the five-ETF portfolio, per USD 100,000 invested (×1,000 for the USD 100mn mandate)",
     { x: 0.5, y: 1.06, w: 12.33, h: 0.3, fontSize: 11, italic: true, color: MUTED });
@@ -116,7 +115,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
 }
 
 // ---------- Slide 3: annual checkpoint table ----------
-{
+if (want(3)) {
   const { s, T } = mk("Annual checkpoints: the downside stays above the USD 70,000 target");
   T("Simulated portfolio value at each year-end, per USD 100,000 invested", { x: 0.5, y: 1.06, w: 12.33, h: 0.3, fontSize: 11, italic: true, color: MUTED });
   const H = (t, c) => ({ text: t, options: { bold: true, color: WHITE, fill: { color: c || BLUE }, align: "center" } });
@@ -147,4 +146,13 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   note(T, "Source: team Monte Carlo app, Annual Portfolio Checkpoint Table. Probabilities are shares of simulated paths; they are model outputs, not guarantees.");
 }
 
-pres.writeFile({ fileName: path.join(__dirname, "Strategy-Slides.pptx") }).then((f) => console.log("wrote", f));
+}
+module.exports = { addStrategySlides };
+
+if (require.main === module) {
+  const pres = new pptxgen();
+  pres.layout = "LAYOUT_WIDE"; // 13.333 x 7.5
+  pres.title = "Strategy: five-ETF Asian AI-hardware portfolio";
+  addStrategySlides(pres);
+  pres.writeFile({ fileName: path.join(__dirname, "Strategy-Slides.pptx") }).then((f) => console.log("wrote", f));
+}

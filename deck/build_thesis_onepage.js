@@ -13,15 +13,13 @@ const BLUE = "2C5F82", BLUE_L = "E8EFF5", BLUE_M = "8DB3D1", GRAY = "F2F2F2", TX
 const F = "Arial";
 const pct = (x, d = 1) => (x >= 0 ? "" : "−") + (Math.abs(x) * 100).toFixed(d) + "%";
 
-const pres = new pptxgen();
-pres.layout = "LAYOUT_WIDE"; // 13.333 x 7.5
-pres.title = "Investment thesis on one page";
+function addThesisOnePage(pres) {
 const s = pres.addSlide();
 s.background = { color: WHITE };
 const T = (t, o) => s.addText(t, Object.assign({ fontFace: F, fontSize: 12, color: TXT, margin: 0, valign: "top", isTextBox: true }, o));
 
 // Title, rules and section footer (team template)
-T("Investment thesis: Asia owns AI's hardware, and 2026's market rewards an autocall", { x: 0.5, y: 0.3, w: 12.3, h: 0.6, fontSize: 22, valign: "middle" });
+T("Investment thesis: Monopolizing the AI Supply Chain via Structured Overlays", { x: 0.5, y: 0.3, w: 12.3, h: 0.6, fontSize: 22, valign: "middle" });
 s.addShape(pres.shapes.LINE, { x: 0.5, y: 0.98, w: 12.33, h: 0, line: { color: BLUE, width: 1 } });
 s.addShape(pres.shapes.LINE, { x: 0.5, y: 6.98, w: 12.33, h: 0, line: { color: LINE, width: 0.75 } });
 [["ANALYSIS", 0.5], ["STRATEGY", 4.69], ["APPENDIX", 8.89]].forEach(([t, x]) => {
@@ -43,7 +41,7 @@ const chartBase = () => ({ catAxisLabelColor: MUTED, valAxisLabelColor: MUTED, c
 
 // ---------------- Left: thesis 1, what we own ----------------
 const LX = 0.5, LW = 6.0;
-header(LX, LW, "1", "What we own: Asia controls AI's hardware bottlenecks");
+header(LX, LW, "1", "Asia controls AI's hardware bottlenecks");
 const cm = MD.chip_market_bn;
 s.addChart(pres.charts.BAR, [{ name: "Chip market", labels: cm.labels, values: cm.values }],
   Object.assign(chartBase(), { x: LX, y: 1.92, w: 2.7, h: 2.05, barDir: "col", chartColors: [BLUE, BLUE, BLUE_M, BLUE_M], showValue: true, dataLabelPosition: "outEnd",
@@ -70,7 +68,7 @@ nodes.forEach(([big, head, body], i) => {
 
 // ---------------- Right: thesis 2, why an autocall now ----------------
 const RX = 6.83, RW = 6.0;
-header(RX, RW, "2", "Why an autocall now: 2026 punishes bonds and buy-and-hold");
+header(RX, RW, "2", "2026 punishes bonds and buy-and-hold");
 const DOT = MD.fomc_dots_sep2026;
 s.addImage({ path: path.join(__dirname, "fomc_dot_plot_compact.png"), x: RX, y: 1.95, w: 3.6, h: 3.6 * 638 / 1804 });
 T("FOMC dot plot, 16 Sep 2026 (shaded: today's 3.75–4.00%)", { x: RX, y: 3.25, w: 3.6, h: 0.2, fontSize: 7.5, italic: true, color: MUTED });
@@ -104,4 +102,13 @@ T("Sources: WSTS; company capex guidance; Counterpoint (foundry, HBM); TrendForc
   { x: 0.5, y: 6.6, w: 12.33, h: 0.32, fontSize: 7.5, italic: true, color: MUTED });
 s.addNotes("One-page thesis. Left: what we own. AI spending is a hardware boom and Asia holds the three bottlenecks: Taiwan's foundries, Korea's high-bandwidth memory, Japan's chip-making tools. Demand is structural, though the memory cycle is maturing. Right: why we hold it through an autocall now. The Fed's dot plot keeps rates high until 2028, so long bonds carry rate risk and a capital floor is cheap; volatility is at records, so buy-and-hold must sit through violent swings while autocall coupons pay on recovery and are funded by option premium; the theme is concentrated and fully priced, so a diversified basket and a capped upside cost little.");
 
-pres.writeFile({ fileName: path.join(__dirname, "Investment-Thesis-OnePage.pptx") }).then((f) => console.log("wrote", f));
+}
+module.exports = { addThesisOnePage };
+
+if (require.main === module) {
+  const pres = new pptxgen();
+  pres.layout = "LAYOUT_WIDE"; // 13.333 x 7.5
+  pres.title = "Investment thesis on one page";
+  addThesisOnePage(pres);
+  pres.writeFile({ fileName: path.join(__dirname, "Investment-Thesis-OnePage.pptx") }).then((f) => console.log("wrote", f));
+}

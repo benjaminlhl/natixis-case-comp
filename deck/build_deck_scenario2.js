@@ -5,6 +5,44 @@ const path = require("path");
 const pptxgen = require("pptxgenjs");
 const R = require(path.join(__dirname, "..", "pricing", "scenario2_results.json"));
 
+
+// Team-template slides (thesis, strategy) are authored on a 13.33 x 7.5 canvas; scale them by 0.75 onto this 10 x 5.625 deck.
+const SCALE = 0.75;
+function scaleOpts(o, top) {
+  if (Array.isArray(o)) return o.map((v) => scaleOpts(v, false));
+  if (!o || typeof o !== "object") return o;
+  const r = {};
+  for (const [k, v] of Object.entries(o)) {
+    if (top && ["x", "y", "w", "h"].includes(k) && typeof v === "number") r[k] = v * SCALE;
+    else if ((k === "colW" || k === "rowH") && top) r[k] = Array.isArray(v) ? v.map((z) => z * SCALE) : v * SCALE;
+    else if (/^fontSize$|FontSize$/.test(k) && typeof v === "number") r[k] = Math.round(v * SCALE * 10) / 10;
+    else if (k === "line" && v && typeof v === "object") r[k] = Object.assign({}, v, typeof v.width === "number" ? { width: v.width * SCALE } : {});
+    else if (k === "options" || k === "text") r[k] = scaleOpts(v, false);
+    else r[k] = v;
+  }
+  return r;
+}
+const scaleText = (t) => (Array.isArray(t) ? t.map((run) => (run && typeof run === "object" ? scaleOpts(run, false) : run)) : t);
+function scaledPres(p) {
+  return {
+    shapes: p.shapes, charts: p.charts,
+    addSlide() {
+      const s = p.addSlide();
+      return {
+        set background(b) { s.background = b; },
+        addText: (t, o) => s.addText(scaleText(t), scaleOpts(o, true)),
+        addShape: (type, o) => s.addShape(type, scaleOpts(o, true)),
+        addImage: (o) => s.addImage(scaleOpts(o, true)),
+        addChart: (type, data, o) => s.addChart(type, data, scaleOpts(o, true)),
+        addTable: (rows, o) => s.addTable(rows.map((row) => row.map((c) => (c && typeof c === "object" ? scaleOpts(c, false) : c))), scaleOpts(o, true)),
+        addNotes: (t) => s.addNotes(t),
+      };
+    },
+  };
+}
+const { addThesisOnePage } = require(path.join(__dirname, "build_thesis_onepage.js"));
+const { addStrategySlides } = require(path.join(__dirname, "..", "strategy", "build_strategy_slides.js"));
+
 const pres = new pptxgen();
 pres.layout = "LAYOUT_16x9"; // 10 x 5.625
 pres.title = "Asian Digital Transformation Autocallable Note";
@@ -66,12 +104,13 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   const s = pres.addSlide(); s.background = { color: WHITE };
   title(s, "Agenda");
   const items = [["Client & market", "Who the Chak family is, what they need, and why Asia's digital build-out now", "1–2"],
-                 ["Product design", "Underlying basket, term sheet, and why a buffered autocallable (70% barrier + 70% put)", "3–4"],
-                 ["Payoffs explained", "Observation timeline and the three outcomes at maturity (building blocks in the appendix)", "5"],
-                 ["Scenarios & back-testing", "Stress paths and Monte Carlo outcome distributions", "6–7"],
-                 ["Risks & hedging", "Investor risks, mitigants, and how the Natixis desk hedges", "8"]];
+                 ["Investment thesis & strategy", "Why Asian AI hardware, why an autocall now, and why our five-ETF weights", "3–4"],
+                 ["Product design", "Underlying basket, term sheet, and why a buffered autocallable (70% barrier + 70% put)", "5–6"],
+                 ["Payoffs explained", "Observation timeline and the three outcomes at maturity (building blocks in the appendix)", "7"],
+                 ["Scenarios & back-testing", "Stress paths and Monte Carlo outcome distributions", "8–9"],
+                 ["Risks & hedging", "Investor risks, mitigants, and how the Natixis desk hedges", "10"]];
   items.forEach((it, i) => {
-    const y = 1.15 + i * 0.8;
+    const y = 1.05 + i * 0.7;
     dot(s, 0.6, y + 0.05, String(i + 1), i % 2 ? GOLD : JADE, 0.5);
     txt(s, it[0], { x: 1.35, y, w: 5, h: 0.32, fontSize: 16, bold: true, color: INK });
     txt(s, it[1], { x: 1.35, y: y + 0.33, w: 7, h: 0.3, fontSize: 11.5, color: MUTED });
@@ -120,7 +159,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   });
   const rows = [[hdr("Client need"), hdr("Design answer in our note")],
     ["Capital appreciation", `${pct(CPN, 2)} p.a. coupon, above the 5.69% 5Y USD funding rate, in every path that autocalls; proceeds roll into the next note`],
-    ["Exposure to Asian digital transformation", "Semiconductor-heavy basket: the AI hardware layer behind the family's tech-infrastructure business (slide 3)"],
+    ["Exposure to Asian digital transformation", "Semiconductor-heavy basket: the AI hardware layer behind the family's tech-infrastructure business (slide 5)"],
     ["Generational preservation", "70% barrier plus embedded 70% put: maximum loss 30% at maturity; diversified basket (not worst-of); BPCE-backed issuer"],
     ["Volatile markets", "Memory coupon: a missed coupon is paid when the basket recovers; a fall of up to 30% at maturity costs nothing"]];
   s.addTable(rows, { x: 0.5, y: 3.7, w: 9, colW: [2.6, 6.4], fontFace: BF, fontSize: 9.5, color: TXT, border: { type: "solid", pt: 0.5, color: GRID }, fill: { color: WHITE }, rowH: 0.27, margin: [2, 5, 2, 5] });
@@ -156,6 +195,10 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   s.addNotes("Two arguments. (1) Structural: AI spending flows straight into Asian semiconductors: Taiwan makes the chips, Korea the memory, Japan the chip-making tools, plus an ESG-screened Taiwan sleeve. (2) Structuring: high USD rates make the principal cheap, Asian volatility makes the 100% coupon trigger likely to be hit, and a 70% put caps the downside, so we can pay a double-digit coupon with a hard floor.");
 }
 
+// ======================= 3–4. Investment thesis and strategy (team template) =======================
+addThesisOnePage(scaledPres(pres));
+addStrategySlides(scaledPres(pres), [1]);
+
 // ======================= 3. Basket =======================
 {
   const s = pres.addSlide(); s.background = { color: WHITE };
@@ -184,7 +227,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
           { text: `a shock to one ETF is cushioned by the others: basket vol ~${pct(R.basket_vol, 0)} vs ${pct(Math.min(...R.inputs.vols), 0)}–${pct(Math.max(...R.inputs.vols), 0)} alone. Overlap (TSMC, Samsung, SK hynix sit in several ETFs) keeps correlations high (0.45–0.85).` }],
     { x: 3.4, y: 4.2, w: 6.1, h: 0.6, fontSize: 9.5 });
   foot(s, "*Assumed 5Y vols. USD 5M/day ETF rule: EWY, EWT, 2644, 00878 pass; 3119 is borderline (~USD 4–5M/day), verify the 6-month average on Bloomberg. 00878 distributes ~7.6% a year, which lowers its price path.");
-  pageNo(s, 3);
+  pageNo(s, 5);
   s.addNotes("Five Bloomberg-listed ETFs: 3119 HK (Asia semiconductors), 2644 JP (Japan semiconductors), EWT and EWY (US-listed Taiwan and Korea country funds) and 00878 TT (Taiwan ESG high dividend). EWT and EWY trade in USD, so no quanto is needed; the HKD, JPY and TWD lines are quantoed into USD. Check: 3119 trading value against the USD 5M/day rule, 2644 top holdings, and 00878 distributions (~7.6% a year), which reduce its price-return path and so the chance of the basket getting back to 100%.");
 }
 
@@ -193,7 +236,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   const s = pres.addSlide(); s.background = { color: WHITE };
   title(s, `Term sheet: 5-year buffered autocallable, ${pct(CPN, 2)} coupon`, "Why this design: a double-digit coupon, with the loss at maturity capped at 30%");
   const terms = [["Issuer", "Natixis SA (BPCE Group)"], ["Notional / currency", "USD 100,000,000 · quanto USD"], ["Trade / maturity", "17 Sep 2026 / 17 Sep 2031 (5Y)"],
-                 ["Underlying", `Weighted basket of ${R.inputs.weights.length} Asian ETFs (slide 3)`], ["Observation", "Quarterly, 20 dates; autocall from Q4 (Year 1)"],
+                 ["Underlying", `Weighted basket of ${R.inputs.weights.length} Asian ETFs (slide 5)`], ["Observation", "Quarterly, 20 dates; autocall from Q4 (Year 1)"],
                  ["Coupon", `${pct(CPN, 2)} p.a. (${pct(QC, 2)} per quarter), paid if basket ≥ 100%`], ["Memory", "Missed coupons paid on the next date basket ≥ 100%"],
                  ["Autocall", "Basket ≥ 100% from Q4: 100% + coupons due, note ends"], ["At maturity", "100% if basket ≥ 70%; otherwise 70% (embedded 70% put)"],
                  ["Issue price / fair value", `100% / ${pct(REC.pv)}`]];
@@ -218,7 +261,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
           { text: `The draft's 8.5% fixed coupon is worth ${pct(R.draft_8_5_fixed_70_pv)}, so Natixis cannot fund it. Full protection pays only ${pct(fp.fair_coupon)}. Without a put the coupon is ${pct(np_.fair_coupon)}, but a crash can wipe out the capital. The embedded 70% put costs ~${(100 * (np_.fair_coupon - REC.fair_coupon)).toFixed(1)}pts of coupon and caps the loss at 30%: fair ${pct(REC.fair_coupon)}, we offer ${pct(CPN, 2)}.`, options: { color: WHITE } }],
     { x: 5.5, y: 3.53, w: 3.9, h: 1.28, fontSize: 9.5 });
   foot(s, NOTE + " Loss risk = probability the note returns less than 100% at maturity (risk-neutral).");
-  pageNo(s, 4);
+  pageNo(s, 6);
   s.addNotes("The table is the key design argument. Full protection is safe but pays under 8%. Removing all protection pays more but exposes the family to the whole drawdown in a crash. Our design sits between: the family accepts the first 30% of loss below the barrier risk only in a deep fall, and Natixis embeds a 70% put so the worst case is 70% back. The put costs a little over 2 points of coupon, which is the price of the hard floor.");
 }
 
@@ -259,8 +302,8 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
     txt(s, [{ text: o[3], options: { bold: true, color: o[4], fontSize: 16, breakLine: true } }, { text: "risk-neutral", options: { color: MUTED, fontSize: 7.5 } }],
       { x: 8.65, y: y + 0.05, w: 0.85, h: 0.62, align: "center", valign: "middle" });
   });
-  foot(s, "Probabilities are risk-neutral (drift = funding rate − dividends); real-world outcomes are on slide 7. The desk's replication (bond, coupon digitals, 70% put pair) is in Appendix B.");
-  pageNo(s, 5);
+  foot(s, "Probabilities are risk-neutral (drift = funding rate − dividends); real-world outcomes are on slide 9. The desk's replication (bond, coupon digitals, 70% put pair) is in Appendix B.");
+  pageNo(s, 7);
   s.addNotes(`Explain the note as one question asked every quarter: is the basket at or above where it started? If yes, the family is paid ${pct(QC, 2)} for that quarter plus any coupons missed before, and from Year 1 the note also ends with 100% back. If the note is never called, the payoff chart shows three zones at Year 5: at or above 100% the family receives ${pct(1 + CPN * 5)}; between 70% and 100% it gets 100% back; below 70% the embedded put pays 70%, so the loss stops at 30%.`);
 }
 
@@ -288,7 +331,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
           { text: `the note earns ~${pct(Math.min(...names.filter((n) => st[n].call_q).map((n) => st[n].irr)))}–${pct(Math.max(...names.filter((n) => st[n].call_q).map((n) => st[n].irr)))} a year whenever the basket gets back to 100%, even after a 30% drawdown: memory pays all 15 missed coupons at Q15. In a lost decade (basket −12%) the buffer returns 100%; in a lasting shock (basket −45%) the embedded put returns 70%.` }],
     { x: 5.25, y: 4.03, w: 4.2, h: 1.0, fontSize: 9.5 });
   foot(s, "Paths are illustrative and not forecasts. 'Basket' = direct basket return at Y5 when the note is not called. Historical back-test to run on Bloomberg history (appendix).");
-  pageNo(s, 6);
+  pageNo(s, 8);
   s.addNotes("Walk the five scenarios. The 2022-style path is the key one: a 30% drawdown in the first year that would scare a direct investor, yet the note pays all 15 quarterly coupons at once when the basket recovers at Q15. The two bad paths show the two layers of protection: at −12% the 30% buffer returns 100%; at −45% the embedded put returns 70%, so the family loses 30% instead of 45%.");
 }
 
@@ -319,7 +362,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
     txt(s, k[1], { x: x + 1.3, y: 4.02, w: 1.45, h: 0.95, fontSize: 10, color: i === 2 ? WHITE : TXT, valign: "middle" });
   });
   foot(s, NOTE + " IRR uses actual quarterly coupon dates.");
-  pageNo(s, 7);
+  pageNo(s, 9);
   s.addNotes(`The table answers 'what if markets go nowhere?'. Even at 0% equity return the note is called in ~${pct(R.real_world["0%"].p_called, 0)} of paths, because volatility alone takes the basket back to 100% on some date. The honest cost of the higher coupon: in ~${pct(RN.p_floor, 0)} of paths (risk-neutral; ${pct(R.real_world["8%"].p_floor, 0)} at 8% equity returns) the basket ends below 70% and the family gets 70% back, but never less.`);
 }
 
@@ -348,7 +391,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   txt(s, [{ text: "Pricing sensitivity (fair coupon): ", options: { bold: true, color: INK } },
           { text: `base ${pct(SV.base)} · vol ±3pts ${pct(SV["vol -3pts"])}–${pct(SV["vol +3pts"])} · corr ±0.15 ${pct(SV["corr -0.15"])}–${pct(SV["corr +0.15"])} · equity drift −1/−2% ${pct(SV["drift -1%"])}–${pct(SV["drift -2%"])}. ${["base", "vol -3pts", "vol +3pts", "corr -0.15", "corr +0.15", "drift -1%", "drift -2%"].every((k) => SV[k] >= CPN - 1e-9) ? `The ${pct(CPN, 2)} offer stays fundable in every case.` : `The ${pct(CPN, 2)} offer needs re-checking if vols or correlation fall.`}` }],
     { x: 0.45, y: 4.45, w: 5.4, h: 0.7, fontSize: 9 });
-  pageNo(s, 8);
+  pageNo(s, 10);
   s.addNotes(`Investor risks on the left, desk hedges on the right. The capital-loss line is explicit: below 70% at maturity the family loses 30%, never more. The other honest risks are capped upside and Natixis credit. The ${pct(CPN, 2)} coupon sits below the ${pct(SV.base)} fair level in every sensitivity we ran, so the offer is robust to market moves before the trade date.`);
 }
 
