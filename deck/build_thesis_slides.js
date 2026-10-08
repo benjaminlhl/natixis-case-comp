@@ -211,48 +211,10 @@ async function icon(Comp, color) {
     s.addNotes("Thesis 2, market evidence only. Economic: AI-hardware demand is structural, but the equity path is violent (2022 falls, 2026 round trips), concentrated in a handful of names, and valuations already assume a lot while memory price momentum slows. Finance: the Fed is hiking again, so long bonds carry real rate risk; volatility is at record highs; and high rates make a capital floor unusually cheap. Each point ends with the autocall link: coupons paid on recovery (not timing), a diversified basket, capped upside that costs little, short duration, coupons funded by volatility, and a floor funded by high rates.");
   }
 
-  // ===== Thesis 2 (rates): FOMC dot plot, 16 Sep 2026 =====
-  {
-    const { s, T } = mk("Investment thesis 2 (rates): the Fed's dot plot says higher for longer", "ANALYSIS");
-    const DOT = MD.fomc_dots_sep2026;
-    const med = (c) => { const v = []; Object.entries(DOT[c]).forEach(([k, n]) => { for (let i = 0; i < n; i++) v.push(+k); }); v.sort((a, b) => a - b);
-      return (v[(v.length - 1) >> 1] + v[v.length >> 1]) / 2; };
-    const rng = (c) => { const k = Object.keys(DOT[c]).map(Number); return [Math.min(...k), Math.max(...k)]; };
-    const f = (x) => x.toFixed(3).replace(/0+$/, "") + "%";
-    s.addImage({ path: path.join(__dirname, "fomc_dot_plot.png"), x: 0.5, y: 1.15, w: 7.2, h: 7.2 * 1188 / 1892 });
-    T("FOMC participants' view of the appropriate fed funds rate (midpoint of target range), Summary of Economic Projections, 16 Sep 2026",
-      { x: 0.5, y: 5.72, w: 7.2, h: 0.3, fontSize: 8.5, italic: true, color: MUTED });
-    const r27 = rng("2027");
-    const pts = [
-      [f(med("2026")), "Rates stay high through 2027", `Median ${f(med("2026"))} at end-2026 and ${f(med("2027"))} at end-2027 (one more hike from 3.75–4.00%); cuts only from 2028.`,
-        "USD funding stays high for most of a 5-year note: the principal and a 70% floor are cheap to build"],
-      [`${DOT["2026"]["4.375"] + DOT["2027"]["4.375"]} dots`, "Risk of more hikes", `${DOT["2026"]["4.375"]} participants see 4.375% this year and ${DOT["2027"]["4.375"]} in 2027, above the median.`,
-        "A 5-year bond loses if rates rise further; an autocall can redeem from year 1 (expected life ~2 years)"],
-      [`${((r27[1] - r27[0]) * 100).toFixed(0)}bp`, "Wide disagreement", `2027 dots span ${f(r27[0])}–${f(r27[1])}; longer run ${f(rng("Longer run")[0])}–${f(rng("Longer run")[1])}. The rate path is uncertain.`,
-        "Rate uncertainty keeps volatility high, and richer option premium funds the coupon"],
-      [f(med("Longer run")), "Slow easing later", `Median falls to ${f(med("2028"))} in 2028 and ${f(med("2029"))} in 2029, towards ${f(med("Longer run"))} in the long run.`,
-        "Lower USD rates late in the note's life support Asian equities, helping the basket back to 100% (autocall)"],
-    ];
-    const RX = 7.95, RW = 4.88;
-    pts.forEach((p, i) => {
-      const y = 1.15 + i * 1.12;
-      s.addShape(pres.shapes.RECTANGLE, { x: RX, y, w: RW, h: 1.02, fill: { color: i % 2 ? WHITE : GRAY }, line: { color: GRAY } });
-      T(p[0], { x: RX + 0.05, y, w: 1.15, h: 1.02, fontSize: 16, bold: true, color: BLUE, align: "center", valign: "middle" });
-      T([{ text: p[1] + ": ", options: { bold: true, color: TXT } }, { text: p[2], options: { color: MUTED, breakLine: true } },
-         { text: "→ " + p[3], options: { bold: true, color: BLUE } }],
-        { x: RX + 1.25, y: y + 0.04, w: RW - 1.35, h: 0.94, fontSize: 8.8, valign: "middle", paraSpaceAfter: 1 });
-    });
-    s.addShape(pres.shapes.RECTANGLE, { x: 0.5, y: 6.08, w: 12.33, h: 0.48, fill: { color: BLUE }, line: { color: BLUE } });
-    T("Higher-for-longer USD rates make a capital floor cheap and long bonds risky: the setting suits a short-dated, buffered autocall.",
-      { x: 0.65, y: 6.08, w: 12.03, h: 0.48, fontSize: 12, bold: true, color: WHITE, align: "center", valign: "middle" });
-    note(T, "Source: Federal Reserve, Summary of Economic Projections, Figure 2 (16 Sep 2026). Dot counts read from the chart (18 participants for 2026–27 and the longer run, 17 for 2028–29): verify against the SEP table.", 6.62);
-    s.addNotes("The dot plot is the Fed's own forecast. Each dot is one FOMC participant's view of the right policy rate at year-end. Three readings: (1) the median sees one more hike this year and no cuts until 2028, so USD rates stay high for most of our 5-year horizon; (2) a hawkish minority sees 4.375%, so long bonds carry real downside; (3) the dots are widely spread, so rate volatility, and with it option premium, stays high. Each reading links to why a short-dated autocall with a 70% floor fits: cheap floor, early redemption, coupon funded by volatility, and supportive easing later in the life of the note.");
-  }
-
   // ===== Thesis 2, one-slide version: traditional strategies fall short in 2026 =====
   {
     const { s, T } = mk("Investment thesis 2: Traditional strategies fall short; autocallables fit 2026", "ANALYSIS");
-    T("Long bonds face rising rates; buy-and-hold equity faces record volatility, concentration and stretched valuations",
+    T("The Fed sees rates high until 2028, so long bonds carry rate risk; buy-and-hold equity faces volatility, concentration and stretched valuations",
       { x: 0.5, y: 1.05, w: 12.3, h: 0.3, fontSize: 11.5, bold: true, italic: true, color: TXT });
     const R100 = TN.rates["+100bp"];
     const PW = 4.08, PX = [0.5, 0.5 + PW + 0.2], PY = [1.45, 3.7];
@@ -263,13 +225,11 @@ async function icon(Comp, color) {
       return { x, y: y + 0.36 };
     };
     const cap = (x, y, t) => T(t, { x, y, w: PW, h: 0.4, fontSize: 8.5, color: MUTED });
-    // P1 Fed path
-    let p = panel(0, "Rates are rising again");
-    const ff = MD.fed_funds_upper;
-    s.addChart(pres.charts.LINE, [{ name: "Fed funds (upper bound)", labels: ff.labels, values: ff.values }],
-      Object.assign(chartBase(), { x: p.x, y: p.y, w: PW, h: 1.38, chartColors: [BLUE], lineSize: 2.25, lineDataSymbol: "none", showTitle: false,
-        valAxisMinVal: 0, valAxisMaxVal: 6, valAxisMajorUnit: 2, valAxisLabelFormatCode: '0"%"', catAxisLabelFontSize: 6.5, valAxisLabelFontSize: 8, showLegend: false }));
-    cap(p.x, p.y + 1.42, "Fed funds upper bound: hikes 2022–23, cuts 2024–25, a hike again on 16 Sep 2026 (median dot 4.1% for end-2026).");
+    // P1 Fed dot plot (SEP, 16 Sep 2026)
+    let p = panel(0, "The Fed: rates stay high until 2028");
+    const DOT = MD.fomc_dots_sep2026;
+    s.addImage({ path: path.join(__dirname, "fomc_dot_plot_compact.png"), x: p.x + 0.09, y: p.y, w: 3.9, h: 3.9 * 638 / 1804 });
+    cap(p.x, p.y + 1.42, `FOMC dot plot, 16 Sep 2026 (one dot per participant; shaded = today's 3.75–4.00%). ${DOT["2026"]["4.375"] + DOT["2027"]["4.375"]} dots at 4.375% for 2026–27; long run 3.25%.`);
     // P2 index path
     p = panel(1, "Equity paths are violent");
     s.addChart(pres.charts.LINE, idxSeries(), Object.assign(chartBase(), { x: p.x, y: p.y, w: PW, h: 1.38, chartColors: [BLUE, RED, "A6A6A6"], lineSize: 2, showTitle: false,
@@ -299,11 +259,11 @@ async function icon(Comp, color) {
     s.addShape(pres.shapes.LINE, { x: IX + 0.3, y: 1.78, w: IW - 0.6, h: 0, line: { color: BLUE, width: 0.75 } });
     T("Market proof: Taiwan structured-note issuance +81% in 2025, snowball autocalls the favourite payoff (SRP)",
       { x: IX, y: 1.8, w: IW, h: 0.3, fontSize: 8, italic: true, color: MUTED, align: "center" });
-    const imp = [["Early exit beats duration", `Bonds lose ~${pct(-R100.bond_value_change)} per 1% rate rise; autocalls can redeem from year 1`],
+    const imp = [["Early exit beats duration", `Fed median 4.125% to end-2027, some see more hikes: bonds lose ~${pct(-R100.bond_value_change)} per 1% rise; autocalls can redeem from year 1`],
                  ["Paid on recovery, not timing", "−25% in ten weeks (KOSPI 2026): autocall coupons pay once the basket is back at its start"],
                  ["Diversify the basket", "TSMC >40% of TAIEX, ~92% of advanced chips from Taiwan: use a diversified ETF basket, not worst-of"],
                  ["Volatility funds the coupon", "VKOSPI at a record 91.2: richer option premium means higher autocall coupons"],
-                 ["Protection is affordable", `USD 100 in 5 years costs USD ${(RES.inputs.zcb_5y * 100).toFixed(1)} at 5.69%: a buffer and a 70% floor fit inside an autocall`]];
+                 ["Protection is affordable", `Rates high until 2028: USD 100 in 5 years costs USD ${(RES.inputs.zcb_5y * 100).toFixed(1)} at 5.69%, so a 70% floor fits inside an autocall`]];
     imp.forEach((m, i) => {
       const y = 2.12 + i * 0.76;
       s.addShape(pres.shapes.RECTANGLE, { x: IX, y, w: IW, h: 0.68, fill: { color: WHITE }, line: { color: BLUE, width: 1 } });
@@ -314,8 +274,8 @@ async function icon(Comp, color) {
     s.addShape(pres.shapes.RECTANGLE, { x: 0.5, y: 6.0, w: 12.33, h: 0.48, fill: { color: BLUE }, line: { color: BLUE } });
     T("Plain bonds and equities leave investors exposed; a buffered autocall with a 70% floor keeps the theme and manages the risks.",
       { x: 0.65, y: 6.0, w: 12.03, h: 0.48, fontSize: 12, bold: true, color: WHITE, align: "center", valign: "middle" });
-    note(T, "Sources: Federal Reserve via Advisor Perspectives; TWSE, KRX/press, Nikkei (index levels); Siblis Research (P/E); Herald / SBS (VKOSPI); TrendForce; J.P. Morgan 2026 Outlook; StructuredRetailProducts.com; case funding grid with standard bond maths.", 6.56);
-    s.addNotes("One-slide thesis 2, modelled on the 'traditional strategies fall short' format, using market evidence only: rising rates (bond duration risk), violent equity paths, concentration, record volatility and a late, richly priced cycle. Implications link each market fact to why an autocallable structure fits; our specific note and its numbers come in the product section.");
+    note(T, "Sources: Federal Reserve, Summary of Economic Projections (16 Sep 2026; dot counts read from Figure 2, verify); TWSE, KRX/press, Nikkei (index levels); Siblis Research (P/E); Herald / SBS (VKOSPI); TrendForce; J.P. Morgan 2026 Outlook; StructuredRetailProducts.com; case funding grid with standard bond maths.", 6.56);
+    s.addNotes("One-slide thesis 2, modelled on the 'traditional strategies fall short' format, using market evidence only: the Fed's 16 Sep dot plot (median 4.125% through 2027, cuts only from 2028, a hawkish minority at 4.375%, wide disagreement) and the bond duration risk it implies, violent equity paths, concentration, record volatility and a late, richly priced cycle. Implications link each market fact to why an autocallable structure fits; our specific note and its numbers come in the product section.");
   }
 
   // ===== Appendix: sources =====
