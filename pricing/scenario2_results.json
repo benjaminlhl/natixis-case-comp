@@ -51,26 +51,49 @@
    ]
   ],
   "issue_price": 0.98,
-  "coupon": 0.09,
-  "barrier": 0.65,
+  "coupon": 0.065,
+  "cpn_barrier": 1.0,
   "zcb_5y": 0.7583
  },
  "basket_vol": 0.1896,
- "design_fair_coupon": {
-  "fixed_unconditional_70": 0.0585,
-  "fixed_unconditional_65": 0.0559,
-  "phoenix_memory_cb70_65": 0.0614,
-  "snowball_70": 0.101,
-  "snowball_65": 0.0967,
-  "snowball_60": 0.0917
- },
  "recommended": {
-  "pv": 0.9726,
-  "natixis_margin": 0.0274
+  "pv": 0.9751,
+  "natixis_margin": 0.0249,
+  "fair_coupon": 0.0693,
+  "pv_principal": 0.9007,
+  "pv_coupons": 0.0745
+ },
+ "designs": {
+  "Classic: fixed coupon, 70% barrier": {
+   "fair_coupon": 0.0585,
+   "p_loss": 0.0961
+  },
+  "Phoenix memory (80% cpn barrier), 70% barrier": {
+   "fair_coupon": 0.0703,
+   "p_loss": 0.0961
+  },
+  "Snowball, 65% barrier": {
+   "fair_coupon": 0.0967,
+   "p_loss": 0.0766
+  },
+  "Classic, 70% barrier, 10%-vol basket": {
+   "fair_coupon": 0.0408,
+   "p_loss": 0.0107
+  },
+  "Capital protected, memory coupon": {
+   "fair_coupon": 0.0693,
+   "p_loss": 0.0
+  }
  },
  "draft_8_5_fixed_70_pv": 1.0306,
+ "snowball_alt": {
+  "coupon": 0.09,
+  "barrier": 0.65,
+  "p_loss": 0.0766,
+  "fair_coupon": 0.0967
+ },
  "rn": {
-  "pv": 0.9726,
+  "pv": 0.9751,
   "p_called": 0.8277,
   "p_call_by_year": [
    0.5136,
@@ -79,15 +102,14 @@
    0.8022,
    0.8277
   ],
-  "p_par_no_coupon": 0.0956,
-  "p_loss": 0.0766,
-  "avg_loss_given_loss": 0.4686,
+  "p_zero_return": 0.1081,
+  "p_not_called_some_cpn": 0.0641,
+  "p_loss": 0.0,
   "exp_life_y": 2.08,
-  "exp_payout": 1.0739,
-  "irr_mean": 0.0639,
-  "irr_p5": -0.1029,
-  "irr_p1": -0.1571,
-  "es95_loss": 0.5135
+  "exp_total_coupons": 0.0813,
+  "irr_mean": 0.0544,
+  "irr_p5": -0.0,
+  "irr_p50": 0.0658
  },
  "call_profile": [
   0.5136,
@@ -110,74 +132,74 @@
   0.1723
  ],
  "coupon_sens": {
-  "base": 0.0967,
-  "vol +3pts": 0.1096,
-  "vol -3pts": 0.0849,
-  "corr +0.15": 0.1036,
-  "corr -0.15": 0.0883,
-  "stepdown 5%/yr": 0.0757,
-  "first call Y2": 0.1003
+  "base": 0.0693,
+  "vol +3pts": 0.0718,
+  "vol -3pts": 0.066,
+  "corr +0.15": 0.0709,
+  "corr -0.15": 0.067,
+  "cpn barrier 90%": 0.0573,
+  "cpn barrier 95%": 0.0626,
+  "first call Y2": 0.0713,
+  "drift -1%": 0.0752,
+  "drift -2%": 0.0813
  },
  "real_world": {
   "0%": {
-   "pv": 0.8844,
-   "p_called": 0.6867,
+   "pv": 0.9391,
+   "p_called": 0.6832,
    "p_call_by_year": [
-    0.4176,
-    0.5785,
-    0.6345,
-    0.666,
-    0.6867
+    0.4146,
+    0.5757,
+    0.6311,
+    0.6622,
+    0.6832
    ],
-   "p_par_no_coupon": 0.1177,
-   "p_loss": 0.1956,
-   "avg_loss_given_loss": 0.5015,
-   "exp_life_y": 2.58,
-   "exp_payout": 0.9931,
-   "irr_mean": 0.0347,
-   "irr_p5": -0.1542,
-   "irr_p1": -0.2009,
-   "es95_loss": 0.6337
+   "p_zero_return": 0.2026,
+   "p_not_called_some_cpn": 0.1142,
+   "p_loss": 0.0,
+   "exp_life_y": 2.59,
+   "exp_total_coupons": 0.0691,
+   "irr_mean": 0.0452,
+   "irr_p5": -0.0,
+   "irr_p50": 0.0645
   },
   "4%": {
-   "pv": 0.956,
-   "p_called": 0.8003,
+   "pv": 0.9684,
+   "p_called": 0.8007,
    "p_call_by_year": [
-    0.4985,
-    0.6762,
-    0.7395,
-    0.7762,
-    0.8003
+    0.5002,
+    0.6786,
+    0.7412,
+    0.7776,
+    0.8007
    ],
-   "p_par_no_coupon": 0.1008,
-   "p_loss": 0.0989,
-   "avg_loss_given_loss": 0.477,
-   "exp_life_y": 2.17,
-   "exp_payout": 1.0584,
-   "irr_mean": 0.0585,
-   "irr_p5": -0.117,
-   "irr_p1": -0.1678,
-   "es95_loss": 0.5472
+   "p_zero_return": 0.1255,
+   "p_not_called_some_cpn": 0.0738,
+   "p_loss": 0.0,
+   "exp_life_y": 2.16,
+   "exp_total_coupons": 0.0782,
+   "irr_mean": 0.0527,
+   "irr_p5": -0.0,
+   "irr_p50": 0.0657
   },
   "8%": {
-   "pv": 1.003,
-   "p_called": 0.889,
+   "pv": 0.9904,
+   "p_called": 0.8893,
    "p_call_by_year": [
-    0.5799,
-    0.7649,
-    0.8292,
-    0.8656,
-    0.889
+    0.5821,
+    0.7658,
+    0.8294,
+    0.8654,
+    0.8893
    ],
-   "p_par_no_coupon": 0.0712,
-   "p_loss": 0.0398,
-   "avg_loss_given_loss": 0.4567,
+   "p_zero_return": 0.0692,
+   "p_not_called_some_cpn": 0.0415,
+   "p_loss": 0.0,
    "exp_life_y": 1.82,
-   "exp_payout": 1.0955,
-   "irr_mean": 0.0741,
-   "irr_p5": 0.0,
-   "irr_p1": -0.1312,
-   "es95_loss": 0.3634
+   "exp_total_coupons": 0.0834,
+   "irr_mean": 0.0584,
+   "irr_p5": -0.0,
+   "irr_p50": 0.066
   }
  },
  "fan": {
@@ -317,9 +339,16 @@
     1.8
    ],
    "call_q": 4,
-   "payout": 1.09,
    "years": 1.0,
-   "irr": 0.09
+   "coupons": 0.065,
+   "cpn_quarters": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "total": 1.065,
+   "irr": 0.0666
   },
   "Range-bound Asia": {
    "path": [
@@ -345,9 +374,13 @@
     1.03
    ],
    "call_q": 6,
-   "payout": 1.135,
    "years": 1.5,
-   "irr": 0.0881
+   "coupons": 0.0975,
+   "cpn_quarters": [
+    6
+   ],
+   "total": 1.0975,
+   "irr": 0.064
   },
   "2022-style tech drawdown, slow recovery": {
    "path": [
@@ -373,9 +406,13 @@
     1.1
    ],
    "call_q": 15,
-   "payout": 1.3375,
    "years": 3.75,
-   "irr": 0.0806
+   "coupons": 0.2437,
+   "cpn_quarters": [
+    15
+   ],
+   "total": 1.2437,
+   "irr": 0.0599
   },
   "Lost decade (sideways below par)": {
    "path": [
@@ -401,9 +438,11 @@
     0.88
    ],
    "call_q": 0,
-   "payout": 1.0,
    "years": 5.0,
-   "irr": 0.0
+   "coupons": 0.0,
+   "cpn_quarters": [],
+   "total": 1.0,
+   "irr": -0.0
   },
   "Geopolitical shock, no recovery": {
    "path": [
@@ -429,16 +468,17 @@
     0.55
    ],
    "call_q": 0,
-   "payout": 0.55,
    "years": 5.0,
-   "irr": -0.1127
+   "coupons": 0.0,
+   "cpn_quarters": [],
+   "total": 1.0,
+   "irr": -0.0
   }
  },
  "ppn": {
   "zcb": 0.7583,
   "option_budget": 0.2217,
   "atm_call_pv": 0.2173,
-  "participation": 1.02,
-  "exp_payout": 1.2924
+  "participation": 1.02
  }
 }

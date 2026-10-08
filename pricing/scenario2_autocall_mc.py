@@ -1,13 +1,16 @@
-"""Scenario 2 (NKE Private Wealth / Chak family): Asian Digital Transformation Snowball Autocallable Note.
+"""Scenario 2 (NKE Private Wealth / Chak family): Asian Digital Transformation Capital-Protected Autocallable Note.
 
 Monte Carlo pricer, coupon solver, design comparison, sensitivities and scenario statistics.
 Market inputs (vols, dividends, correlations) are ASSUMPTIONS, to be refreshed with Bloomberg
 data as of the 17 Sep 2026 trade date. Discounting uses the USD funding grid from the game rules.
 
 Recommended product (USD, quanto, 5Y, quarterly observations):
-  - Autocall: from Q4 (1Y) onwards, if basket >= 100% of initial -> 100% + 9.0% p.a. x years elapsed
-  - Maturity (not called): basket >= 65% -> 100%; basket < 65% -> basket level (1:1 loss from initial)
+  - Conditional memory coupon: 6.5% p.a. (1.625% per quarter), paid on each quarterly date the
+    basket is >= 100% of initial, together with any coupons missed on earlier dates
+  - Autocall: from Q4 (1Y) onwards, if basket >= 100% -> 100% + coupons due, note ends
+  - Maturity (not called): 100% of principal (capital protected, subject to Natixis credit)
   - Basket = weighted sum of index performances (not worst-of)
+Earlier designs (snowball, fixed coupon, phoenix with barrier) are kept for comparison.
 Run:  python3 pricing/scenario2_autocall_mc.py   (writes pricing/scenario2_results.json)
 """
 import json
@@ -39,7 +42,8 @@ DT = 1 / FREQ
 N_PATHS = 200_000
 ISSUE_PRICE = 0.98            # Natixis margin + hedging costs = 2% upfront
 
-COUPON, BARRIER, AC, FIRST = 0.09, 0.65, 1.00, 4
+COUPON, CPN_BARRIER, AC, FIRST = 0.065, 1.00, 1.00, 4
+BARRIER = 0.65               # default capital barrier for the at-risk comparison designs
 
 
 def simulate(vol=VOL, corr=CORR, n=N_PATHS, real_world=False, eq_drift=0.07):
@@ -108,24 +112,55 @@ def solve(fn, B, price=ISSUE_PRICE, **kw):
     return round(m, 4)
 
 
-def stats(B, c=COUPON, barrier=BARRIER):
-    pv, cq, pay = snowball(B, c, barrier)
+def protected_cf(B, c=COUPON, cpn_barrier=CPN_BARRIER, **kw):
+    """Cash flows (n x N_OBS, % of notional) of the capital-protected memory-coupon autocall."""
+    n = B.shape[0]
+    cq = call_quarter(B, **kw)
     lq = np.where(cq > 0, cq, N_OBS)
-    yrs = lq / FREQ
-    irr = pay ** (1 / yrs) - 1
+    cf, owed = np.zeros((n, N_OBS)), np.zeros(n)
+    for q in range(1, N_OBS + 1):
+        alive = lq >= q
+        owed[alive] += c / FREQ
+        pay = alive & (B[:, q - 1] >= cpn_barrier)
+        cf[pay, q - 1] += owed[pay]
+        owed[pay] = 0
+    cf[np.arange(n), lq - 1] += 1.0
+    return cf, cq
+
+
+def protected(B, c=COUPON, cpn_barrier=CPN_BARRIER, **kw):
+    cf, cq = protected_cf(B, c, cpn_barrier, **kw)
+    return cf @ DFS, cq, cf.sum(axis=1)
+
+
+def irr(cf):
+    """Quarterly cash flows per path -> annual IRR (vectorised bisection), price = 100%."""
+    lo, hi = np.full(cf.shape[0], -0.5), np.full(cf.shape[0], 0.5)
+    for _ in range(60):
+        r = 0.5 * (lo + hi)
+        v = (cf * (1 + r[:, None]) ** (-TIMES[None, :])).sum(axis=1)
+        up = v > 1
+        lo, hi = np.where(up, r, lo), np.where(up, hi, r)
+    return 0.5 * (lo + hi)
+
+
+def stats(B, c=COUPON):
+    cf, cq = protected_cf(B, c)
+    lq = np.where(cq > 0, cq, N_OBS)
+    cpn = cf.sum(axis=1) - 1
+    r = irr(cf)
     return {
-        "pv": round(float(pv.mean()), 4),
+        "pv": round(float((cf @ DFS).mean()), 4),
         "p_called": round(float((cq > 0).mean()), 4),
         "p_call_by_year": [round(float(((cq > 0) & (cq <= 4 * y)).mean()), 4) for y in range(1, 6)],
-        "p_par_no_coupon": round(float(((cq == 0) & (pay == 1)).mean()), 4),
-        "p_loss": round(float((pay < 1).mean()), 4),
-        "avg_loss_given_loss": round(float(1 - pay[pay < 1].mean()), 4) if (pay < 1).any() else 0.0,
-        "exp_life_y": round(float(yrs.mean()), 2),
-        "exp_payout": round(float(pay.mean()), 4),
-        "irr_mean": round(float(irr.mean()), 4),
-        "irr_p5": round(float(np.percentile(irr, 5)), 4),
-        "irr_p1": round(float(np.percentile(irr, 1)), 4),
-        "es95_loss": round(float(1 - np.sort(pay)[: len(pay) // 20].mean()), 4),
+        "p_zero_return": round(float((cpn < 1e-9).mean()), 4),
+        "p_not_called_some_cpn": round(float(((cq == 0) & (cpn > 1e-9)).mean()), 4),
+        "p_loss": 0.0,
+        "exp_life_y": round(float((lq / FREQ).mean()), 2),
+        "exp_total_coupons": round(float(cpn.mean()), 4),
+        "irr_mean": round(float(r.mean()), 4),
+        "irr_p5": round(float(np.percentile(r, 5)), 4),
+        "irr_p50": round(float(np.percentile(r, 50)), 4),
     }
 
 
@@ -143,66 +178,86 @@ def stress_paths():
     }
 
 
+def p_breach(fn, B, c, barrier, **kw):
+    cq = fn(B, c, barrier=barrier, **kw)[1]
+    return round(float(((cq == 0) & (B[:, -1] < barrier)).mean()), 4)
+
+
 if __name__ == "__main__":
     res = {"inputs": {"underlyings": dict(zip(NAMES, LABELS)), "weights": W.tolist(), "vols": VOL.tolist(),
                       "divs": DIV.tolist(), "corr": CORR.tolist(), "issue_price": ISSUE_PRICE,
-                      "coupon": COUPON, "barrier": BARRIER, "zcb_5y": round(df(5), 4)}}
+                      "coupon": COUPON, "cpn_barrier": CPN_BARRIER, "zcb_5y": round(df(5), 4)}}
     B = simulate()
     res["basket_vol"] = round(float(np.std(np.log(B[:, 3]))), 4)
 
-    # 1. Design comparison (fair coupon at 98% issue price, same basket / autocall / barrier)
-    res["design_fair_coupon"] = {
-        "fixed_unconditional_70": solve(fixed_coupon, B, barrier=0.70),
-        "fixed_unconditional_65": solve(fixed_coupon, B, barrier=0.65),
-        "phoenix_memory_cb70_65": solve(phoenix, B, barrier=0.65),
-        "snowball_70": solve(snowball, B, barrier=0.70),
-        "snowball_65": solve(snowball, B, barrier=0.65),
-        "snowball_60": solve(snowball, B, barrier=0.60),
-    }
-    pv = snowball(B, COUPON)[0].mean()
-    res["recommended"] = {"pv": round(float(pv), 4), "natixis_margin": round(float(1 - pv), 4)}
-    res["draft_8_5_fixed_70_pv"] = round(float(fixed_coupon(B, 0.085, barrier=0.70)[0].mean()), 4)
+    # 1. Recommended product: value, margin and decomposition
+    cf, cq = protected_cf(B)
+    lq = np.where(cq > 0, cq, N_OBS)
+    pv_principal = float(DFS[lq - 1].mean())
+    pv = float((cf @ DFS).mean())
+    res["recommended"] = {"pv": round(pv, 4), "natixis_margin": round(1 - pv, 4),
+                          "fair_coupon": solve(protected, B), "pv_principal": round(pv_principal, 4),
+                          "pv_coupons": round(pv - pv_principal, 4)}
 
-    # 2. Risk-neutral statistics and call profile
+    # 2. Design comparison: fair coupon at 98% and probability of capital loss
+    C10 = np.full((4, 4), 0.999); np.fill_diagonal(C10, 1.0)
+    B10 = simulate(vol=np.full(4, 0.10), corr=C10)
+    designs = {}
+    c = solve(fixed_coupon, B, barrier=0.70); designs["Classic: fixed coupon, 70% barrier"] = [c, p_breach(fixed_coupon, B, c, 0.70)]
+    c = solve(phoenix, B, barrier=0.70, cpn_barrier=0.80); designs["Phoenix memory (80% cpn barrier), 70% barrier"] = [c, p_breach(phoenix, B, c, 0.70, cpn_barrier=0.80)]
+    c = solve(snowball, B, barrier=0.65); designs["Snowball, 65% barrier"] = [c, p_breach(snowball, B, c, 0.65)]
+    c = solve(fixed_coupon, B10, barrier=0.70); designs["Classic, 70% barrier, 10%-vol basket"] = [c, p_breach(fixed_coupon, B10, c, 0.70)]
+    designs["Capital protected, memory coupon"] = [res["recommended"]["fair_coupon"], 0.0]
+    res["designs"] = {k: {"fair_coupon": round(v[0], 4), "p_loss": v[1]} for k, v in designs.items()}
+    res["draft_8_5_fixed_70_pv"] = round(float(fixed_coupon(B, 0.085, barrier=0.70)[0].mean()), 4)
+    res["snowball_alt"] = {"coupon": 0.09, "barrier": 0.65, "p_loss": p_breach(snowball, B, 0.09, 0.65),
+                           "fair_coupon": designs["Snowball, 65% barrier"][0]}
+
+    # 3. Risk-neutral statistics and call profile
     res["rn"] = stats(B)
-    cq = snowball(B, COUPON)[1]
     res["call_profile"] = [round(float((cq == q).mean()), 4) for q in range(4, 21)] + [round(float((cq == 0).mean()), 4)]
 
-    # 3. Sensitivities of fair snowball coupon
-    sens = {"base": res["design_fair_coupon"]["snowball_65"]}
-    for tag, v, c in [("vol +3pts", VOL + 0.03, CORR), ("vol -3pts", VOL - 0.03, CORR),
-                      ("corr +0.15", VOL, CORR + 0.15 * (1 - np.eye(4))),
-                      ("corr -0.15", VOL, CORR - 0.15 * (1 - np.eye(4)))]:
-        sens[tag] = solve(snowball, simulate(v, c, n=100_000))
-    sens["stepdown 5%/yr"] = solve(snowball, B, stepdown=0.05)
-    sens["first call Y2"] = solve(snowball, B, first=8)
+    # 4. Sensitivities of the fair coupon
+    sens = {"base": res["recommended"]["fair_coupon"]}
+    for tag, v, cr in [("vol +3pts", VOL + 0.03, CORR), ("vol -3pts", VOL - 0.03, CORR),
+                       ("corr +0.15", VOL, CORR + 0.15 * (1 - np.eye(4))),
+                       ("corr -0.15", VOL, CORR - 0.15 * (1 - np.eye(4)))]:
+        sens[tag] = solve(protected, simulate(v, cr, n=100_000))
+    for cb in (0.90, 0.95):
+        sens[f"cpn barrier {int(cb*100)}%"] = solve(protected, B, cpn_barrier=cb)
+    sens["first call Y2"] = solve(protected, B, first=8)
+    _fund = fund
+    for sh in (0.01, 0.02):
+        globals()["fund"] = lambda t, s=sh: _fund(t) - s      # equity drift only; DFS already fixed
+        sens[f"drift -{int(sh*100)}%"] = solve(protected, simulate(n=100_000))
+    globals()["fund"] = _fund
     res["coupon_sens"] = sens
 
-    # 4. Real-world outcome distributions (equity total-return drift scenarios)
+    # 5. Real-world outcome distributions (equity total-return drift scenarios)
     res["real_world"] = {f"{int(d*100)}%": stats(simulate(real_world=True, eq_drift=d, n=100_000))
                          for d in [0.00, 0.04, 0.08]}
 
-    # 5. Fan chart percentiles (risk-neutral)
+    # 6. Fan chart percentiles (risk-neutral)
     res["fan"] = {p: [round(float(np.percentile(B[:, q - 1], p)), 3) for q in range(1, 21)] for p in [5, 25, 50, 75, 95]}
 
-    # 6. Hypothetical stress paths
+    # 7. Hypothetical stress paths
     st = {}
     for name, path in stress_paths().items():
-        pv_, cq_, pay_ = snowball(path[None, :], COUPON)
-        q = int(cq_[0])
-        st[name] = {"path": [round(float(x), 3) for x in path], "call_q": q,
-                    "payout": round(float(pay_[0]), 4), "years": (q if q else 20) / 4,
-                    "irr": round(float(pay_[0] ** (1 / ((q if q else 20) / 4)) - 1), 4)}
+        cfp, cqp = protected_cf(path[None, :])
+        q = int(cqp[0])
+        cpn_dates = cfp[0].copy(); cpn_dates[(q if q else 20) - 1] -= 1.0
+        st[name] = {"path": [round(float(x), 3) for x in path], "call_q": q, "years": (q if q else 20) / 4,
+                    "coupons": round(float(cfp.sum() - 1), 4), "cpn_quarters": [i + 1 for i, x in enumerate(cpn_dates) if x > 1e-9],
+                    "total": round(float(cfp.sum()), 4), "irr": round(float(irr(cfp)[0]), 4)}
     res["stress"] = st
 
-    # 7. 100% principal-protected alternative (for comparison)
+    # 8. 100% principal-protected participation note (comparison)
     zcb = df(5)
     call_pv = zcb * np.maximum(B[:, -1] - 1, 0).mean()
     res["ppn"] = {"zcb": round(zcb, 4), "option_budget": round(ISSUE_PRICE - zcb, 4),
-                  "atm_call_pv": round(float(call_pv), 4), "participation": round(float((ISSUE_PRICE - zcb) / call_pv), 3),
-                  "exp_payout": round(float(1 + (ISSUE_PRICE - zcb) / call_pv * np.maximum(B[:, -1] - 1, 0).mean()), 4)}
+                  "atm_call_pv": round(float(call_pv), 4), "participation": round(float((ISSUE_PRICE - zcb) / call_pv), 3)}
 
-    print(json.dumps({k: v for k, v in res.items() if k not in ("fan", "stress")}, indent=1))
+    print(json.dumps({k: v for k, v in res.items() if k not in ("fan", "stress", "inputs")}, indent=1))
     print(json.dumps({k: {kk: vv for kk, vv in v.items() if kk != "path"} for k, v in res["stress"].items()}, indent=1))
-    with open("pricing/scenario2_results.json", "w") as f:
+    with open(__file__.replace("scenario2_autocall_mc.py", "scenario2_results.json"), "w") as f:
         json.dump(res, f, indent=1)

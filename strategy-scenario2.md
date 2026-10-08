@@ -1,39 +1,55 @@
-# Scenario 2 strategy: Asian Digital Transformation Snowball Note
+# Scenario 2 strategy: Asian Digital Transformation Capital-Protected Autocallable Note
 
 **Client:** NKE Private Wealth (Chak family) · **Size:** USD 100mn · **Trade date:** 17 Sep 2026 · **Tenor:** 5Y
-**Deck:** `deck/Asian-Digital-Snowball-Note.pdf` (built by `deck/build_deck_scenario2.js`)
+**Deck:** `deck/Asian-Digital-Autocallable-Note.pdf` (built by `deck/build_deck_scenario2.js`)
 **Pricer:** `pricing/scenario2_autocall_mc.py` → `pricing/scenario2_results.json`
+**Supporting analysis:** `pricing/scenario2_risk_levers.py`, `pricing/scenario2_barrier70_grid.py`
 
 > Vols, dividends and correlations are **assumptions**. Refresh them on Bloomberg as of 17 Sep 2026 and re-run the pricer; the deck reads its numbers from the JSON.
 
 ## Terms
-- Issuer Natixis SA, USD quanto, 5 years, quarterly observations with autocall from Q4.
+- Issuer Natixis SA, USD quanto, 5 years, 20 quarterly observation dates.
 - Underlying: weighted basket (not worst-of) of HSTECH Index 30%, NKY Index 30%, TWSE Index 25% and MXAP0UT Index 15% (MSCI AC APAC Utilities; verify the ticker).
-- Autocall: if basket ≥ 100% on a review date, the note pays 100% + 9.0% p.a. × years elapsed (snowball: Y1 109%, up to Y5 145%).
-- Not called: final basket ≥ 65% returns 100%; final basket < 65% returns principal × final level (European barrier).
-- Issued at 100%. Fair value is 97.3%, leaving 2.7% for hedging costs and margin.
+- **Coupon:** 6.5% p.a. (1.625% per quarter), paid on each date the basket is ≥ 100% of its initial level.
+- **Memory:** missed coupons are paid on the next date the basket is ≥ 100%.
+- **Autocall:** from Q4 (Year 1), if basket ≥ 100% the note pays 100% plus coupons due and ends.
+- **At maturity:** 100% of principal whatever the basket level (capital protected, subject to Natixis credit).
+- Issued at 100%. Fair value is 97.5%, leaving 2.5% for hedging costs and margin.
+
+## Why this design
+Fair coupons below are at a 98% issue price, on the same basket.
+
+| Autocall design | Fair coupon | Chance of capital loss |
+|---|---|---|
+| Classic, fixed coupon, 70% barrier | 5.9% | 9.6% |
+| Phoenix memory (80% coupon barrier), 70% barrier | 7.0% | 9.6% |
+| Snowball, 65% barrier (earlier version) | 9.7% | 7.7% |
+| Classic, 70% barrier, 10%-vol basket | 4.1% | 1.1% |
+| **Capital protected, memory coupon (ours)** | **6.9%** | **0%** |
+
+- The draft's 8.5% fixed coupon is worth ~103% to the client, so Natixis cannot fund it.
+- Getting a 70% barrier down to 1–2% breach needs a ~10%-vol basket. That pays ~4%, below the 5.69% USD bond.
+- Full protection is cheap at 5.69% rates, and the autocall usually returns the principal early, so the protected design keeps a coupon above the funding rate.
+
+## Key numbers (risk-neutral unless stated)
+- Called at Y1: 51%. Called within 5Y: 83%. Expected life: 2.1 years.
+- Zero return (100% back, no coupon): 10.8%. Not called but some early coupons: 6.4%. Capital loss: 0%.
+- Mean IRR 5.4%, median IRR 6.6%.
+- Real-world mean IRR: 4.5% at 0% equity return, 5.3% at 4%, 5.8% at 8%.
+- Fair-coupon sensitivity:
+
+  | Change | Fair coupon |
+  |---|---|
+  | Vol ±3pts | 6.6–7.2% |
+  | Correlation ±0.15 | 6.7–7.1% |
+  | Equity drift −1% / −2% | 7.5% / 8.1% |
+  | Coupon barrier 95% | 6.3% |
+  | Coupon barrier 90% | 5.7% |
 
 ## Changes vs. the first draft (`Natixis_.pdf`)
-1. **The 8.5% unconditional quarterly coupon is not fundable.** Using the case USD funding grid (5Y 5.69%), the same basket, autocall and 70% barrier, the fair fixed coupon is ~5.9% at a 98% issue price. The draft is worth ~103% to the client. Switching the coupon to snowball (paid only at call) lifts the fair coupon to 9.7% with a 65% barrier. It also matches the "capital appreciation, not income" mandate.
-2. **The draft's thematic indices are not Bloomberg-listed**, which the rules require. Each theme is mapped to a real index.
-3. **The barrier is now consistent.** The draft mixed a 70% European kick-in with a 90% strike. The note now has a single 65% European barrier with 1:1 loss from 100%.
-4. **Hedging direction corrected.** Natixis is long the client's 65% put, so it is long downside vega and long correlation.
-
-## Key numbers (risk-neutral)
-- Autocall probability: 51% at Y1, 83% within 5Y. Expected life 2.1 years.
-- Probability of capital loss 7.7%. Average loss given loss 47%; expected loss 3.6%.
-- Fair coupon at 98% issue price:
-
-  | Variant | Fair coupon |
-  |---|---|
-  | Fixed coupon | 5.6% |
-  | Phoenix memory | 6.1% |
-  | Snowball, 70% barrier | 10.1% |
-  | Snowball, 65% barrier (base) | 9.7% |
-  | Snowball, 60% barrier | 9.2% |
-
-- Sensitivity: vol ±3pts moves the fair coupon across 8.5–11.0%; correlation ±0.15 moves it across 8.8–10.4%.
-- PPN alternative: 100% protected with ~102% upside participation at maturity.
+1. The fixed 8.5% coupon was not fundable. It is replaced by a 6.5% memory coupon on a capital-protected note.
+2. The draft's thematic indices are not Bloomberg-listed. Each theme is mapped to a real index.
+3. The barrier/strike inconsistency is gone: there is no barrier, and capital is fully protected.
 
 ## To do before submission
 - Pull Bloomberg vols, correlations and dividends, then re-run the pricer.
