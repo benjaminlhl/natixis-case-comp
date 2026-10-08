@@ -1,14 +1,15 @@
-"""Scenario 2 (NKE Private Wealth / Chak family): Asian Digital Transformation Capital-Protected Autocallable Note.
+"""Scenario 2 (NKE Private Wealth / Chak family): Asian Digital Transformation Buffered Autocallable Note.
 
 Monte Carlo pricer, coupon solver, design comparison, sensitivities and scenario statistics.
 Market inputs (vols, dividends, correlations) are ASSUMPTIONS, to be refreshed with Bloomberg
 data as of the 17 Sep 2026 trade date. Discounting uses the USD funding grid from the game rules.
 
 Recommended product (USD, 5Y, quarterly observations), basket of five Asia semiconductor / Taiwan / Korea / ESG ETFs:
-  - Conditional memory coupon: 7.2% p.a. (1.80% per quarter), paid on each quarterly date the
+  - Conditional memory coupon: 10.5% p.a. (2.625% per quarter), paid on each quarterly date the
     basket is >= 100% of initial, together with any coupons missed on earlier dates
   - Autocall: from Q4 (1Y) onwards, if basket >= 100% -> 100% + coupons due, note ends
-  - Maturity (not called): 100% of principal (capital protected, subject to Natixis credit)
+  - Maturity (not called): 100% if basket >= 70% of initial; otherwise 70% (embedded 70% put: loss capped at 30%),
+    subject to Natixis credit
   - Basket = weighted sum of index performances (not worst-of)
 Earlier designs (snowball, fixed coupon, phoenix with barrier) are kept for comparison.
 Run:  python3 pricing/scenario2_autocall_mc.py   (writes pricing/scenario2_results.json)
@@ -45,7 +46,8 @@ DT = 1 / FREQ
 N_PATHS = 200_000
 ISSUE_PRICE = 0.98            # Natixis margin + hedging costs = 2% upfront
 
-COUPON, CPN_BARRIER, AC, FIRST = 0.072, 1.00, 1.00, 4
+COUPON, CPN_BARRIER, AC, FIRST = 0.105, 1.00, 1.00, 4
+KI_BARRIER, FLOOR = 0.70, 0.70   # 70% barrier at maturity; embedded 70% put floors the repayment at 70%
 BARRIER = 0.65               # default capital barrier for the at-risk comparison designs
 
 
@@ -115,8 +117,10 @@ def solve(fn, B, price=ISSUE_PRICE, **kw):
     return round(m, 4)
 
 
-def protected_cf(B, c=COUPON, cpn_barrier=CPN_BARRIER, **kw):
-    """Cash flows (n x N_OBS, % of notional) of the capital-protected memory-coupon autocall."""
+def protected_cf(B, c=COUPON, cpn_barrier=CPN_BARRIER, ki=KI_BARRIER, floor=FLOOR, **kw):
+    """Cash flows (n x N_OBS, % of notional) of the recommended memory-coupon autocall.
+    At maturity (not called): 100% if basket >= ki, else floor (the embedded put caps the loss).
+    ki=0 gives the fully capital-protected variant; floor=None repays the basket level (no put)."""
     n = B.shape[0]
     cq = call_quarter(B, **kw)
     lq = np.where(cq > 0, cq, N_OBS)
@@ -127,7 +131,8 @@ def protected_cf(B, c=COUPON, cpn_barrier=CPN_BARRIER, **kw):
         pay = alive & (B[:, q - 1] >= cpn_barrier)
         cf[pay, q - 1] += owed[pay]
         owed[pay] = 0
-    cf[np.arange(n), lq - 1] += 1.0
+    red = np.where((cq == 0) & (B[:, -1] < ki), B[:, -1] if floor is None else floor, 1.0)
+    cf[np.arange(n), lq - 1] += red
     return cf, cq
 
 
@@ -150,15 +155,18 @@ def irr(cf):
 def stats(B, c=COUPON):
     cf, cq = protected_cf(B, c)
     lq = np.where(cq > 0, cq, N_OBS)
-    cpn = cf.sum(axis=1) - 1
+    floor_hit = (cq == 0) & (B[:, -1] < KI_BARRIER)
+    cpn = cf.sum(axis=1) - np.where(floor_hit, FLOOR, 1.0)
     r = irr(cf)
     return {
         "pv": round(float((cf @ DFS).mean()), 4),
         "p_called": round(float((cq > 0).mean()), 4),
         "p_call_by_year": [round(float(((cq > 0) & (cq <= 4 * y)).mean()), 4) for y in range(1, 6)],
-        "p_zero_return": round(float((cpn < 1e-9).mean()), 4),
-        "p_not_called_some_cpn": round(float(((cq == 0) & (cpn > 1e-9)).mean()), 4),
-        "p_loss": 0.0,
+        "p_zero_return": round(float(((cq == 0) & ~floor_hit & (cpn < 1e-9)).mean()), 4),
+        "p_not_called_some_cpn": round(float(((cq == 0) & ~floor_hit & (cpn > 1e-9)).mean()), 4),
+        "p_floor": round(float(floor_hit.mean()), 4),
+        "p_loss": round(float((cf.sum(axis=1) < 1 - 1e-9).mean()), 4),
+        "worst_1pct_total": round(float(np.percentile(cf.sum(axis=1), 1)), 4),
         "exp_life_y": round(float((lq / FREQ).mean()), 2),
         "exp_total_coupons": round(float(cpn.mean()), 4),
         "irr_mean": round(float(r.mean()), 4),
@@ -207,11 +215,16 @@ if __name__ == "__main__":
     # 1. Recommended product: value, margin and decomposition
     cf, cq = protected_cf(B)
     lq = np.where(cq > 0, cq, N_OBS)
-    pv_principal = float(DFS[lq - 1].mean())
+    pv_principal = float(DFS[lq - 1].mean())                      # 100% repaid at call or maturity
+    nc, bt, d5 = cq == 0, B[:, -1], DFS[-1]
+    pv_short_put = -float((d5 * np.where(nc & (bt < KI_BARRIER), 1 - bt, 0)).mean())   # client's loss below 70%
+    pv_long_put = float((d5 * np.where(nc, np.maximum(FLOOR - bt, 0), 0)).mean())      # embedded 70% put
     pv = float((cf @ DFS).mean())
     res["recommended"] = {"pv": round(pv, 4), "natixis_margin": round(1 - pv, 4),
                           "fair_coupon": solve(protected, B), "pv_principal": round(pv_principal, 4),
-                          "pv_coupons": round(pv - pv_principal, 4)}
+                          "pv_short_barrier_put": round(pv_short_put, 4), "pv_long_put": round(pv_long_put, 4),
+                          "pv_buffer_net": round(pv_short_put + pv_long_put, 4),
+                          "pv_coupons": round(pv - pv_principal - pv_short_put - pv_long_put, 4)}
 
     # 2. Design comparison: fair coupon at 98% and probability of capital loss
     C10 = np.full((NA, NA), 0.999); np.fill_diagonal(C10, 1.0)
@@ -221,7 +234,10 @@ if __name__ == "__main__":
     c = solve(phoenix, B, barrier=0.70, cpn_barrier=0.80); designs["Phoenix memory (80% cpn barrier), 70% barrier"] = [c, p_breach(phoenix, B, c, 0.70, cpn_barrier=0.80)]
     c = solve(snowball, B, barrier=0.65); designs["Snowball, 65% barrier"] = [c, p_breach(snowball, B, c, 0.65)]
     c = solve(fixed_coupon, B10, barrier=0.70); designs["Classic, 70% barrier, 10%-vol basket"] = [c, p_breach(fixed_coupon, B10, c, 0.70)]
-    designs["Capital protected, memory coupon"] = [res["recommended"]["fair_coupon"], 0.0]
+    c = solve(protected, B, ki=0.0); designs["Capital protected (100%), memory coupon"] = [c, 0.0]
+    res["protected_100_fair_coupon"] = c
+    c = solve(protected, B, floor=None); designs["Memory coupon, 70% barrier, no put"] = [c, round(float(((call_quarter(B) == 0) & (B[:, -1] < 0.70)).mean()), 4)]
+    designs["70% barrier + 70% put, memory coupon (ours)"] = [res["recommended"]["fair_coupon"], stats(B)["p_floor"]]
     res["designs"] = {k: {"fair_coupon": round(v[0], 4), "p_loss": v[1]} for k, v in designs.items()}
     res["draft_8_5_fixed_70_pv"] = round(float(fixed_coupon(B, 0.085, barrier=0.70)[0].mean()), 4)
     res["snowball_alt"] = {"coupon": 0.09, "barrier": 0.65, "p_loss": p_breach(snowball, B, 0.09, 0.65),
@@ -259,9 +275,10 @@ if __name__ == "__main__":
     for name, path in stress_paths().items():
         cfp, cqp = protected_cf(path[None, :])
         q = int(cqp[0])
-        cpn_dates = cfp[0].copy(); cpn_dates[(q if q else 20) - 1] -= 1.0
+        red = FLOOR if (q == 0 and path[-1] < KI_BARRIER) else 1.0
+        cpn_dates = cfp[0].copy(); cpn_dates[(q if q else 20) - 1] -= red
         st[name] = {"path": [round(float(x), 3) for x in path], "call_q": q, "years": (q if q else 20) / 4,
-                    "coupons": round(float(cfp.sum() - 1), 4), "cpn_quarters": [i + 1 for i, x in enumerate(cpn_dates) if x > 1e-9],
+                    "coupons": round(float(cfp.sum() - red), 4), "redemption": red, "cpn_quarters": [i + 1 for i, x in enumerate(cpn_dates) if x > 1e-9],
                     "total": round(float(cfp.sum()), 4), "irr": round(float(irr(cfp)[0]), 4)}
     res["stress"] = st
 

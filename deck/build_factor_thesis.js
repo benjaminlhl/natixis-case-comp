@@ -6,6 +6,7 @@ const path = require("path");
 const pptxgen = require("pptxgenjs");
 const FS = require(path.join(__dirname, "..", "simulation", "factor_snapshot.json"));
 const COL = require(path.join(__dirname, "..", "simulation", "collar_results.json"));
+const RES = require(path.join(__dirname, "..", "pricing", "scenario2_results.json"));
 const IMG = (f) => path.join(__dirname, "..", "simulation", f);
 
 const BLUE = "2C5F82", BLUE_L = "E8EFF5", TXT = "262626", MUTED = "595959", WHITE = "FFFFFF", LINE = "BFBFBF";
@@ -99,7 +100,7 @@ const note = (T, text, y) => T(text, { x: 0.5, y, w: 12.33, h: 0.3, fontSize: 8,
   const boxes = [
     ["Volatility 2× normal", `Realised ${(P.vol_3m * 100).toFixed(0)}% vs ${(P.vol_5y_weekly * 100).toFixed(0)}% on average. In our 5-year simulation the unhedged worst 1% is USD ${COL.year5_percentiles_unhedged["1"].toFixed(0)}mn of 100.`],
     ["Correlation stays high", `The five ETFs move together (${FS.avg_corr_3m.toFixed(2)} now, ${FS.avg_corr_5y.toFixed(2)} on average): they share TSMC, Samsung and SK hynix, so a shock hits all five.`],
-    ["So: protect, don't dilute", `A zero-cost collar (buy the ${(COL.put_strike * 100).toFixed(0)}% put, sell a ≈${(COL.call_strike_mc * 100).toFixed(0)}% call) lifts the worst 1% to USD 70mn and keeps the median at ${COL.year5_percentiles_collared["50"].toFixed(0)}.`],
+    ["So: protect, don't dilute", `A 70% put lifts the worst 1% to USD 70mn. Our note embeds it: ${(RES.inputs.coupon * 100).toFixed(1)}% memory coupon, 100% back above 70%, never less than 70%.`],
   ];
   boxes.forEach(([h, b], i) => {
     const x = 0.5 + i * 4.18;
@@ -108,7 +109,7 @@ const note = (T, text, y) => T(text, { x: 0.5, y, w: 12.33, h: 0.3, fontSize: 8,
     T(h, { x: x + 0.2, y: 5.12, w: 3.67, h: 0.3, fontSize: 12, bold: true, color: BLUE });
     T(b, { x: x + 0.2, y: 5.44, w: 3.67, h: 0.82, fontSize: 10, color: TXT });
   });
-  note(T, "Realised vol: 63-day daily returns of the buy-and-hold portfolio; 5-year average of that series 22% (weekly-return vol 24.5%). Correlation: 13-week weekly returns. Collar priced in the team Monte Carlo without volatility skew (real quotes will be dearer).", 6.45);
+  note(T, "Realised vol: 63-day daily returns of the buy-and-hold portfolio; 5-year average of that series 22% (weekly-return vol 24.5%). Correlation: 13-week weekly returns. Put and note priced in the team Monte Carlo without volatility skew (real quotes will be dearer).", 6.45);
 }
 
 // ---------- Slide 4: sources

@@ -147,7 +147,7 @@ async function icon(Comp, color) {
       T(x[1], { x: RX + 1.95, y, w: W2 - 2.05, h: 0.54, fontSize: 9.5, color: TXT, valign: "middle" });
     });
     note(T, "Source: J.P. Morgan Asset & Wealth Management, Eye on the Market, 2026 Outlook \"Smothering Heights\" (M. Cembalest, 1 Jan 2026), pp. 1–2, 7, 33–35, 46; underlying data Bloomberg, USITC, BP, ROC Taiwan, Global Guardian. Reliance values read from JPM's chart (approximate).");
-    banner(s, T, "J.P. Morgan's key risks (concentration, Taiwan, a 10–15% correction) are what a capital-protected autocall is built to absorb.");
+    banner(s, T, "J.P. Morgan's key risks (concentration, Taiwan, a 10–15% correction) are what an autocall with a 30% buffer and a 70% floor is built to absorb.");
     s.addNotes("Third-party validation from J.P. Morgan's 2026 Outlook. Left: the AI theme has driven most of the equity market's returns and earnings since ChatGPT, and the moat runs through TSMC (8 of the 10 largest companies depend on it). Right: JPM's own 'what could go wrong' list highlights: Taiwan dependence (~92% of advanced chips) and blockade vulnerability, a possible 'Metaverse moment' for hyperscaler capex, and a 10–15% correction in its 2026 base case. These are the risks any investor in the theme has to manage. Note: the outlook is dated 1 Jan 2026, before this year's moves.");
   }
 
@@ -206,9 +206,9 @@ async function icon(Comp, color) {
       "Rich option premium funds higher autocall coupons");
     point(RX, RW, 5.52, 3, pct(RES.inputs.zcb_5y), BLUE, "High rates make guarantees cheap",
       `At 5.69% 5Y USD funding, USD 100 payable in 5 years costs only USD ${(RES.inputs.zcb_5y * 100).toFixed(1)} today.`,
-      "Full capital protection is affordable inside an autocall");
+      "A capital floor is affordable inside an autocall");
     note(T, "Sources: TWSE, KRX/press, Nikkei (index levels; 2021–23 KOSPI/Nikkei to verify); Asiae, FN News, BIT Research (KOSPI); J.P. Morgan 2026 Outlook; Trading Economics, Siblis (valuations); TrendForce; Federal Reserve via Advisor Perspectives; Herald / SBS (VKOSPI); case funding grid; standard bond maths.", 6.42);
-    s.addNotes("Thesis 2, market evidence only. Economic: AI-hardware demand is structural, but the equity path is violent (2022 falls, 2026 round trips), concentrated in a handful of names, and valuations already assume a lot while memory price momentum slows. Finance: the Fed is hiking again, so long bonds carry real rate risk; volatility is at record highs; and high rates make guaranteeing future capital unusually cheap. Each point ends with the autocall link: coupons paid on recovery (not timing), a diversified basket, capped upside that costs little, short duration, coupons funded by volatility, and protection funded by high rates.");
+    s.addNotes("Thesis 2, market evidence only. Economic: AI-hardware demand is structural, but the equity path is violent (2022 falls, 2026 round trips), concentrated in a handful of names, and valuations already assume a lot while memory price momentum slows. Finance: the Fed is hiking again, so long bonds carry real rate risk; volatility is at record highs; and high rates make a capital floor unusually cheap. Each point ends with the autocall link: coupons paid on recovery (not timing), a diversified basket, capped upside that costs little, short duration, coupons funded by volatility, and a floor funded by high rates.");
   }
 
   // ===== Thesis 2, one-slide version: traditional strategies fall short in 2026 =====
@@ -265,7 +265,7 @@ async function icon(Comp, color) {
                  ["Paid on recovery, not timing", "−25% in ten weeks (KOSPI 2026): autocall coupons pay once the basket is back at its start"],
                  ["Diversify the basket", "TSMC >40% of TAIEX, ~92% of advanced chips from Taiwan: use a diversified ETF basket, not worst-of"],
                  ["Volatility funds the coupon", "VKOSPI at a record 91.2: richer option premium means higher autocall coupons"],
-                 ["Protection is affordable", `USD 100 in 5 years costs USD ${(RES.inputs.zcb_5y * 100).toFixed(1)} at 5.69%: capital protection fits inside an autocall`]];
+                 ["Protection is affordable", `USD 100 in 5 years costs USD ${(RES.inputs.zcb_5y * 100).toFixed(1)} at 5.69%: a buffer and a 70% floor fit inside an autocall`]];
     imp.forEach((m, i) => {
       const y = 2.12 + i * 0.76;
       s.addShape(pres.shapes.RECTANGLE, { x: IX, y, w: IW, h: 0.68, fill: { color: WHITE }, line: { color: BLUE, width: 1 } });
@@ -274,7 +274,7 @@ async function icon(Comp, color) {
         { x: IX + 0.55, y: y + 0.02, w: IW - 0.65, h: 0.64, fontSize: 8.8, valign: "middle" });
     });
     s.addShape(pres.shapes.RECTANGLE, { x: 0.5, y: 6.0, w: 12.33, h: 0.48, fill: { color: BLUE }, line: { color: BLUE } });
-    T("Plain bonds and equities leave investors exposed; a capital-protected autocall keeps the theme and manages the risks.",
+    T("Plain bonds and equities leave investors exposed; a buffered autocall with a 70% floor keeps the theme and manages the risks.",
       { x: 0.65, y: 6.0, w: 12.03, h: 0.48, fontSize: 12, bold: true, color: WHITE, align: "center", valign: "middle" });
     note(T, "Sources: Federal Reserve via Advisor Perspectives; TWSE, KRX/press, Nikkei (index levels); Siblis Research (P/E); Herald / SBS (VKOSPI); TrendForce; J.P. Morgan 2026 Outlook; StructuredRetailProducts.com; case funding grid with standard bond maths.", 6.56);
     s.addNotes("One-slide thesis 2, modelled on the 'traditional strategies fall short' format, using market evidence only: rising rates (bond duration risk), violent equity paths, concentration, record volatility and a late, richly priced cycle. Implications link each market fact to why an autocallable structure fits; our specific note and its numbers come in the product section.");
