@@ -21,7 +21,7 @@ rng = np.random.default_rng(2026)
 NAMES = ["3119 HK Equity", "2644 JP Equity", "EWT US Equity", "EWY US Equity", "00878 TT Equity"]
 LABELS = ["Global X Asia Semiconductor ETF", "Global X Japan Semiconductor ETF", "iShares MSCI Taiwan ETF",
           "iShares MSCI South Korea ETF", "Cathay Taiwan ESG Sustainability High Dividend ETF"]
-W = np.array([0.25, 0.20, 0.20, 0.20, 0.15])
+W = np.array([0.25, 0.25, 0.15, 0.15, 0.20])
 VOL = np.array([0.32, 0.38, 0.26, 0.30, 0.18])          # assumed 5Y implied vols
 DIV = np.array([0.010, 0.008, 0.026, 0.012, 0.076])     # distribution yields (00878 ~7.6%: price-return ETF)
 CORR = np.array([[1.00, 0.70, 0.85, 0.80, 0.60],

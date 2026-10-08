@@ -1,91 +1,91 @@
 {
  "rates": {
   "-200bp": {
-   "note_value_change": 0.0304,
+   "note_value_change": 0.0305,
    "bond_value_change": 0.0911,
-   "new_note_fair_coupon": 0.0503
+   "new_note_fair_coupon": 0.0512
   },
   "-150bp": {
-   "note_value_change": 0.0225,
+   "note_value_change": 0.0227,
    "bond_value_change": 0.0677,
-   "new_note_fair_coupon": 0.0576
+   "new_note_fair_coupon": 0.0586
   },
   "-100bp": {
-   "note_value_change": 0.0146,
+   "note_value_change": 0.0144,
    "bond_value_change": 0.0449,
-   "new_note_fair_coupon": 0.0649
+   "new_note_fair_coupon": 0.0661
   },
   "-50bp": {
-   "note_value_change": 0.0071,
+   "note_value_change": 0.007,
    "bond_value_change": 0.0228,
-   "new_note_fair_coupon": 0.0717
+   "new_note_fair_coupon": 0.0729
   },
   "+50bp": {
-   "note_value_change": -0.0064,
+   "note_value_change": -0.0066,
    "bond_value_change": -0.0197,
-   "new_note_fair_coupon": 0.0839
+   "new_note_fair_coupon": 0.0852
   },
   "+100bp": {
    "note_value_change": -0.0131,
    "bond_value_change": -0.0402,
-   "new_note_fair_coupon": 0.0899
+   "new_note_fair_coupon": 0.091
   },
   "+150bp": {
-   "note_value_change": -0.0197,
+   "note_value_change": -0.0198,
    "bond_value_change": -0.06,
-   "new_note_fair_coupon": 0.096
+   "new_note_fair_coupon": 0.0973
   },
   "+200bp": {
-   "note_value_change": -0.0251,
+   "note_value_change": -0.0252,
    "bond_value_change": -0.0794,
-   "new_note_fair_coupon": 0.1008
+   "new_note_fair_coupon": 0.1022
   },
   "base": {
-   "note_value": 0.9732,
-   "fair_coupon": 0.0781
+   "note_value": 0.972,
+   "fair_coupon": 0.0793
   }
  },
  "vol": {
-  "+0pts": 0.0782,
-  "+3pts": 0.0804,
-  "+5pts": 0.0824,
-  "+10pts": 0.0874
+  "+0pts": 0.0792,
+  "+3pts": 0.0816,
+  "+5pts": 0.0835,
+  "+10pts": 0.0882
  },
  "breakeven": {
   "0%": {
-   "mean_irr": 0.0499,
-   "p_beats_bond": 0.6796,
-   "p_called": 0.6796
+   "mean_irr": 0.0494,
+   "p_beats_bond": 0.6733,
+   "p_called": 0.6733
   },
   "2%": {
-   "mean_irr": 0.0528,
-   "p_beats_bond": 0.7222,
-   "p_called": 0.7222
+   "mean_irr": 0.0524,
+   "p_beats_bond": 0.7165,
+   "p_called": 0.7165
   },
   "4%": {
-   "mean_irr": 0.0559,
-   "p_beats_bond": 0.7652,
-   "p_called": 0.7652
+   "mean_irr": 0.0556,
+   "p_beats_bond": 0.7608,
+   "p_called": 0.7608
   },
   "6%": {
-   "mean_irr": 0.0589,
-   "p_beats_bond": 0.8073,
-   "p_called": 0.8073
+   "mean_irr": 0.0585,
+   "p_beats_bond": 0.8017,
+   "p_called": 0.8017
   },
   "8%": {
-   "mean_irr": 0.0614,
-   "p_beats_bond": 0.843,
-   "p_called": 0.843
+   "mean_irr": 0.061,
+   "p_beats_bond": 0.8383,
+   "p_called": 0.8383
   },
   "10%": {
-   "mean_irr": 0.0636,
-   "p_beats_bond": 0.874,
-   "p_called": 0.874
+   "mean_irr": 0.0634,
+   "p_beats_bond": 0.8714,
+   "p_called": 0.8714
   },
   "12%": {
-   "mean_irr": 0.0655,
-   "p_beats_bond": 0.9004,
-   "p_called": 0.9004
+   "mean_irr": 0.0654,
+   "p_beats_bond": 0.8987,
+   "p_called": 0.8987
   }
  }
 }

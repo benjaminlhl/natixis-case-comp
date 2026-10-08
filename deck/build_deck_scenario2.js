@@ -96,7 +96,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   txt(s, [
     { text: "We recommend ", options: {} },
     { text: "a USD 100mn, 5-year Natixis capital-protected autocallable note", options: { bold: true, color: JADE } },
-    { text: " on a basket of five Bloomberg-listed Asian ETFs: Global X Asia Semiconductor (3119 HK) 25%, Global X Japan Semiconductor (2644 JP) 20%, iShares MSCI Taiwan (EWT) 20%, iShares MSCI South Korea (EWY) 20% and Cathay Taiwan ESG High Dividend (00878 TT) 15%. It gives the family the AI hardware layer (chips, memory and chip-making equipment) that complements, rather than duplicates, the infrastructure, power and property they already own. ", options: {} },
+    { text: " on a basket of five Bloomberg-listed Asian ETFs: Global X Asia Semiconductor (3119 HK) 25%, Global X Japan Semiconductor (2644 JP) 25%, iShares MSCI Taiwan (EWT) 15%, iShares MSCI South Korea (EWY) 15% and Cathay Taiwan ESG High Dividend (00878 TT) 20%. It gives the family the AI hardware layer (chips, memory and chip-making equipment) that complements, rather than duplicates, the infrastructure, power and property they already own. ", options: {} },
     { text: `The family never loses capital at maturity, earns ${pct(CPN, 2)} a year in the ${pct(RN.p_called, 0)} of paths where the basket gets back to its starting level, and gets 100% back in the rest. Fair value is ${pct(REC.pv)}, so issuing at par leaves Natixis ${pct(REC.natixis_margin)} for hedging and margin.`, options: { bold: true } },
   ], { x: 0.5, y: 3.85, w: 9, h: 1.3, fontSize: 11.5 });
   s.addNotes("Executive summary (does not count toward the 10-slide limit).");
@@ -375,7 +375,7 @@ const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { colo
   title(s, "Risks for the family, and how Natixis hedges its side", "Transparent disclosure plus a desk hedging plan for every exposure");
   const risks = [["Opportunity cost", `Basket never back to 100%: 0% for 5 years (~${pct(RN.p_zero_return, 0)} of paths)`, "Coupon above the funding rate in most paths; only 5% of wealth"],
                  ["Capped upside", `Basket +80% still pays ${pct(CPN, 2)} p.a. and is called at Y1`, "Rest of family wealth keeps direct equity exposure"],
-                 ["ETF structure", "00878 pays ~7.6% a year out, lowering its price path; 3119 trading is thin; ETF tracking error", "Small 00878 weight; verify volumes; Natixis can reference total-return versions"],
+                 ["ETF structure", "00878 pays ~7.6% a year out, lowering its price path; 3119 trading is thin; ETF tracking error", "00878 capped at 20%; verify volumes; Natixis can reference total-return versions"],
                  ["Issuer credit", "Protection depends on Natixis / BPCE paying", "BPCE senior rating; optional collateralised wrapper"],
                  ["Liquidity / MTM", "Sold before maturity, the price can be below 100%", "Natixis daily indicative price; hold to call or maturity"]];
   const rows = [[hdr("Risk"), hdr("What could happen"), hdr("Mitigant")]].concat(risks.map((r) => [{ text: r[0], options: { bold: true, color: INK } }, r[1], r[2]]));
