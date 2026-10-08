@@ -52,3 +52,19 @@ Collected 8 Oct 2026 from web search. Most pages could not be opened directly fr
 | Backtests: autocall indices paid 96% of scheduled coupons since 2005 (issuer-sponsored) | [Calamos](https://www.calamos.com/blogs/voices/beyond-the-coupon-how-to-evaluate-a-growing-autocallable-etf-category/) |
 | Trade-off: autocall upside limited to the coupon | [Barclays autocallable prospectus (SEC)](https://www.sec.gov/Archives/edgar/data/312070/000119312510151530/dfwp.htm) |
 | Regime comparison, IRR distribution, loss probability | Team Monte Carlo: `pricing/scenario2_vs_traditional.py` → `pricing/scenario2_vs_traditional.json` |
+
+## J.P. Morgan 2026 Outlook (added 8 Oct 2026)
+
+Michael Cembalest, *Eye on the Market, 2026 Outlook: "Smothering Heights: is the largest moat in market history indestructible?"*, J.P. Morgan Asset & Wealth Management, 1 January 2026 (PDF supplied by the team).
+
+| Fact used | Page |
+|---|---|
+| 42 AI-linked stocks generated 65–75% of S&P 500 returns, profits and capex since Nov 2022; price return 190% vs 26% for S&P 500 ex-AI; MSCI Japan 59% (earnings +52%), China 50%, Europe 33% | p. 1 (table, Bloomberg/JPMAM, 22 Dec 2025) |
+| Tech capex contributed 40–45% of US GDP growth over the last three quarters; 2025 tech capex is larger, as a share of GDP, than the Manhattan Project, Apollo or the interstate highways | p. 1 |
+| 4 hyperscalers + 4 semiconductor companies (NVIDIA, TSMC, ASML, AMD) grew from $3trn to $18trn; ~20% of MSCI World, ~16% of MSCI ACWI | p. 2 |
+| Base case for 2026: a 10–15% correction at some point (profit-taking, growth scare), with markets ending the year higher | p. 1 |
+| Hyperscalers spent $1.3trn on capex and R&D since Q4 2022; risk of a "Metaverse moment"; Mag 7 fell 50% in 2022 | p. 7 |
+| Global semiconductor reliance on Taiwan ~64%, ~92% for advanced chips, vs ~22% European reliance on Russian energy in 2021 (values read from chart) | p. 33 |
+| 8 of the 10 largest companies depend in large part on TSMC supply; TSMC Taiwan wafer gross margin 62% vs 8% in Arizona (Semianalysis) | p. 34 |
+| Taiwan imports ~90% of primary energy; LNG is 40% of power generation with 10–11 days of gas storage; "the most blockade-sensitive advanced economy" | p. 35 |
+| Japan: corporate reforms positive; TOPIX cash-to-assets more than 2× US/Europe levels ("plenty of wood to chop") | p. 46 |

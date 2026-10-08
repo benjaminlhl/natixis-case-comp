@@ -99,6 +99,49 @@ async function icon(Comp, color) {
     s.addNotes("Thesis 1. AI is a hardware story and our three markets each own a bottleneck. The boom is visible in earnings, not just prices: KOSPI's forward P/E of 7.8x against 23x trailing means analysts expect earnings to roughly triple. But the cycle is maturing: memory price increases are decelerating and US tariffs are a live risk. That tension (great theme, risky path) is the bridge to thesis 2.");
   }
 
+  // ===== Third-party view: J.P. Morgan 2026 Outlook =====
+  {
+    const { s, T } = mk("J.P. Morgan's 2026 Outlook: the AI moat is real, and so are its cracks", "ANALYSIS");
+    T("\"Smothering Heights: is the largest moat in market history indestructible?\" (M. Cembalest, J.P. Morgan Asset & Wealth Management, 1 Jan 2026)",
+      { x: 0.5, y: 1.03, w: 12.3, h: 0.3, fontSize: 11, italic: true, color: MUTED });
+    const W2 = 6.0, LX = 0.5, RX = 6.83;
+    // Left: the theme is the market
+    bar(s, T, LX, 1.4, W2, "The theme is the market");
+    const cats = ["42 AI stocks", "S&P 500 ex-AI", "MSCI Japan", "MSCI China", "MSCI Europe"];
+    s.addChart(pres.charts.BAR, [{ name: "Price return", labels: cats, values: [190, 26, 59, 50, 33] }, { name: "Earnings growth", labels: cats, values: [153, 19, 52, 15, 4] }],
+      Object.assign(chartBase(), { x: LX, y: 1.88, w: W2, h: 2.0, barDir: "col", barGrouping: "clustered", chartColors: [BLUE, BLUE_M], showValue: true, dataLabelPosition: "outEnd",
+        dataLabelFormatCode: '0"%"', dataLabelFontSize: 8, dataLabelColor: TXT, valAxisHidden: true, valGridLine: { style: "none" }, valAxisMinVal: 0, valAxisMaxVal: 220,
+        title: "Since ChatGPT's launch (Nov 2022 to Dec 2025)", titleFontSize: 9.5, showLegend: true, legendPos: "r", legendFontSize: 8.5, legendFontFace: F, catAxisLabelFontSize: 8.5 }));
+    const lp = [["$3trn → $18trn", "Market cap of 4 hyperscalers + NVIDIA, TSMC, ASML, AMD in ~7 years: ~20% of MSCI World"],
+                ["65–75%", "Share of S&P 500 returns, profits and capex since Nov 2022 from 42 AI-linked stocks"],
+                ["8 of 10", "Of the world's 10 largest companies depend heavily on TSMC supply"]];
+    lp.forEach((x, i) => {
+      const y = 3.98 + i * 0.6;
+      s.addShape(pres.shapes.RECTANGLE, { x: LX, y, w: W2, h: 0.54, fill: { color: i % 2 ? WHITE : GRAY }, line: { color: GRAY } });
+      T(x[0], { x: LX + 0.1, y, w: 1.75, h: 0.54, fontSize: 15, bold: true, color: BLUE, align: "center", valign: "middle" });
+      T(x[1], { x: LX + 1.95, y, w: W2 - 2.05, h: 0.54, fontSize: 9.5, color: TXT, valign: "middle" });
+    });
+    // Right: but the moat has cracks
+    bar(s, T, RX, 1.4, W2, "…but the moat has cracks");
+    const rel = [["Europe on Russian energy (2021)", 22], ["World on Taiwan: all chips", 64], ["World on Taiwan: advanced chips", 92]];
+    s.addChart(pres.charts.BAR, [{ name: "Reliance", labels: rel.map((x) => x[0]), values: rel.map((x) => x[1]) }],
+      Object.assign(chartBase(), { x: RX, y: 1.88, w: W2, h: 2.0, barDir: "col", chartColors: ["A6A6A6", BLUE_M, RED], showValue: true, dataLabelPosition: "outEnd",
+        dataLabelFormatCode: '"~"0"%"', dataLabelFontSize: 9, dataLabelColor: TXT, valAxisHidden: true, valGridLine: { style: "none" }, valAxisMinVal: 0, valAxisMaxVal: 105,
+        title: "Dependence on a single source (JPM, read from chart)", titleFontSize: 9.5, showLegend: false, catAxisLabelFontSize: 8.5 }));
+    const rp = [["10–11 days", "Taiwan's gas storage; LNG is 40% of its power and 90% of energy is imported: \"the most blockade-sensitive advanced economy\""],
+                ["$1.3trn", "Hyperscaler capex + R&D since 2022: risk of a \"Metaverse moment\" (Mag 7 fell 50% in 2022)"],
+                ["−10–15%", "JPM's base case: a correction at some point in 2026, then markets end the year higher"]];
+    rp.forEach((x, i) => {
+      const y = 3.98 + i * 0.6;
+      s.addShape(pres.shapes.RECTANGLE, { x: RX, y, w: W2, h: 0.54, fill: { color: i % 2 ? WHITE : GRAY }, line: { color: GRAY } });
+      T(x[0], { x: RX + 0.1, y, w: 1.75, h: 0.54, fontSize: 15, bold: true, color: RED, align: "center", valign: "middle" });
+      T(x[1], { x: RX + 1.95, y, w: W2 - 2.05, h: 0.54, fontSize: 9.5, color: TXT, valign: "middle" });
+    });
+    note(T, "Source: J.P. Morgan Asset & Wealth Management, Eye on the Market, 2026 Outlook \"Smothering Heights\" (M. Cembalest, 1 Jan 2026), pp. 1–2, 7, 33–35, 46; underlying data Bloomberg, USITC, BP, ROC Taiwan, Global Guardian. Reliance values read from JPM's chart (approximate).");
+    banner(s, T, "Same conclusion as ours: stay in the AI-hardware theme, but not unprotected. Our note keeps the upside path and removes the capital risk.");
+    s.addNotes("Third-party validation from J.P. Morgan's 2026 Outlook. Left: the AI theme has driven most of the equity market's returns and earnings since ChatGPT, and the moat runs through TSMC (8 of the 10 largest companies depend on it). Right: JPM's own 'what could go wrong' list maps onto our risks: Taiwan dependence (~92% of advanced chips) and blockade vulnerability, a possible 'Metaverse moment' for hyperscaler capex, and a 10–15% correction in its 2026 base case. That is the case for owning the theme through capital protection. Note: the outlook is dated 1 Jan 2026, before this year's moves.");
+  }
+
   // ===== Thesis 2: why an autocall on our theme with protection (economic + finance) =====
   {
     const { s, T } = mk("Investment thesis 2: Own the AI-hardware theme through a protected autocall", "ANALYSIS");
@@ -128,8 +171,8 @@ async function icon(Comp, color) {
        { text: "…but the path is violent", options: { bold: true, color: RED, breakLine: true } },
        { text: "VKOSPI closed at an all-time high of 91.2 on 9 Jun 2026, above the 2008 crisis peak. Circuit breakers fired three times in June." }],
       { x: LX + 2.7, y: 1.98, w: LW - 2.75, h: 1.7, fontSize: 9.5, color: TXT, paraSpaceAfter: 3 });
-    point(LX, LW, 3.8, 1, "−25%", RED, "Round trips happen fast", "KOSPI hit 9,000+ in June (~+110% YTD), then closed at 6,789 on 28 Aug: about −25% in ten weeks. 2022: chip markets fell 25–36%.");
-    point(LX, LW, 4.66, 2, ">40%", BLUE, "Returns hinge on a few names", "TSMC is >40% of the TAIEX; Advantest outgrew the Nikkei's 10% weight cap. Taiwan trades among the world's most expensive markets.");
+    point(LX, LW, 3.8, 1, "−25%", RED, "Round trips happen fast", "KOSPI hit 9,000+ in June (~+110% YTD), then 6,789 on 28 Aug: about −25% in ten weeks. J.P. Morgan's 2026 base case includes a 10–15% correction.");
+    point(LX, LW, 4.66, 2, ">40%", BLUE, "Returns hinge on a few names", "TSMC is >40% of the TAIEX, and ~92% of advanced chips are made in Taiwan, which J.P. Morgan calls the most blockade-sensitive advanced economy.");
     point(LX, LW, 5.52, 3, "¥20trn", BLUE, "Reforms support a recovery to 100%", "Record Japanese buybacks (~¥20trn FY2025 forecast) and Korea's Value-up programme help the basket get back to its start, which is all the coupon needs.");
     // Finance
     const RX = 6.83, RW = 6.0;
@@ -150,7 +193,7 @@ async function icon(Comp, color) {
       `${pct(RN.p_call_by_year[0], 0)} of notes are called at year 1. If rates are 1% higher by then, a new note would pay ~${pct(R100.new_note_fair_coupon)}.`);
     point(RX, RW, 5.52, 3, pct(V["+5pts"]), BLUE, "Record volatility funds the coupon",
       `Fair coupon ${pct(V["+0pts"])} at our vol inputs, ${pct(V["+5pts"])} with 5pts more vol. 2026's record vols make our ${pct(CPN, 2)} conservative.`);
-    note(T, "Sources: Herald / SBS / FN News (VKOSPI); FN News and Shinhan (KOSPI 28 Aug); TWSE, Korea Times, Bloomberg/BNN (2022); Trading Economics, Nikkei Asia (weights); Siblis (valuations); Asset Management One (buybacks); Federal Reserve via Advisor Perspectives (16 Sep 2026); case funding grid; team Monte Carlo.", 6.42);
+    note(T, "Sources: Herald / SBS / FN News (VKOSPI); FN News and Shinhan (KOSPI 28 Aug); TWSE, Korea Times, Bloomberg/BNN (2022); Trading Economics, Nikkei Asia (weights); Siblis (valuations); J.P. Morgan 2026 Outlook; Asset Management One (buybacks); Federal Reserve via Advisor Perspectives (16 Sep 2026); case funding grid; team Monte Carlo.", 6.42);
     s.addNotes("Thesis 2 in two halves. Economic: demand is structural but the path is violent (record VKOSPI, a 25% KOSPI round trip in ten weeks), concentrated and late-cycle; reforms make a recovery to 100% plausible, which is all our coupon needs. Finance: rates are high and rising, so protection is cheap and long-duration bonds are risky. Our note has about a third of a 5-year bond's rate sensitivity and usually returns cash within two years, when a new note would pay more. Record volatility makes our 6.75% coupon conservative.");
   }
 
@@ -285,12 +328,13 @@ async function icon(Comp, color) {
       ["KOSPI 9,000+ in June (~+110% YTD), 6,789 on 28 Aug 2026", "BIT Research; FN News / Shinhan Securities (31 Aug 2026)"],
       ["2022: TAIEX −31.6% peak to trough; KOSPI −24.9%; SOX −36%", "TWSE 2022 Market Highlights; Korea Times; Bloomberg via BNN"],
       ["Japan buybacks ¥18.7trn FY2024, ~¥20trn FY2025e; Korea Value-Up Index +30% vs KOSPI 200", "Asset Management One via portfolio institutional; AllianceBernstein"],
+      ["42 AI stocks = 65–75% of S&P 500 returns/profits/capex; ~92% of advanced chips from Taiwan; 10–15% correction in 2026 base case", "J.P. Morgan AWM, Eye on the Market 2026 Outlook \"Smothering Heights\" (1 Jan 2026)"],
       ["Taiwan structured notes 2025: ~75,900 products, +81%; snowball autocalls favoured", "StructuredRetailProducts.com, Taiwan Q4 2025 review"],
       ["Rate and vol sensitivities, break-even vs bond, market-type comparison", "Team Monte Carlo: scenario2_thesis_numbers.py, scenario2_vs_traditional.py"],
     ];
     const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { color: BLUE } } });
     s.addTable([[hdr("Fact used"), hdr("Source")]].concat(src.map((r) => [r[0], r[1]])), { x: 0.5, y: 1.15, w: 12.33, colW: [7.2, 5.13], fontFace: F, fontSize: 8.5,
-      color: TXT, valign: "middle", border: { type: "solid", pt: 0.5, color: LINE }, fill: { color: WHITE }, rowH: 0.3, margin: [1, 5, 1, 5] });
+      color: TXT, valign: "middle", border: { type: "solid", pt: 0.5, color: LINE }, fill: { color: WHITE }, rowH: 0.28, margin: [1, 5, 1, 5] });
     T("Several figures are forecasts or third-party estimates; numbers marked 'verify' come from a single secondary source. Full URLs: deck/thesis_sources.md.",
       { x: 0.5, y: 6.35, w: 12.33, h: 0.3, fontSize: 9, italic: true, color: MUTED });
   }
