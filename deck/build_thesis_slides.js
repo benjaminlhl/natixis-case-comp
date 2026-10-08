@@ -211,6 +211,44 @@ async function icon(Comp, color) {
     s.addNotes("Thesis 2, market evidence only. Economic: AI-hardware demand is structural, but the equity path is violent (2022 falls, 2026 round trips), concentrated in a handful of names, and valuations already assume a lot while memory price momentum slows. Finance: the Fed is hiking again, so long bonds carry real rate risk; volatility is at record highs; and high rates make a capital floor unusually cheap. Each point ends with the autocall link: coupons paid on recovery (not timing), a diversified basket, capped upside that costs little, short duration, coupons funded by volatility, and a floor funded by high rates.");
   }
 
+  // ===== Thesis 2 (rates): FOMC dot plot, 16 Sep 2026 =====
+  {
+    const { s, T } = mk("Investment thesis 2 (rates): the Fed's dot plot says higher for longer", "ANALYSIS");
+    const DOT = MD.fomc_dots_sep2026;
+    const med = (c) => { const v = []; Object.entries(DOT[c]).forEach(([k, n]) => { for (let i = 0; i < n; i++) v.push(+k); }); v.sort((a, b) => a - b);
+      return (v[(v.length - 1) >> 1] + v[v.length >> 1]) / 2; };
+    const rng = (c) => { const k = Object.keys(DOT[c]).map(Number); return [Math.min(...k), Math.max(...k)]; };
+    const f = (x) => x.toFixed(3).replace(/0+$/, "") + "%";
+    s.addImage({ path: path.join(__dirname, "fomc_dot_plot.png"), x: 0.5, y: 1.15, w: 7.2, h: 7.2 * 1188 / 1892 });
+    T("FOMC participants' view of the appropriate fed funds rate (midpoint of target range), Summary of Economic Projections, 16 Sep 2026",
+      { x: 0.5, y: 5.72, w: 7.2, h: 0.3, fontSize: 8.5, italic: true, color: MUTED });
+    const r27 = rng("2027");
+    const pts = [
+      [f(med("2026")), "Rates stay high through 2027", `Median ${f(med("2026"))} at end-2026 and ${f(med("2027"))} at end-2027 (one more hike from 3.75–4.00%); cuts only from 2028.`,
+        "USD funding stays high for most of a 5-year note: the principal and a 70% floor are cheap to build"],
+      [`${DOT["2026"]["4.375"] + DOT["2027"]["4.375"]} dots`, "Risk of more hikes", `${DOT["2026"]["4.375"]} participants see 4.375% this year and ${DOT["2027"]["4.375"]} in 2027, above the median.`,
+        "A 5-year bond loses if rates rise further; an autocall can redeem from year 1 (expected life ~2 years)"],
+      [`${((r27[1] - r27[0]) * 100).toFixed(0)}bp`, "Wide disagreement", `2027 dots span ${f(r27[0])}–${f(r27[1])}; longer run ${f(rng("Longer run")[0])}–${f(rng("Longer run")[1])}. The rate path is uncertain.`,
+        "Rate uncertainty keeps volatility high, and richer option premium funds the coupon"],
+      [f(med("Longer run")), "Slow easing later", `Median falls to ${f(med("2028"))} in 2028 and ${f(med("2029"))} in 2029, towards ${f(med("Longer run"))} in the long run.`,
+        "Lower USD rates late in the note's life support Asian equities, helping the basket back to 100% (autocall)"],
+    ];
+    const RX = 7.95, RW = 4.88;
+    pts.forEach((p, i) => {
+      const y = 1.15 + i * 1.12;
+      s.addShape(pres.shapes.RECTANGLE, { x: RX, y, w: RW, h: 1.02, fill: { color: i % 2 ? WHITE : GRAY }, line: { color: GRAY } });
+      T(p[0], { x: RX + 0.05, y, w: 1.15, h: 1.02, fontSize: 16, bold: true, color: BLUE, align: "center", valign: "middle" });
+      T([{ text: p[1] + ": ", options: { bold: true, color: TXT } }, { text: p[2], options: { color: MUTED, breakLine: true } },
+         { text: "→ " + p[3], options: { bold: true, color: BLUE } }],
+        { x: RX + 1.25, y: y + 0.04, w: RW - 1.35, h: 0.94, fontSize: 8.8, valign: "middle", paraSpaceAfter: 1 });
+    });
+    s.addShape(pres.shapes.RECTANGLE, { x: 0.5, y: 6.08, w: 12.33, h: 0.48, fill: { color: BLUE }, line: { color: BLUE } });
+    T("Higher-for-longer USD rates make a capital floor cheap and long bonds risky: the setting suits a short-dated, buffered autocall.",
+      { x: 0.65, y: 6.08, w: 12.03, h: 0.48, fontSize: 12, bold: true, color: WHITE, align: "center", valign: "middle" });
+    note(T, "Source: Federal Reserve, Summary of Economic Projections, Figure 2 (16 Sep 2026). Dot counts read from the chart (18 participants for 2026–27 and the longer run, 17 for 2028–29): verify against the SEP table.", 6.62);
+    s.addNotes("The dot plot is the Fed's own forecast. Each dot is one FOMC participant's view of the right policy rate at year-end. Three readings: (1) the median sees one more hike this year and no cuts until 2028, so USD rates stay high for most of our 5-year horizon; (2) a hawkish minority sees 4.375%, so long bonds carry real downside; (3) the dots are widely spread, so rate volatility, and with it option premium, stays high. Each reading links to why a short-dated autocall with a 70% floor fits: cheap floor, early redemption, coupon funded by volatility, and supportive easing later in the life of the note.");
+  }
+
   // ===== Thesis 2, one-slide version: traditional strategies fall short in 2026 =====
   {
     const { s, T } = mk("Investment thesis 2: Traditional strategies fall short; autocallables fit 2026", "ANALYSIS");
@@ -294,6 +332,7 @@ async function icon(Comp, color) {
       ["Chip market ~USD 1.5trn in 2026 (+90%); equipment USD 165.9bn (+23.2%), DRAM equip. +39%, test +31%", "WSTS Spring 2026 (2 Jun 2026); SEMI mid-year forecast (14 Jul 2026)"],
       ["US 25% Section 232 tariff on a narrow set of advanced logic chips from 15 Jan 2026", "White House Proclamation 11002, via Perkins Coie / Mondaq"],
       ["Fed +0.25% to 3.75–4.00% on 16 Sep 2026, first hike since 2023; median dot 4.1% end-2026", "Federal Reserve decision, via Advisor Perspectives"],
+      ["FOMC dot plot: medians 4.125% (2026), 4.125% (2027), 3.875% (2028), 3.625% (2029), 3.25% longer run", "Federal Reserve, Summary of Economic Projections, Figure 2 (16 Sep 2026)"],
       ["VKOSPI record close 91.23 (9 Jun 2026), above Oct 2008 (89.30); 83.58 on 5 Mar 2026", "Herald Corp; SBS; FN News (Jun 2026)"],
       ["KOSPI 9,000+ in June (~+110% YTD), 6,789 on 28 Aug 2026", "BIT Research; FN News / Shinhan Securities (31 Aug 2026)"],
       ["2022: TAIEX −31.6% peak to trough; KOSPI −24.9%; SOX −36%", "TWSE 2022 Market Highlights; Korea Times; Bloomberg via BNN"],
@@ -304,9 +343,9 @@ async function icon(Comp, color) {
     ];
     const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { color: BLUE } } });
     s.addTable([[hdr("Fact used"), hdr("Source")]].concat(src.map((r) => [r[0], r[1]])), { x: 0.5, y: 1.15, w: 12.33, colW: [7.2, 5.13], fontFace: F, fontSize: 8.5,
-      color: TXT, valign: "middle", border: { type: "solid", pt: 0.5, color: LINE }, fill: { color: WHITE }, rowH: 0.28, margin: [1, 5, 1, 5] });
+      color: TXT, valign: "middle", border: { type: "solid", pt: 0.5, color: LINE }, fill: { color: WHITE }, rowH: 0.27, margin: [1, 5, 1, 5] });
     T("Several figures are forecasts or third-party estimates; numbers marked 'verify' come from a single secondary source. Full URLs: deck/thesis_sources.md.",
-      { x: 0.5, y: 6.35, w: 12.33, h: 0.3, fontSize: 9, italic: true, color: MUTED });
+      { x: 0.5, y: 6.66, w: 12.33, h: 0.26, fontSize: 8, italic: true, color: MUTED });
   }
 
   await pres.writeFile({ fileName: path.join(__dirname, "Investment-Thesis-Slides.pptx") });
